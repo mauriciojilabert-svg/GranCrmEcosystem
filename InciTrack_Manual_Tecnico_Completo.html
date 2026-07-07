@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InciTrack_Manual_Tecnico_Completo.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="manual-t%C3%A9cnico-y-arquitect%C3%B3nico-completo-incitrack--grancrm">Manual Técnico y Arquitectónico Completo: InciTrack &amp; GranCRM</h1>
+<h2 id="1-introducci%C3%B3n-al-ecosistema">1. Introducción al Ecosistema</h2>
+<p><strong>InciTrack</strong> es un módulo de gestión de incidencias (Tickets) diseñado para operar dentro del ecosistema <strong>GranCRM</strong>. En lugar de ser una aplicación monolítica tradicional, InciTrack está dividido en dos partes principales:</p>
+<ol>
+<li><strong>Un Frontend Desacoplado (React/Vite):</strong> Que funciona como un &quot;Micro-Frontend&quot;.</li>
+<li><strong>Un Backend Dedicado (Django):</strong> Que gestiona la lógica de negocio y se conecta a su propia base de datos, independiente de la del Orquestador.</li>
+</ol>
+<p>Este enfoque permite que el equipo de InciTrack pueda desplegar actualizaciones, reiniciar sus servidores o modificar su base de datos sin afectar a otras aplicaciones (como CallReviews o el propio Orquestador).</p>
+<div style="page-break-before: always;"></div>
+<h2 id="2-arquitectura-de-micro-frontends-module-federation">2. Arquitectura de Micro-Frontends (Module Federation)</h2>
+<p>El frontend de InciTrack utiliza <strong>Webpack Module Federation</strong> (mediante Vite). Esto resuelve el problema de cómo cargar múltiples aplicaciones de React dentro de una sola ventana del navegador.</p>
+<h3 id="%C2%BFc%C3%B3mo-funciona-la-inyecci%C3%B3n">¿Cómo funciona la inyección?</h3>
+<ol>
+<li>El usuario inicia sesión en el <strong>Orquestador</strong>.</li>
+<li>El Orquestador lee el archivo de manifiesto (<code>dios.json</code>) de InciTrack para saber dónde está su código compilado.</li>
+<li>El navegador descarga el archivo <code>remoteEntry.js</code> de InciTrack.</li>
+<li>El Orquestador inyecta los componentes de InciTrack en la pantalla, pasándole <strong>Propiedades Clave (Props)</strong>:
+<ul>
+<li><code>session</code>: Los datos del usuario logueado.</li>
+<li><code>apiBase</code>: La URL donde InciTrack debe hacer sus peticiones backend (<code>/incitrack/</code>).</li>
+<li><code>basename</code>: La ruta del navegador (<code>/incitrack</code>).</li>
+<li><code>bus</code>: Un canal de eventos para comunicarse con el Orquestador (ej. avisar si la sesión expiró).</li>
+</ul>
+</li>
+</ol>
+<div style="page-break-before: always;"></div>
+<h2 id="3-conexi%C3%B3n-a-base-de-datos-sql-server">3. Conexión a Base de Datos (SQL Server)</h2>
+<p>InciTrack se conecta a una base de datos <strong>Microsoft SQL Server 2019</strong>, específicamente a la instancia <code>QAIntouch</code> alojada en la IP <code>172.20.21.50</code>.</p>
+<h3 id="detalles-de-la-conexi%C3%B3n-backend">Detalles de la Conexión (Backend)</h3>
+<ul>
+<li><strong>Motor:</strong> <code>mssql</code> (vía ODBC Driver 18)</li>
+<li><strong>Base de Datos:</strong> <code>QAIntouch</code></li>
+<li><strong>Usuario:</strong> <code>incitrack_login</code></li>
+<li><strong>Puerto:</strong> <code>1433</code></li>
+</ul>
+<h3 id="sincronizaci%C3%B3n-de-usuarios">Sincronización de Usuarios</h3>
+<p>Para mantener la integridad de los datos (saber quién creó un ticket), InciTrack necesita tener a los usuarios en su propia base de datos.
+En lugar de conectar InciTrack a la BD del Orquestador (lo cual sería un antipatrón), <strong>InciTrack crea una copia del usuario al vuelo</strong>. Cuando un usuario entra a InciTrack por primera vez, el archivo <code>grancrm_session.py</code> lee su token, extrae su email y nombre, y lo guarda en la tabla de usuarios de <code>QAIntouch</code>.</p>
+<div style="page-break-before: always;"></div>
+<h2 id="4-diagrama-de-flujo-y-arquitectura">4. Diagrama de Flujo y Arquitectura</h2>
+<p>Para que el mapa visual se imprima perfectamente en el PDF, hemos renderizado el flujo en la siguiente imagen de alta resolución:</p>
+<img src="https://quickchart.io/graphviz?graph=digraph%20G%20%7B%20rankdir%3DLR%3B%20node%20%5Bshape%3Dbox%2C%20style%3Dfilled%2C%20fillcolor%3D%22%23f0f0f0%22%2C%20fontname%3D%22Helvetica%22%5D%3B%20User%20%5Blabel%3D%22Usuario%20Web%22%2C%20shape%3Dellipse%2C%20fillcolor%3D%22%23d0e0ff%22%5D%3B%20Nginx%20%5Blabel%3D%22Nginx%20Proxy%20Inverso%22%2C%20fillcolor%3D%22%23ffd0d0%22%5D%3B%20OrqFront%20%5Blabel%3D%22Shell%20Orquestador%20%28React%29%22%5D%3B%20OrqBack%20%5Blabel%3D%22API%20Orquestador%20%28Django%29%22%5D%3B%20ITFront%20%5Blabel%3D%22InciTrack%20MicroFrontend%22%5D%3B%20ITBack%20%5Blabel%3D%22InciTrack%20Backend%20%28Django%29%22%5D%3B%20DB%20%5Blabel%3D%22SQL%20Server%20%28172.20.21.50%29%5CnQAIntouch%22%2C%20shape%3Dcylinder%2C%20fillcolor%3D%22%23d0ffd0%22%5D%3B%20User%20-%3E%20Nginx%20%5Blabel%3D%22%20HTTPS%22%5D%3B%20Nginx%20-%3E%20OrqFront%20%5Blabel%3D%22%20%2F%22%5D%3B%20Nginx%20-%3E%20OrqBack%20%5Blabel%3D%22%20%2Fapi%22%5D%3B%20Nginx%20-%3E%20ITFront%20%5Blabel%3D%22%20%2Fmf%2Fincitrack%22%5D%3B%20Nginx%20-%3E%20ITBack%20%5Blabel%3D%22%20%2Fincitrack%2Fapi%22%5D%3B%20OrqFront%20-%3E%20ITFront%20%5Blabel%3D%22%20Inyecta%20remotamente%22%2C%20style%3Ddashed%5D%3B%20ITFront%20-%3E%20OrqFront%20%5Blabel%3D%22%20postMessage%20%28Menu%29%22%2C%20style%3Ddashed%5D%3B%20ITFront%20-%3E%20ITBack%20%5Blabel%3D%22%20HTTP%20REST%22%5D%3B%20ITBack%20-%3E%20DB%20%5Blabel%3D%22%20ODBC%22%5D%3B%20%7D" alt="Diagrama UML de Arquitectura" style="width:100%; max-width:800px; display:block; margin: 0 auto;" />
+<h3 id="flujo-de-peticiones-paso-a-paso">Flujo de Peticiones (Paso a Paso)</h3>
+<ol>
+<li><strong>[Navegador]</strong> -&gt; El usuario entra a <code>https://qadash.../incitrack/</code></li>
+<li><strong>[Nginx]</strong> -&gt; El proxy Nginx intercepta la petición. Como la URL es <code>/mf/incitrack/</code>, Nginx va a la carpeta de Vite y devuelve los archivos <code>.js</code> y <code>.css</code> de React.</li>
+<li><strong>[Navegador]</strong> -&gt; React carga la interfaz y hace un <code>fetch()</code> a <code>/incitrack/api/v1/tickets/</code>.</li>
+<li><strong>[Nginx]</strong> -&gt; Nginx ve <code>/incitrack/api/</code> y redirige la petición al contenedor Docker del backend de InciTrack (puerto 8000).</li>
+<li><strong>[Backend Django]</strong> -&gt; El middleware <code>grancrm_session.py</code> recibe la petición. Extrae la cookie <code>grancrm_session</code>, la desencripta y verifica que el usuario es válido.</li>
+<li><strong>[SQL Server]</strong> -&gt; Django se conecta a <code>172.20.21.50</code>, busca los tickets, y devuelve los datos en JSON.</li>
+</ol>
+<div style="page-break-before: always;"></div>
+<h2 id="5-comparativa-de-entornos-dev-248-vs-qa-249">5. Comparativa de Entornos: DEV (.248) vs QA (.249)</h2>
+<p>El entorno de <strong>QA (.249)</strong> fue actualizado recientemente para independizar su menú lateral. El entorno de <strong>DEV (.248)</strong> aún mantiene el código antiguo acoplado al Orquestador.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Aspecto</th>
+<th style="text-align:left">QA (.249) - Independizado</th>
+<th style="text-align:left">DEV (.248) - Acoplado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Control del Menú (Sidebar)</strong></td>
+<td style="text-align:left"><strong>Frontend de InciTrack</strong>. El archivo <code>App.tsx</code> calcula el menú usando <code>postMessage</code>.</td>
+<td style="text-align:left"><strong>BD del Orquestador</strong>. Depende de la tabla Aplicacion y lo que dictó <code>dios.json</code>.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Manejo de Roles</strong></td>
+<td style="text-align:left">Transparente. Traduce internamente <code>admin_cuenta</code> a <code>admin</code> antes de validar accesos.</td>
+<td style="text-align:left">Problemático. Si el Orquestador pasa un rol nuevo, InciTrack le niega el acceso.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Dependencia del Orquestador</strong></td>
+<td style="text-align:left">Mínima. Solo usa el Token JWT y el CSS global.</td>
+<td style="text-align:left">Alta. Requiere sincronización manual de la base de datos para mostrar el menú.</td>
+</tr>
+</tbody>
+</table>
+<div style="page-break-before: always;"></div>
+<h2 id="6-diccionario-de-archivos-clave-y-sus-funciones">6. Diccionario de Archivos Clave y sus Funciones</h2>
+<h3 id="frontend-carpeta-frontendsrc">Frontend (Carpeta: <code>frontend/src/</code>)</h3>
+<ol>
+<li><strong><code>App.tsx</code>:</strong> El núcleo de React. Configura las rutas (<code>react-router</code>), normaliza los roles de GranCRM e inyecta dinámicamente el menú lateral enviando el evento <code>grancrm:nav</code>.</li>
+<li><strong><code>context.tsx</code>:</strong> Provee el &quot;Contexto&quot; a toda la aplicación. Aquí vive la función <code>normalizeRole</code> que unifica los roles viejos y nuevos.</li>
+<li><strong><code>api.ts</code>:</strong> El interceptor de red. Todas las peticiones al backend pasan por aquí. Adjunta el <code>X-CSRFToken</code> y maneja los errores 401 (Sesión Expirada).</li>
+<li><strong><code>main.tsx</code>:</strong> Solo se usa en desarrollo local. Simula un Orquestador falso (DevShell) para que los desarrolladores puedan trabajar sin levantar todo GranCRM.</li>
+<li><strong><code>RoleGuard.tsx</code>:</strong> Componente protector. Envuelve partes de la interfaz (como los botones de Admin) y los oculta si el usuario no tiene el rol necesario.</li>
+</ol>
+<h3 id="backend-carpeta-incitrack">Backend (Carpeta: <code>incitrack/</code>)</h3>
+<ol>
+<li><strong><code>incitrack/settings.py</code>:</strong> Archivo maestro de Django. Define la conexión ODBC a SQL Server, contraseñas, URLs del Orquestador y claves JWT.</li>
+<li><strong><code>tickets/grancrm_session.py</code>:</strong> El guardián de seguridad. Middleware que lee la cookie del usuario, verifica que la firma JWT sea correcta y sincroniza el usuario en la BD de SQL Server.</li>
+<li><strong><code>tickets/api.py</code>:</strong> Controladores de la API (Vistas). Aquí se construyen los JSON que el frontend consume.</li>
+<li><strong><code>tickets/models.py</code>:</strong> Definición de las tablas de SQL Server (Tickets, SLA, Notificaciones) mapeadas a código Python.</li>
+<li><strong><code>dios.json</code>:</strong> Manifiesto técnico. Antes controlaba el menú, ahora solo sirve para decirle al Orquestador dónde está la IP de InciTrack.</li>
+</ol>
+<div style="page-break-before: always;"></div>
+<h2 id="7-comandos-%C3%BAtiles-para-el-d%C3%ADa-a-d%C3%ADa">7. Comandos Útiles para el Día a Día</h2>
+<h3 id="comandos-de-docker-infraestructura">Comandos de Docker (Infraestructura)</h3>
+<pre class="hljs"><code><div><span class="hljs-comment"># Ver si el contenedor de InciTrack está corriendo y sano</span>
+sudo docker compose ps | grep incitrack
+
+<span class="hljs-comment"># Reiniciar InciTrack para aplicar cambios en el Backend (Python)</span>
+sudo docker compose restart incitrack-modulo
+
+<span class="hljs-comment"># Ver los logs en tiempo real (útil para ver errores de SQL Server)</span>
+sudo docker compose logs -f incitrack-modulo
+</div></code></pre>
+<h3 id="comandos-de-frontend-react">Comandos de Frontend (React)</h3>
+<pre class="hljs"><code><div><span class="hljs-comment"># Entrar a la carpeta del frontend</span>
+<span class="hljs-built_in">cd</span> /home/admincrm/grancrm/incitrack/frontend
+
+<span class="hljs-comment"># Instalar dependencias si se agregó un nuevo paquete</span>
+npm install
+
+<span class="hljs-comment"># Compilar el código a producción (Obligatorio tras hacer cambios en .tsx)</span>
+npm run build
+</div></code></pre>
+<h3 id="comandos-de-backend-django">Comandos de Backend (Django)</h3>
+<pre class="hljs"><code><div><span class="hljs-comment"># Entrar dentro del contenedor de InciTrack</span>
+sudo docker compose <span class="hljs-built_in">exec</span> incitrack-modulo bash
+
+<span class="hljs-comment"># Crear nuevas migraciones tras modificar models.py</span>
+python manage.py makemigrations
+
+<span class="hljs-comment"># Aplicar las migraciones a SQL Server (172.20.21.50)</span>
+python manage.py migrate
+
+<span class="hljs-comment"># Limpiar sesiones expiradas en la BD</span>
+python manage.py clearsessions
+</div></code></pre>
+<hr>
+<h2 id="8-consideraciones-para-producci%C3%B3n">8. Consideraciones para Producción</h2>
+<ol>
+<li><strong>Variables de Entorno:</strong> Nunca hardcodear contraseñas de SQL Server en <code>settings.py</code>. Siempre usar el <code>.env</code>.</li>
+<li><strong>Caché del Navegador:</strong> Vite hace <em>cache busting</em> automático, pero el archivo <code>remoteEntry.js</code> a veces se queda pegado en la memoria de Chrome. Tras cada despliegue, recuerda presionar <strong>Vaciar caché y volver a cargar de manera rígida</strong>.</li>
+<li><strong>Mantenimiento del JWT:</strong> Si el Orquestador rota o cambia la variable <code>GRANCRM_JWT_SECRET</code>, InciTrack dejará de funcionar (Tirará Error 401 en todo) hasta que actualices la misma variable en su <code>.env</code>.</li>
+</ol>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{% if objeto %}Editar{% else %}Crear{% endif %} Usuario — InciTrack{% endblock %}
+{% block nav_admin %}nxl-active{% endblock %}
+{% block page_title %}{% if objeto %}Editar{% else %}Crear{% endif %} Usuario{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'usuario_lista' %}">Usuarios</a></li>
+<li class="breadcrumb-item active">{% if objeto %}Editar{% else %}Crear{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+            {% if field.name not in 'cuentas_asignadas,supervisores_asignados' %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="text-muted fs-12 mt-1">{{ field.help_text }}</div>{% endif %}
+              {% if field.errors %}<div class="text-danger fs-12 mt-1">{{ field.errors.0 }}</div>{% endif %}
+            </div>
+            {% endif %}
+          {% endfor %}
+
+          {% if objeto %}
+          <div id="seccion-cuentas" class="mb-3" style="{% if objeto.rol != 'supervisor' %}display:none;{% endif %}">
+            <label class="form-label fw-semibold">Cuentas asignadas <small class="text-muted fw-normal">(solo supervisores)</small></label>
+            <div class="border rounded p-3 d-flex flex-wrap gap-2">
+              {% with form.cuentas_asignadas as field %}
+                {% for checkbox in field %}
+                <div class="form-check">{{ checkbox.tag }}<label class="form-check-label fs-12 ms-1">{{ checkbox.choice_label }}</label></div>
+                {% endfor %}
+                {% if field.errors %}<div class="text-danger fs-12 mt-1 w-100">{{ field.errors.0 }}</div>{% endif %}
+              {% endwith %}
+            </div>
+          </div>
+
+          <div id="seccion-supervisores" class="mb-3" style="{% if objeto.rol != 'jefe' %}display:none;{% endif %}">
+            <label class="form-label fw-semibold">Supervisores asignados <small class="text-muted fw-normal">(solo jefes de cuenta)</small></label>
+            <div class="border rounded p-3 d-flex flex-wrap gap-2">
+              {% with form.supervisores_asignados as field %}
+                {% for checkbox in field %}
+                <div class="form-check">{{ checkbox.tag }}<label class="form-check-label fs-12 ms-1">{{ checkbox.choice_label }}</label></div>
+                {% endfor %}
+                {% if field.errors %}<div class="text-danger fs-12 mt-1 w-100">{{ field.errors.0 }}</div>{% endif %}
+              {% endwith %}
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary"><i class="feather-save me-1"></i>Guardar</button>
+            <a href="{% url 'usuario_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const rolSelect = document.getElementById('id_rol');
+const seccionCuentas = document.getElementById('seccion-cuentas');
+const seccionSupervisores = document.getElementById('seccion-supervisores');
+if (rolSelect) {
+  rolSelect.addEventListener('change', function() {
+    if (seccionCuentas) seccionCuentas.style.display = this.value === 'supervisor' ? 'block' : 'none';
+    if (seccionSupervisores) seccionSupervisores.style.display = this.value === 'jefe' ? 'block' : 'none';
+  });
+}
+</script>
+{% endblock %}

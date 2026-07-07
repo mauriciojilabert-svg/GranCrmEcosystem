@@ -1,0 +1,17 @@
+{
+  "testmotors": {
+    "db": "testmotors",
+    "host": "172.20.21.50",
+    "port": 1433
+  },
+  "intouch": {
+    "db": "DevIntouch",
+    "host": "172.20.21.50",
+    "port": 1433
+  },
+  "qa-smoke": {
+    "db": "qa_smoke_crm",
+    "host": "172.20.21.50",
+    "port": 1433
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "nombre": "InciTrack",
+  "url_interna": "http://172.20.21.249:8000",
+  "url_publica": "/incitrack/",
+  "icono": "feather-alert-circle",
+  "categoria": "Soporte",
+  "descripcion": "Gestion de incidencias y tickets",
+  "source_host": "172.20.21.50",
+  "source_db": "QAIntouch",
+  "schemas": [
+    "incitrack"
+  ],
+  "secret": "",
+  "modo": "spa_remote",
+  "slug": "incitrack",
+  "route_prefix": "/incitrack",
+  "remote_entry_url": "/mf/incitrack/remoteEntry.js",
+  "remote_scope": "incitrack",
+  "contract_version": "1",
+  "nav": [
+    {
+      "label": "Dashboard",
+      "icon": "feather-airplay",
+      "inner": "/incitrack/"
+    },
+    {
+      "label": "Tickets",
+      "icon": "feather-life-buoy",
+      "inner": "/incitrack/tickets/"
+    },
+    {
+      "label": "Nuevo ticket",
+      "icon": "feather-plus-circle",
+      "inner": "/incitrack/tickets/nuevo/"
+    },
+    {
+      "label": "Usuarios",
+      "icon": "feather-users",
+      "inner": "/incitrack/admin/usuarios/",
+      "roles": [
+        "sa",
+        "admin",
+        "admin_ti",
+        "admin_cuenta"
+      ]
+    },
+    {
+      "label": "Cuentas",
+      "icon": "feather-home",
+      "inner": "/incitrack/admin/cuentas/",
+      "roles": [
+        "sa",
+        "admin",
+        "admin_ti",
+        "admin_cuenta"
+      ]
+    },
+    {
+      "label": "Notificaciones",
+      "icon": "feather-bell",
+      "inner": "/incitrack/admin/notificaciones/"
+    },
+    {
+      "label": "Config. SLA",
+      "icon": "feather-sliders",
+      "inner": "/incitrack/sla/",
+      "roles": [
+        "sa",
+        "admin",
+        "admin_ti",
+        "admin_cuenta"
+      ]
+    },
+    {
+      "label": "Estadísticas",
+      "icon": "feather-pie-chart",
+      "inner": "/incitrack/estadisticas/",
+      "roles": [
+        "sa",
+        "admin",
+        "admin_ti",
+        "admin_cuenta"
+      ]
+    }
+  ]
+}

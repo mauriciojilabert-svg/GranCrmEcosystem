@@ -1,0 +1,237 @@
+{% load incitrack_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}InciTrack{% endblock %} — GranCRM</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/vendors/css/vendors.min.css" />
+    <link rel="stylesheet" href="/assets/css/theme.min.css" />
+    {% block extra_css %}{% endblock %}
+    <style>
+        /* Transicion logo sidebar */
+        .b-brand .logo { transition: opacity 0.3s ease, transform 0.25s ease; }
+        .b-brand .logo-sm { opacity: 0; position: absolute; transform: scale(0.8); }
+        .b-brand .logo-lg { opacity: 1; transform: scale(1); }
+        html.minimenu .b-brand .logo-lg { opacity: 0; transform: scale(0.8); }
+        html.minimenu .b-brand .logo-sm { opacity: 1; position: relative; transform: scale(1); }
+        html.app-skin-dark .b-brand .logo { filter: none !important; }
+    </style>
+    <script>(function(){if(localStorage.getItem('grancrm-theme')==='dark'){document.documentElement.classList.add('app-skin-dark');}})();</script>
+</head>
+<body>
+
+<!-- ================================================================ -->
+<!-- [Start] Sidebar Navigation                                        -->
+<!-- ================================================================ -->
+<nav class="nxl-navigation">
+    <div class="navbar-wrapper">
+        <div class="m-header">
+            <a href="{% url 'dashboard' %}" class="b-brand">
+                <img src="/assets/images/logo-full.png" alt="GranCRM" class="logo logo-lg" />
+                <img src="/assets/images/logo-abbr.png" alt="GranCRM" class="logo logo-sm" />
+            </a>
+        </div>
+        <div class="navbar-content">
+            <ul class="nxl-navbar">
+                <li class="nxl-item nxl-caption">
+                    <label>InciTrack</label>
+                </li>
+
+                <!-- Dashboard -->
+                <li class="nxl-item {% block nav_dashboard %}{% endblock %}">
+                    <a href="{% url 'dashboard' %}" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-airplay"></i></span>
+                        <span class="nxl-mtext">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- Tickets -->
+                <li class="nxl-item nxl-hasmenu {% block nav_tickets %}{% endblock %}">
+                    <a href="javascript:void(0);" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-life-buoy"></i></span>
+                        <span class="nxl-mtext">Tickets</span>
+                        <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                    </a>
+                    <ul class="nxl-submenu">
+                        <li class="nxl-item"><a class="nxl-link" href="{% url 'ticket_lista' %}">Ver todos</a></li>
+                        <li class="nxl-item"><a class="nxl-link" href="{% url 'ticket_nuevo' %}">Nuevo ticket</a></li>
+                    </ul>
+                </li>
+
+                {% if request.user.es_admin or request.user.es_jefe %}
+                <li class="nxl-item nxl-caption">
+                    <label>Administración</label>
+                </li>
+
+                <!-- Admin Panel -->
+                <li class="nxl-item nxl-hasmenu {% block nav_admin %}{% endblock %}">
+                    <a href="javascript:void(0);" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-settings"></i></span>
+                        <span class="nxl-mtext">Configuración</span>
+                        <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                    </a>
+                    <ul class="nxl-submenu">
+                        {% if request.user.es_admin %}
+                        <li class="nxl-item"><a class="nxl-link" href="{% url 'usuario_lista' %}">Usuarios</a></li>
+                        {% endif %}
+                        <li class="nxl-item"><a class="nxl-link" href="{% url 'cuenta_lista' %}">Cuentas</a></li>
+                        {% if request.user.es_admin %}
+                        <li class="nxl-item"><a class="nxl-link" href="{% url 'notificacion_lista' %}">Notificaciones</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+
+                {% if request.user.is_superuser %}
+                <li class="nxl-item {% block nav_sla %}{% endblock %}">
+                    <a href="{% url 'sla_lista' %}" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-sliders"></i></span>
+                        <span class="nxl-mtext">Config. SLA</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% endif %}
+
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- ================================================================ -->
+<!-- [End] Sidebar Navigation                                          -->
+<!-- ================================================================ -->
+
+<!-- ================================================================ -->
+<!-- [Start] Header                                                    -->
+<!-- ================================================================ -->
+<header class="nxl-header">
+    <div class="header-wrapper">
+        <div class="header-left d-flex align-items-center gap-4">
+            <a href="javascript:void(0);" class="nxl-head-mobile-toggler" id="mobile-collapse">
+                <div class="hamburger hamburger--arrowturn"><div class="hamburger-box"><div class="hamburger-inner"></div></div></div>
+            </a>
+            <div class="nxl-navigation-toggle">
+                <a href="javascript:void(0);" id="menu-mini-button"><i class="feather-align-left"></i></a>
+                <a href="javascript:void(0);" id="menu-expend-button" style="display:none"><i class="feather-arrow-right"></i></a>
+            </div>
+            <div class="nxl-drp-link nxl-lavel-mega-menu">
+                <div class="nxl-lavel-mega-menu-wrapper d-flex gap-3">
+                    <div class="dropdown nxl-h-item nxl-lavel-menu">
+                        <a href="javascript:void(0);" class="btn bg-white border px-3 py-2 fw-semibold fs-12 text-dark d-flex align-items-center gap-2" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                            <i class="feather-grid text-primary"></i> MÓDULOS <i class="feather-chevron-down"></i>
+                        </a>
+        <div class="dropdown-menu nxl-h-dropdown p-3" style="min-width:280px;">
+                            <p class="fs-11 fw-bold text-muted mb-2 text-uppercase px-1">Módulos</p>
+                            <div class="d-flex flex-wrap gap-2 px-1">
+                                <a href="http://172.20.21.248:9000/" class="border rounded py-2 px-3 fs-12 fw-semibold text-decoration-none flex-fill text-center"><i class="feather-home d-block mb-1 text-primary"></i>Hub</a>
+                                <a href="http://172.20.21.248:7000/" class="border rounded py-2 px-3 fs-12 fw-semibold text-decoration-none flex-fill text-center"><i class="feather-phone-call d-block mb-1 text-primary"></i>Call Reviews</a>
+                                <a href="http://172.20.21.248:8000/incitrack/" class="border rounded py-2 px-3 fs-12 fw-semibold text-decoration-none flex-fill text-center"><i class="feather-life-buoy d-block mb-1 text-primary"></i>InciTrack</a>
+                                <a href="http://172.20.21.248:8001/" class="border rounded py-2 px-3 fs-12 fw-semibold text-decoration-none flex-fill text-center"><i class="feather-message-circle d-block mb-1 text-primary"></i>WSP Platform</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="header-right ms-auto">
+            <div class="d-flex align-items-center">
+                <div class="nxl-h-item dark-light-theme">
+                    <a href="javascript:void(0);" class="nxl-head-link me-0 dark-button"><i class="feather-moon"></i></a>
+                    <a href="javascript:void(0);" class="nxl-head-link me-0 light-button" style="display:none"><i class="feather-sun"></i></a>
+                </div>
+                <div class="dropdown nxl-h-item ms-2">
+                    <a href="javascript:void(0);" class="d-flex align-items-center gap-2 nxl-head-link me-0" data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside">
+                        <div class="avatar-text avatar-md rounded-circle bg-primary text-white fw-bold" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:14px;">{{ request.user.nombre|first|upper }}</div>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown">
+                        <div class="dropdown-header border-bottom pb-3 mb-1">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-text rounded-circle bg-primary text-white fw-bold flex-shrink-0" style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-size:18px;">{{ request.user.nombre|first|upper }}</div>
+                                <div style="min-width:0;">
+                                    <h6 class="text-dark mb-0 fs-13 fw-bold text-truncate">{{ request.user.nombre }}</h6>
+                                    <span class="fs-11 text-muted text-truncate d-block">{{ request.user.email }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider my-1"></div>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
+                                <i class="feather-log-out fs-14"></i><span class="fs-13">Cerrar sesión</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- ================================================================ -->
+<!-- [End] Header                                                      -->
+<!-- ================================================================ -->
+
+<!-- ================================================================ -->
+<!-- [Start] Main Content                                              -->
+<!-- ================================================================ -->
+<main class="nxl-container">
+    <div class="nxl-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-left d-flex align-items-center">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">{% block page_title %}{% endblock %}</h5>
+                </div>
+            </div>
+            <div class="page-header-right ms-auto">
+                {% block page_actions %}{% endblock %}
+            </div>
+        </div>
+        <!-- End Page Header -->
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="px-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Main Content Block -->
+        <div class="main-content">
+            {% block content %}{% endblock %}
+        </div>
+
+    </div>
+</main>
+<!-- ================================================================ -->
+<!-- [End] Main Content                                                -->
+<!-- ================================================================ -->
+
+<!-- Scripts -->
+<script src="/assets/vendors/js/vendors.min.js"></script>
+<script src="/assets/vendors/js/apexcharts.min.js"></script>
+<script src="/assets/js/common-init.min.js"></script>
+{% block extra_js %}{% endblock %}
+
+    <script>
+        (function () {
+            var html = document.documentElement;
+            var darkBtn = document.querySelector('.dark-light-theme .dark-button');
+            var lightBtn = document.querySelector('.dark-light-theme .light-button');
+            function applyTheme(dark) {
+                if (dark) { html.classList.add('app-skin-dark'); if(darkBtn)darkBtn.style.display='none'; if(lightBtn)lightBtn.style.display=''; }
+                else { html.classList.remove('app-skin-dark'); if(darkBtn)darkBtn.style.display=''; if(lightBtn)lightBtn.style.display='none'; }
+            }
+            applyTheme(localStorage.getItem('grancrm-theme') === 'dark');
+            if (darkBtn) darkBtn.addEventListener('click', function() { localStorage.setItem('grancrm-theme','dark'); applyTheme(true); });
+            if (lightBtn) lightBtn.addEventListener('click', function() { localStorage.setItem('grancrm-theme','light'); applyTheme(false); });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load incitrack_tags %}
+{% block title %}Resumen de Tickets — InciTrack{% endblock %}
+{% block nav_tickets %}nxl-active{% endblock %}
+{% block page_title %}Resumen de Tickets{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'ticket_lista' %}">Tickets</a></li>
+<li class="breadcrumb-item active">Lista</li>
+{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+  {% if request.user.es_admin %}
+    {% if solo_mis_tickets %}
+      <a href="?ver_todos=1" class="btn btn-outline-primary btn-sm"><i class="feather-users me-1"></i>Ver todos</a>
+    {% else %}
+      <a href="?" class="btn btn-outline-secondary btn-sm"><i class="feather-user me-1"></i>Solo mis tickets</a>
+    {% endif %}
+  {% endif %}
+  <a href="{% url 'ticket_nuevo' %}" class="btn btn-primary btn-sm"><i class="feather-plus me-1"></i>Nuevo Ticket</a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.estado-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.estado-abierto{background:#fee2e2;color:#dc2626;}
+.estado-en_proceso{background:#fef3c7;color:#d97706;}
+.estado-resuelto{background:#dcfce7;color:#16a34a;}
+.estado-cerrado{background:#f1f5f9;color:#64748b;}
+.row-cerrado{opacity:.7;}
+.ticket-id{font-weight:700;color:var(--bs-primary);text-decoration:none;}
+.ticket-titulo{color:var(--bs-body-color);text-decoration:none;font-weight:500;}
+.ticket-titulo:hover{color:var(--bs-primary);}
+.cuenta-link{font-size:11.5px;font-weight:600;padding:2px 8px;background:var(--bs-primary-bg-subtle);color:var(--bs-primary);border-radius:6px;border:1px solid var(--bs-primary-border-subtle);text-decoration:none;}
+.avatar-ini{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;}
+.pag-btn{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 8px;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none;color:var(--bs-secondary-color);border:1px solid var(--bs-border-color);background:transparent;transition:all .15s;}
+.pag-btn:hover{background:var(--bs-primary-bg-subtle);color:var(--bs-primary);}
+.pag-btn.active{background:var(--bs-primary);color:#fff;border-color:var(--bs-primary);}
+.pag-btn.disabled{opacity:.35;pointer-events:none;}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filtros -->
+<div class="card mb-3">
+  <div class="card-body py-3">
+    <form method="get" id="form-filtros">
+      {% if ver_todos %}<input type="hidden" name="ver_todos" value="1">{% endif %}
+
+      <!-- Chips rápidos -->
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="text-muted fs-12 fw-semibold align-self-center">Acceso rápido:</span>
+        <a href="?{% if ver_todos %}ver_todos=1&{% endif %}estado=abierto" class="btn btn-sm {% if estado_activo == 'abierto' %}btn-danger{% else %}btn-outline-secondary{% endif %}">Abiertos</a>
+        <a href="?{% if ver_todos %}ver_todos=1&{% endif %}estado=en_proceso" class="btn btn-sm {% if estado_activo == 'en_proceso' %}btn-warning{% else %}btn-outline-secondary{% endif %}">En Proceso</a>
+        <a href="?{% if ver_todos %}ver_todos=1&{% endif %}estado=resuelto" class="btn btn-sm {% if estado_activo == 'resuelto' %}btn-success{% else %}btn-outline-secondary{% endif %}">Resueltos</a>
+        <a href="?{% if ver_todos %}ver_todos=1&{% endif %}estado=cerrado" class="btn btn-sm {% if estado_activo == 'cerrado' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Cerrados</a>
+        <span class="vr mx-1"></span>
+        <a href="?{% if ver_todos %}ver_todos=1&{% endif %}periodo=hoy" class="btn btn-sm {% if periodo_activo == 'hoy' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Hoy</a>
+        <a href="?{% if ver_todos %}ver_todos=1&{% endif %}periodo=semana" class="btn btn-sm {% if periodo_activo == 'semana' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Esta semana</a>
+        <a href="?{% if ver_todos %}ver_todos=1&{% endif %}periodo=mes" class="btn btn-sm {% if periodo_activo == 'mes' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Este mes</a>
+      </div>
+
+      <!-- Filtros avanzados -->
+      <div class="row g-2 mb-2">
+        <div class="col-md-3">
+          <input type="text" name="q" value="{{ busqueda }}" class="form-control form-control-sm" placeholder="Buscar por título...">
+        </div>
+        <div class="col-md-2">
+          <select name="cuenta" class="form-select form-select-sm">
+            <option value="">Todas las cuentas</option>
+            {% for c in cuentas_disponibles %}
+            <option value="{{ c.pk }}" {% if cuenta_activa == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="estado" class="form-select form-select-sm">
+            <option value="">Todos los estados</option>
+            <option value="abierto"    {% if estado_activo == 'abierto' %}selected{% endif %}>Abierto</option>
+            <option value="en_proceso" {% if estado_activo == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+            <option value="resuelto"   {% if estado_activo == 'resuelto' %}selected{% endif %}>Resuelto</option>
+            <option value="cerrado"    {% if estado_activo == 'cerrado' %}selected{% endif %}>Cerrado</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select name="categoria" class="form-select form-select-sm">
+            <option value="">Todas las categorías</option>
+            {% for cat in categorias %}
+            <option value="{{ cat.pk }}" {% if categoria_activa == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-1">
+          <input type="date" name="desde" value="{{ desde_activo }}" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-1">
+          <input type="date" name="hasta" value="{{ hasta_activo }}" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary btn-sm w-100"><i class="feather-search"></i></button>
+        </div>
+        <div class="col-md-auto">
+          <a href="{% url 'ticket_lista' %}{% if ver_todos %}?ver_todos=1{% endif %}" class="btn btn-outline-secondary btn-sm">Limpiar</a>
+        </div>
+      </div>
+
+      <div class="text-muted fs-12">
+        <strong class="text-primary">{{ total }}</strong> resultado{% if total != 1 %}s{% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3" style="width:48px;">#</th>
+            <th style="width:120px;">Creado por</th>
+            <th>Título</th>
+            <th style="width:120px;">Cuenta</th>
+            <th style="width:180px;">Categoría</th>
+            <th style="width:160px;">Responsable TI</th>
+            <th style="width:110px;">Estado</th>
+            <th style="width:120px;">Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ticket in tickets %}
+          <tr class="{% if ticket.estado == 'cerrado' %}row-cerrado{% endif %}">
+            <td class="ps-3"><a href="{% url 'ticket_detalle' ticket.pk %}" class="ticket-id">#{{ ticket.pk }}</a></td>
+            <td class="fs-12">{{ ticket.creado_por.nombre }}</td>
+            <td><a href="{% url 'ticket_detalle' ticket.pk %}" class="ticket-titulo">{{ ticket.titulo }}</a></td>
+            <td>
+              <a href="?cuenta={{ ticket.cuenta.pk }}" class="cuenta-link">{{ ticket.cuenta.nombre }}</a>
+            </td>
+            <td>
+              {% if ticket.categoria %}
+              <div class="d-flex flex-column gap-1">
+                <span style="font-size:11px;font-weight:700;color:var(--bs-primary);background:var(--bs-primary-bg-subtle);border:1px solid var(--bs-primary-border-subtle);border-radius:6px;padding:2px 8px;white-space:nowrap;">
+                  {{ ticket.categoria.nombre }}{% if ticket.plataforma_bi %} · {{ ticket.get_plataforma_bi_display }}{% endif %}
+                </span>
+                {% if ticket.subcategoria %}<small class="text-muted ps-1">› {{ ticket.subcategoria.nombre }}</small>{% endif %}
+              </div>
+              {% else %}
+              <span class="text-muted fs-12">{{ ticket.tipo_incidencia|default:"—" }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if ticket.asignado_a %}
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-ini">{{ ticket.asignado_a.nombre|slice:":2"|upper }}</div>
+                <span class="fs-12">{{ ticket.asignado_a.nombre }}</span>
+              </div>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle fs-11">Sin asignar</span>
+              {% endif %}
+            </td>
+            <td><span class="estado-badge estado-{{ ticket.estado }}">{{ ticket.get_estado_display|upper }}</span></td>
+            <td class="text-muted fs-12 text-nowrap">{{ ticket.fecha_creacion|date:"d/m/Y H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4"><i class="feather-inbox fs-3 d-block mb-2"></i>No se encontraron tickets.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if paginator.num_pages > 1 %}
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-top">
+      <span class="text-muted fs-12">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de <strong>{{ total }}</strong> tickets</span>
+      <div class="d-flex gap-1">
+        {% if page_obj.has_previous %}
+          <a href="?estado={{ estado_activo }}&cuenta={{ cuenta_activa }}&categoria={{ categoria_activa }}&q={{ busqueda }}&periodo={{ periodo_activo }}&desde={{ desde_activo }}&hasta={{ hasta_activo }}&page=1{% if ver_todos %}&ver_todos=1{% endif %}" class="pag-btn">«</a>
+          <a href="?estado={{ estado_activo }}&cuenta={{ cuenta_activa }}&categoria={{ categoria_activa }}&q={{ busqueda }}&periodo={{ periodo_activo }}&desde={{ desde_activo }}&hasta={{ hasta_activo }}&page={{ page_obj.previous_page_number }}{% if ver_todos %}&ver_todos=1{% endif %}" class="pag-btn">‹</a>
+        {% else %}
+          <span class="pag-btn disabled">«</span><span class="pag-btn disabled">‹</span>
+        {% endif %}
+        {% for num in paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="pag-btn active">{{ num }}</span>
+          {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+            <a href="?estado={{ estado_activo }}&cuenta={{ cuenta_activa }}&categoria={{ categoria_activa }}&q={{ busqueda }}&periodo={{ periodo_activo }}&desde={{ desde_activo }}&hasta={{ hasta_activo }}&page={{ num }}{% if ver_todos %}&ver_todos=1{% endif %}" class="pag-btn">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <a href="?estado={{ estado_activo }}&cuenta={{ cuenta_activa }}&categoria={{ categoria_activa }}&q={{ busqueda }}&periodo={{ periodo_activo }}&desde={{ desde_activo }}&hasta={{ hasta_activo }}&page={{ page_obj.next_page_number }}{% if ver_todos %}&ver_todos=1{% endif %}" class="pag-btn">›</a>
+          <a href="?estado={{ estado_activo }}&cuenta={{ cuenta_activa }}&categoria={{ categoria_activa }}&q={{ busqueda }}&periodo={{ periodo_activo }}&desde={{ desde_activo }}&hasta={{ hasta_activo }}&page={{ paginator.num_pages }}{% if ver_todos %}&ver_todos=1{% endif %}" class="pag-btn">»</a>
+        {% else %}
+          <span class="pag-btn disabled">›</span><span class="pag-btn disabled">»</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('#form-filtros select').forEach(function(sel){
+  sel.addEventListener('change',function(){ document.getElementById('form-filtros').submit(); });
+});
+document.querySelectorAll('#form-filtros input[type="date"]').forEach(function(inp){
+  inp.addEventListener('change',function(){ document.getElementById('form-filtros').submit(); });
+});
+</script>
+{% endblock %}

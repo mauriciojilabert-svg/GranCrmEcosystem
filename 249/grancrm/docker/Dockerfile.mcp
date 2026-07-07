@@ -1,0 +1,18 @@
+# Usamos node:18-alpine por ser liviano (~50MB vs ~350MB de node:18)
+# Alpine = distro Linux mínima, ideal para contenedores
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiamos primero package*.json y luego instalamos.
+# Docker cachea cada instrucción como una "capa".
+# Si server.js cambia pero package.json no, Docker reutiliza
+# la capa del npm install y no lo ejecuta de nuevo = builds rápidos.
+COPY package*.json ./
+RUN npm install --only=production
+# Ahora copiamos el código
+COPY . .
+
+EXPOSE 3001
+
+CMD ["node", "server.js"]

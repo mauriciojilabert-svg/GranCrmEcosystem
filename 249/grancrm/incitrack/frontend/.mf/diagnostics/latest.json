@@ -1,0 +1,10 @@
+{
+  "latestErrorEvent": {
+    "code": "TYPE-001",
+    "message": "Failed to generate type declaration. Execute the below cmd to reproduce and fix the error. #TYPE-001\nargs: {\"cmd\":\"npx tsc --project /home/admincrm/grancrm/incitrack/frontend/node_modules/.federation/tsconfig.84d3ddbf6846a7216b4a760f5774d6a8.json\"}\nView the docs to see how to solve: https://module-federation.io/guide/troubleshooting/type#type-001",
+    "args": {
+      "cmd": "npx tsc --project /home/admincrm/grancrm/incitrack/frontend/node_modules/.federation/tsconfig.84d3ddbf6846a7216b4a760f5774d6a8.json"
+    },
+    "timestamp": 1783002524610
+  }
+}

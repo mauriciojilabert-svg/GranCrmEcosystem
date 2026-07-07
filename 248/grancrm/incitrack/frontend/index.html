@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InciTrack Remote</title>
+    <!-- CSS del tema Duralux (mismo que usan los Django templates).
+         En prod el shell GranCRM los carga globalmente; aquí se referencian
+         via el proxy Vite → Django :8000 para el dev shell standalone. -->
+    <link rel="stylesheet" href="/incitrack/static/duralux/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/incitrack/static/duralux/vendors/css/vendors.min.css" />
+    <link rel="stylesheet" href="/incitrack/static/duralux/css/theme.min.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
