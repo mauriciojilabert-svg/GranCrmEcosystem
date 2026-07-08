@@ -64,10 +64,10 @@ export function UsuariosListPage() {
           { label: 'Usuarios' }
         ]}
       >
-        <Link to="nuevo" className="btn btn-primary btn-sm">
-          <i className="feather-plus me-2" />
-          <span>Nuevo Usuario</span>
-        </Link>
+        <a href="/sa/users" className="btn btn-primary btn-sm">
+          <i className="feather-external-link me-2" />
+          <span>Administrar en Orquestador</span>
+        </a>
       </PageHeader>
 
       <div className="main-content">
