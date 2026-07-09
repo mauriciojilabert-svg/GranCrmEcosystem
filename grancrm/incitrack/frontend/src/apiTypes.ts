@@ -53,6 +53,17 @@ export interface TicketOut {
   comentarios: ComentarioOut[];
 }
 
+export interface TicketAuditOut {
+  id: number;
+  ticket_id: number;
+  usuario_id: number | null;
+  usuario_nombre: string | null;
+  campo_modificado: string;
+  valor_anterior: string | null;
+  valor_nuevo: string | null;
+  fecha_modificacion: string;
+}
+
 export interface TicketCreateIn {
   titulo: string;
   descripcion: string;

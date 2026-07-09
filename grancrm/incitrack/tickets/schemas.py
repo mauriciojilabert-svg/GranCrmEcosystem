@@ -156,6 +156,17 @@ class AuditoriaItem(Schema):
     tipo: str
 
 
+class TicketAuditOut(Schema):
+    id: int
+    ticket_id: int
+    usuario_id: Optional[int] = None
+    usuario_nombre: Optional[str] = None
+    campo_modificado: str
+    valor_anterior: Optional[str] = None
+    valor_nuevo: Optional[str] = None
+    fecha_modificacion: datetime
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # DASHBOARD
 # ══════════════════════════════════════════════════════════════════════════════

@@ -20,7 +20,7 @@ from grancrm_auth.ninja_auth import GranCrmCookieAuth
 from .models import (
     Ticket, Cuenta, Usuario, Comentario,
     NotificacionServicio, Categoria, Subcategoria, ConfiguracionSLA,
-    AvisoTI,
+    AvisoTI, TicketAudit,
 )
 from .mixins import (
     tickets_visibles, cuentas_visibles, puede_ver_ticket,
@@ -28,6 +28,7 @@ from .mixins import (
 from .email_service import notificar_nuevo_ticket
 from .schemas import (
     TicketOut, TicketListItemOut, TicketCreateIn, TicketEditIn,
+    TicketAuditOut,
     ComentarioOut, ComentarioIn,
     DashboardStatsOut,
     UsuarioOut, UsuarioIn,
@@ -471,7 +472,38 @@ def ticket_edit(request: HttpRequest, ticket_id: int, data: TicketEditIn):
     if data.asignado_a_id is not None:
         if data.asignado_a_id != responsable_anterior:
             ticket.fue_reasignado = True
+            
+            # Auditoría de reasignación
+            valor_anterior = str(responsable_anterior) if responsable_anterior else "Nadie"
+            if responsable_anterior:
+                u_ant = Usuario.objects.filter(id=responsable_anterior).first()
+                if u_ant: valor_anterior = u_ant.nombre
+            valor_nuevo = "Nadie"
+            if data.asignado_a_id:
+                u_nue = Usuario.objects.filter(id=data.asignado_a_id).first()
+                if u_nue: valor_nuevo = u_nue.nombre
+
+            TicketAudit.objects.create(
+                ticket=ticket,
+                usuario=usuario,
+                campo_modificado="Responsable",
+                valor_anterior=valor_anterior,
+                valor_nuevo=valor_nuevo
+            )
+
         ticket.asignado_a_id = data.asignado_a_id
+
+    # Auditoría de estado
+    estado_anterior = ticket.estado
+    if data.estado is not None and data.estado != estado_anterior:
+        TicketAudit.objects.create(
+            ticket=ticket,
+            usuario=usuario,
+            campo_modificado="Estado",
+            valor_anterior=estado_anterior,
+            valor_nuevo=data.estado
+        )
+        ticket.estado = data.estado
 
     ticket.save()
     ticket.refresh_from_db()
