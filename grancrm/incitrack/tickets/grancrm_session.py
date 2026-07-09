@@ -60,17 +60,24 @@ class GranCRMSessionMiddleware:
         return self.get_response(request)
 
     def _validate(self, token):
+        secret = getattr(settings, 'GRANCRM_JWT_SECRET', None) or getattr(settings, 'SECRET_KEY', None)
+        if not secret:
+            return None
         try:
-            return jwt.decode(token, settings.GRANCRM_JWT_SECRET, algorithms=["HS256"])
-        except jwt.InvalidTokenError:
+            return jwt.decode(token, secret, algorithms=["HS256"])
+        except Exception:
             return None
 
     def _sync_user(self, request, payload):
         email = payload["email"]
         nombre = payload.get("nombre", email.split("@")[0])
         grancrm_rol = payload.get("rol", "")
-        it_rol = _ROLE_MAP.get(grancrm_rol, "supervisor")
-        is_super = grancrm_rol == "sa"
+        
+        # Eliminar el sufijo si existe (ej: "admin_0" -> "admin")
+        base_rol = grancrm_rol.split("_")[0] if "_" in grancrm_rol else grancrm_rol
+        
+        it_rol = _ROLE_MAP.get(base_rol, "supervisor")
+        is_super = base_rol == "sa"
 
         user, created = User.objects.get_or_create(
             email=email,
