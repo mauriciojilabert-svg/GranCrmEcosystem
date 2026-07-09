@@ -28,7 +28,7 @@ class GranCRMAuthMiddleware:
             try:
                 request.jwt_payload = jwt.decode(
                     token,
-                    settings.GRANCRM_JWT_SECRET,
+                    settings.GRANCRM_JWT_SECRET or settings.SECRET_KEY,
                     algorithms=['HS256'],
                 )
                 
