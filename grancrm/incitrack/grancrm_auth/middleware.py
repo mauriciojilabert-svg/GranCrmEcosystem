@@ -25,31 +25,33 @@ class GranCRMAuthMiddleware:
         request.jwt_payload = None
 
         if token:
-            try:
-                request.jwt_payload = jwt.decode(
-                    token,
-                    settings.GRANCRM_JWT_SECRET or settings.SECRET_KEY,
-                    algorithms=['HS256'],
-                )
-                
-                # Aprovisionamiento JIT (Just-In-Time)
-                email = request.jwt_payload.get('email')
-                if email:
-                    from django.contrib.auth import get_user_model
-                    Usuario = get_user_model()
-                    nombre = request.jwt_payload.get('nombre', email.split('@')[0])
-                    user, created = Usuario.objects.get_or_create(
-                        email=email,
-                        defaults={
-                            'nombre': nombre,
-                            'username': email,
-                            'rol': 'supervisor',
-                            'activo': True,
-                        }
+            secret = getattr(settings, 'GRANCRM_JWT_SECRET', None) or getattr(settings, 'SECRET_KEY', None)
+            if secret:
+                try:
+                    request.jwt_payload = jwt.decode(
+                        token,
+                        secret,
+                        algorithms=['HS256'],
                     )
-                    request.user = user
+                    
+                    # Aprovisionamiento JIT (Just-In-Time)
+                    email = request.jwt_payload.get('email')
+                    if email:
+                        from django.contrib.auth import get_user_model
+                        Usuario = get_user_model()
+                        nombre = request.jwt_payload.get('nombre', email.split('@')[0])
+                        user, created = Usuario.objects.get_or_create(
+                            email=email,
+                            defaults={
+                                'nombre': nombre,
+                                'username': email,
+                                'rol': 'supervisor',
+                                'activo': True,
+                            }
+                        )
+                        request.user = user
 
-            except jwt.InvalidTokenError:
-                pass
+                except Exception:
+                    pass
 
         return self.get_response(request)
