@@ -25,15 +25,17 @@ class GranCRMSessionMiddleware:
         token = request.COOKIES.get("grancrm_session")
 
         if not token:
+            print("grancrm_session: No token provided in cookies.")
             return self.get_response(request)
 
         payload = self._validate(token)
 
         if payload is None:
+            print("grancrm_session: Token validation failed (payload is None).")
             if request.path.startswith('/incitrack/api/'):
-                response = JsonResponse({"detail": "Sesión expirada"}, status=401)
+                response = JsonResponse({"detail": "Sesión expirada (token inválido)"}, status=401)
             else:
-                response = redirect(settings.GRANCRM_ORCHESTRATOR_URL + "/login/")
+                response = redirect(settings.GRANCRM_ORCHESTRATOR_URL + "/login/?error=token_invalido")
             response.delete_cookie(
                 "grancrm_session",
                 domain=getattr(settings, "GRANCRM_COOKIE_DOMAIN", None),
@@ -42,10 +44,11 @@ class GranCRMSessionMiddleware:
 
         # Verificar que el usuario tiene acceso a InciTrack
         if INCITRACK_APP_ID not in payload.get("apps", []):
+            print(f"grancrm_session: User apps {payload.get('apps')} does not contain {INCITRACK_APP_ID}.")
             if request.path.startswith('/incitrack/api/'):
-                response = JsonResponse({"detail": "Sesión expirada"}, status=401)
+                response = JsonResponse({"detail": f"Sesión expirada (sin acceso a app {INCITRACK_APP_ID})"}, status=401)
             else:
-                response = redirect(settings.GRANCRM_ORCHESTRATOR_URL + "/login/")
+                response = redirect(settings.GRANCRM_ORCHESTRATOR_URL + "/login/?error=sin_acceso_incitrack")
             response.delete_cookie(
                 "grancrm_session",
                 domain=getattr(settings, "GRANCRM_COOKIE_DOMAIN", None),
