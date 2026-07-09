@@ -128,17 +128,62 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     ).count()
 
     ahora_local = timezone.localtime(ahora)
-    tickets_recientes = list(qs.values(
+    
+    from django.db.models import Q as DQ
+    
+    # 1. Tickets Urgentes (Por cerrar en 20h-24h o sin asignar)
+    qs_urgentes = qs.filter(
+        DQ(estado__in=['abierto', 'en_proceso']) &
+        (
+            DQ(asignado_a__isnull=True) |
+            (DQ(fecha_actualizacion__lte=limite_20h) & DQ(fecha_actualizacion__gte=limite_24h))
+        )
+    ).order_by('-fecha_actualizacion')
+    
+    tickets_urgentes = list(qs_urgentes.values(
         'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
         'cuenta__nombre', 'creado_por__nombre',
         'asignado_a__nombre', 'asignado_a__id',
         'categoria__nombre', 'subcategoria__nombre',
         'plataforma_bi',
     )[:10])
-    # Convert datetimes to strings for JSON serialization
-    for t in tickets_recientes:
+    for t in tickets_urgentes:
         if t.get('fecha_creacion'):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()
+
+    # 2. Mis Tickets Activos
+    qs_mis_activos = qs.filter(
+        asignado_a=usuario, 
+        estado__in=['abierto', 'en_proceso']
+    ).order_by('-fecha_actualizacion')
+    
+    mis_tickets_activos = list(qs_mis_activos.values(
+        'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
+        'cuenta__nombre', 'creado_por__nombre',
+        'asignado_a__nombre', 'asignado_a__id',
+        'categoria__nombre', 'subcategoria__nombre',
+        'plataforma_bi',
+    )[:10])
+    for t in mis_tickets_activos:
+        if t.get('fecha_creacion'):
+            t['fecha_creacion'] = t['fecha_creacion'].isoformat()
+
+    # 3. Auditoría Reciente (Últimos comentarios en tickets visibles)
+    comentarios_qs = Comentario.objects.filter(ticket__in=qs).select_related('autor', 'ticket').order_by('-fecha')
+    if not usuario.es_admin:
+        comentarios_qs = comentarios_qs.filter(interno=False)
+        
+    auditoria_reciente = []
+    for c in comentarios_qs[:10]:
+        auditoria_reciente.append({
+            "id": c.id,
+            "ticket_id": c.ticket_id,
+            "ticket_titulo": c.ticket.titulo,
+            "autor_nombre": c.autor.nombre,
+            "contenido": c.contenido,
+            "fecha": c.fecha,
+            "tipo": "comentario"
+        })
 
     return 200, DashboardStatsOut(
         total_filtrado=qs_filtrado.count(),
@@ -153,7 +198,9 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         sin_asignar=qs_filtrado.filter(estado__in=['abierto', 'en_proceso'], asignado_a__isnull=True).count(),
         solo_mis_tickets=solo_mis_tickets,
         ver_todos=ver_todos,
-        tickets_recientes=tickets_recientes,
+        tickets_urgentes=tickets_urgentes,
+        mis_tickets_activos=mis_tickets_activos,
+        auditoria_reciente=auditoria_reciente,
     )
 
 
