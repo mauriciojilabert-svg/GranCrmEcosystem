@@ -56,12 +56,6 @@ class GranCrmCookieAuth:
                 request.user = user
 
             return payload
-        except jwt.ExpiredSignatureError:
-            logger.error("ninja_auth: *** TOKEN EXPIRADO ***")
-            return None
-        except jwt.InvalidSignatureError:
-            logger.error(f"ninja_auth: *** FIRMA INVALIDA *** (secreto usado empieza con {str(secret)[:10]})")
-            return None
         except Exception as e:
             logger.error(f"ninja_auth: *** ERROR DESCONOCIDO *** {type(e).__name__}: {e}")
             return None
