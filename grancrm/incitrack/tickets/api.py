@@ -168,6 +168,9 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         solo_mis_tickets=solo_mis_tickets,
         ver_todos=ver_todos,
         tickets_recientes=tickets_recientes,
+        tickets_urgentes=[],
+        mis_tickets_activos=[],
+        auditoria_reciente=[],
     )
 
 
