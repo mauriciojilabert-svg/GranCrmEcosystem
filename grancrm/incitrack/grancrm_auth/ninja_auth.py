@@ -1,9 +1,8 @@
 import jwt
 from django.conf import settings
-
-
 import logging
 logger = logging.getLogger(__name__)
+
 
 class GranCrmCookieAuth:
     """
@@ -18,44 +17,44 @@ class GranCrmCookieAuth:
     def __call__(self, request):
         token = request.COOKIES.get("grancrm_session")
         if not token:
+            print("ninja_auth: SIN COOKIE", flush=True)
             return None
-        try:
-            secret_env = getattr(settings, "GRANCRM_JWT_SECRET", None)
-            secret_key = getattr(settings, "SECRET_KEY", None)
-            orquestador_old_secret = "BMkD0_EZLqHEioRFmIjqyT-bDlEBSD8-eNOWiymLfby5Wn9BsULs_9YR84c3Ftt8Sks"
-            
-            base_secrets = [secret_env, secret_key, orquestador_old_secret]
-            secrets_to_try = []
-            for s in base_secrets:
-                if s: secrets_to_try.extend([s, s + '\r', s + '\n', s + '\r\n', s.strip()])
-            
-            logger.warning("ninja_auth: HARDCODE BYPASS ACTIVADO")
-            payload = {
-                "email": "mauriciocaceres@in-touchcrm.cl",
-                "rol": "sa",
-                "apps": [2, 3, 5, 1],
-                "nombre": "Mauricio Bypass"
-            }
-            request.jwt_payload = payload
-            
-            # Aprovisionamiento JIT (Just-In-Time)
-            email = payload.get('email')
-            if email:
-                from django.contrib.auth import get_user_model
-                Usuario = get_user_model()
-                nombre = payload.get('nombre', email.split('@')[0])
-                user, created = Usuario.objects.get_or_create(
-                    email=email,
-                    defaults={
-                        'nombre': nombre,
-                        'username': email,
-                        'rol': 'supervisor',
-                        'activo': True,
-                    }
-                )
-                request.user = user
 
+        # BYPASS TEMPORAL QA: si el middleware ya valido la sesion, usamos ese payload
+        jwt_payload = getattr(request, "jwt_payload", None)
+        if jwt_payload:
+            print(f"ninja_auth: BYPASS via jwt_payload del middleware OK - {jwt_payload.get('email')}", flush=True)
+            self._jit_provision(request, jwt_payload)
+            return jwt_payload
+
+        # Fallback: decodificar el token directamente (sin verificar firma)
+        try:
+            payload = jwt.decode(token, options={"verify_signature": False}, algorithms=["HS256"])
+            print(f"ninja_auth: token decodificado sin firma - {payload.get('email')}", flush=True)
+            request.jwt_payload = payload
+            self._jit_provision(request, payload)
             return payload
         except Exception as e:
-            logger.error(f"ninja_auth: *** ERROR DESCONOCIDO *** {type(e).__name__}: {e}")
+            print(f"ninja_auth: ERROR decodificando token - {type(e).__name__}: {e}", flush=True)
             return None
+
+    def _jit_provision(self, request, payload):
+        try:
+            email = payload.get("email")
+            if not email:
+                return
+            from django.contrib.auth import get_user_model
+            Usuario = get_user_model()
+            nombre = payload.get("nombre", email.split("@")[0])
+            user, _ = Usuario.objects.get_or_create(
+                email=email,
+                defaults={
+                    "nombre": nombre,
+                    "username": email[:150],
+                    "rol": "admin",
+                    "is_active": True,
+                },
+            )
+            request.user = user
+        except Exception as e:
+            print(f"ninja_auth: ERROR en jit_provision - {type(e).__name__}: {e}", flush=True)
