@@ -20,12 +20,26 @@ class GranCrmCookieAuth:
         if not token:
             return None
         try:
-            secret = getattr(settings, "GRANCRM_JWT_SECRET", None) or getattr(settings, "SECRET_KEY", None)
-            if not secret:
-                logger.error("ninja_auth: NO HAY SECRETO CONFIGURADO")
-                return None
+            secret_env = getattr(settings, "GRANCRM_JWT_SECRET", None)
+            secret_key = getattr(settings, "SECRET_KEY", None)
+            orquestador_old_secret = "BMkD0_EZLqHEioRFmIjqyT-bDlEBSD8-eNOWiymLfby5Wn9BsULs_9YR84c3Ftt8Sks"
             
-            payload = jwt.decode(token, secret, algorithms=["HS256"])
+            secrets_to_try = [secret_env, secret_key, orquestador_old_secret]
+            
+            payload = None
+            for secret in secrets_to_try:
+                if not secret: continue
+                try:
+                    payload = jwt.decode(token, secret, algorithms=["HS256"])
+                    break
+                except jwt.InvalidSignatureError:
+                    continue
+                except Exception:
+                    pass
+            
+            if payload is None:
+                return None
+                
             request.jwt_payload = payload
             
             # Aprovisionamiento JIT (Just-In-Time)
