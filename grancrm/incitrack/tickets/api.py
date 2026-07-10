@@ -180,16 +180,8 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
             if t.get('fecha_creacion'):
                 t['fecha_creacion'] = t['fecha_creacion'].isoformat()
 
-    qs_filtrado = qs
-    if periodo == 'mes':
-        qs_filtrado = qs.filter(fecha_creacion__year=ahora_local.year, fecha_creacion__month=ahora_local.month)
-    elif periodo == 'semana':
-        inicio_semana = ahora_local - timedelta(days=ahora_local.weekday())
-        qs_filtrado = qs.filter(fecha_creacion__gte=inicio_semana)
-
     limite_48h = ahora_local - timedelta(hours=48)
     por_cerrar = qs_filtrado.filter(estado__in=['abierto', 'en_proceso']).count()
-    solo_mis_tickets = not usuario.es_admin
     
     # 3. Auditoría Reciente (Últimos comentarios en tickets visibles)
     comentarios_qs = Comentario.objects.filter(ticket__in=qs).select_related('autor', 'ticket').order_by('-fecha')
