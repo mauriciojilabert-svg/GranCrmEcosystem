@@ -179,7 +179,11 @@ class DashboardStatsOut(Schema):
     sin_asignar: int
     solo_mis_tickets: bool
     ver_todos: bool
-    tickets_recientes: list[dict]
+    # Todos opcionales para compatibilidad con ambas versiones del api.py
+    tickets_recientes: list[dict] = []
+    tickets_urgentes: list[dict] = []
+    mis_tickets_activos: list[dict] = []
+    auditoria_reciente: list[dict] = []
 
 
 # ══════════════════════════════════════════════════════════════════════════════
