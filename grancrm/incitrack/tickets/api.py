@@ -116,21 +116,29 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     if solo_mis_tickets:
         qs = qs.filter(asignado_a=usuario)
 
-    qs_filtrado = qs
-    if periodo == 'hoy':
-        qs_filtrado = qs.filter(fecha_creacion__date=ahora.date())
-    elif periodo == 'ayer':
-        qs_filtrado = qs.filter(fecha_creacion__date=ahora.date() - timedelta(days=1))
-    elif periodo == 'esta_semana':
-        qs_filtrado = qs.filter(fecha_creacion__gte=ahora - timedelta(days=ahora.weekday()))
-    elif periodo == 'este_mes':
-        qs_filtrado = qs.filter(fecha_creacion__year=ahora.year, fecha_creacion__month=ahora.month)
-    elif periodo == 'mes_pasado':
-        if ahora.month == 1:
-            qs_filtrado = qs.filter(fecha_creacion__year=ahora.year - 1, fecha_creacion__month=12)
-    # 1. Aplicar filtro de período si existe
     ahora = timezone.now()
     ahora_local = timezone.localtime(ahora)
+    hoy_date = ahora_local.date()
+
+    qs_filtrado = qs
+    if periodo == 'hoy':
+        qs_filtrado = qs.filter(fecha_creacion__date=hoy_date)
+    elif periodo == 'ayer':
+        qs_filtrado = qs.filter(fecha_creacion__date=hoy_date - timedelta(days=1))
+    elif periodo == 'esta_semana':
+        inicio_semana = hoy_date - timedelta(days=hoy_date.weekday())
+        qs_filtrado = qs.filter(fecha_creacion__date__gte=inicio_semana)
+    elif periodo == 'este_mes':
+        qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year, fecha_creacion__month=hoy_date.month)
+    elif periodo == 'mes_pasado':
+        if hoy_date.month == 1:
+            qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year - 1, fecha_creacion__month=12)
+        else:
+            qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year, fecha_creacion__month=hoy_date.month - 1)
+    elif periodo == 'este_anio':
+        qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year)
+    
+    # 1. Aplicar filtro de período si existe
     
     from django.db.models import Q as DQ
     
