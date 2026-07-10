@@ -128,25 +128,16 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     elif periodo == 'mes_pasado':
         if ahora.month == 1:
             qs_filtrado = qs.filter(fecha_creacion__year=ahora.year - 1, fecha_creacion__month=12)
-        else:
-            qs_filtrado = qs.filter(fecha_creacion__year=ahora.year, fecha_creacion__month=ahora.month - 1)
-    elif periodo == 'este_anio':
-        qs_filtrado = qs.filter(fecha_creacion__year=ahora.year)
-
-    limite_48h = ahora - timedelta(hours=48)
-    limite_20h = ahora - timedelta(hours=20)
-    limite_24h = ahora - timedelta(hours=24)
-    por_cerrar = qs_filtrado.filter(
-        estado__in=['abierto', 'en_proceso'],
-        fecha_actualizacion__lte=limite_20h,
-        fecha_actualizacion__gte=limite_24h,
-    ).count()
-
+    # 1. Aplicar filtro de período si existe
+    ahora = timezone.now()
     ahora_local = timezone.localtime(ahora)
     
     from django.db.models import Q as DQ
     
     # 1. Tickets Urgentes (Por cerrar en 20h-24h o sin asignar)
+    limite_24h = ahora_local - timedelta(hours=24)
+    limite_20h = ahora_local - timedelta(hours=20)
+    
     qs_urgentes = qs.filter(
         DQ(estado__in=['abierto', 'en_proceso']) &
         (
@@ -165,24 +156,33 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     for t in tickets_urgentes:
         if t.get('fecha_creacion'):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()
-
+            
     # 2. Mis Tickets Activos
-    qs_mis_activos = qs.filter(
-        asignado_a=usuario, 
-        estado__in=['abierto', 'en_proceso']
-    ).order_by('-fecha_actualizacion')
-    
-    mis_tickets_activos = list(qs_mis_activos.values(
-        'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
-        'cuenta__nombre', 'creado_por__nombre',
-        'asignado_a__nombre', 'asignado_a__id',
-        'categoria__nombre', 'subcategoria__nombre',
-        'plataforma_bi',
-    )[:10])
-    for t in mis_tickets_activos:
-        if t.get('fecha_creacion'):
-            t['fecha_creacion'] = t['fecha_creacion'].isoformat()
+    mis_tickets_activos = []
+    if not usuario.es_admin:
+        qs_mis_activos = qs.filter(estado__in=['abierto', 'en_proceso'], asignado_a=usuario).order_by('-fecha_actualizacion')
+        mis_tickets_activos = list(qs_mis_activos.values(
+            'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
+            'cuenta__nombre', 'creado_por__nombre',
+            'asignado_a__nombre', 'asignado_a__id',
+            'categoria__nombre', 'subcategoria__nombre',
+            'plataforma_bi',
+        )[:10])
+        for t in mis_tickets_activos:
+            if t.get('fecha_creacion'):
+                t['fecha_creacion'] = t['fecha_creacion'].isoformat()
 
+    qs_filtrado = qs
+    if periodo == 'mes':
+        qs_filtrado = qs.filter(fecha_creacion__year=ahora_local.year, fecha_creacion__month=ahora_local.month)
+    elif periodo == 'semana':
+        inicio_semana = ahora_local - timedelta(days=ahora_local.weekday())
+        qs_filtrado = qs.filter(fecha_creacion__gte=inicio_semana)
+
+    limite_48h = ahora_local - timedelta(hours=48)
+    por_cerrar = qs_filtrado.filter(estado__in=['abierto', 'en_proceso']).count()
+    solo_mis_tickets = not usuario.es_admin
+    
     # 3. Auditoría Reciente (Últimos comentarios en tickets visibles)
     comentarios_qs = Comentario.objects.filter(ticket__in=qs).select_related('autor', 'ticket').order_by('-fecha')
     if not usuario.es_admin:
@@ -196,7 +196,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
             "ticket_titulo": c.ticket.titulo,
             "autor_nombre": c.autor.nombre,
             "contenido": c.contenido,
-            "fecha": c.fecha,
+            "fecha": c.fecha.isoformat() if c.fecha else None,
             "tipo": "comentario"
         })
 
@@ -211,26 +211,24 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     for t in tickets_recientes:
         if t.get('fecha_creacion'):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()
-
-    return 200, DashboardStatsOut(
-        total_filtrado=qs_filtrado.count(),
-        periodo_activo=periodo,
-        abiertos=qs_filtrado.filter(estado='abierto').count(),
-        en_proceso=qs_filtrado.filter(estado='en_proceso').count(),
-        resueltos=qs_filtrado.filter(estado='resuelto').count(),
-        cerrados=qs_filtrado.filter(estado='cerrado').count(),
-        cerrados_48h=qs_filtrado.filter(estado='cerrado', fecha_resolucion__gte=limite_48h).count(),
-        por_cerrar=por_cerrar,
-        tickets_hoy=qs.filter(fecha_creacion__date=ahora_local.date()).count(),
-        sin_asignar=qs_filtrado.filter(estado__in=['abierto', 'en_proceso'], asignado_a__isnull=True).count(),
-        solo_mis_tickets=solo_mis_tickets,
-        ver_todos=ver_todos,
-        tickets_urgentes=tickets_urgentes,
-        mis_tickets_activos=mis_tickets_activos,
-        auditoria_reciente=auditoria_reciente,
-        tickets_recientes=tickets_recientes,
-    )
-
+    return 200, {
+        "total_filtrado": qs_filtrado.count(),
+        "periodo_activo": periodo,
+        "abiertos": qs_filtrado.filter(estado='abierto').count(),
+        "en_proceso": qs_filtrado.filter(estado='en_proceso').count(),
+        "resueltos": qs_filtrado.filter(estado='resuelto').count(),
+        "cerrados": qs_filtrado.filter(estado='cerrado').count(),
+        "cerrados_48h": qs_filtrado.filter(estado='cerrado', fecha_resolucion__gte=limite_48h).count(),
+        "por_cerrar": por_cerrar,
+        "tickets_hoy": qs.filter(fecha_creacion__date=ahora_local.date()).count(),
+        "sin_asignar": qs_filtrado.filter(estado__in=['abierto', 'en_proceso'], asignado_a__isnull=True).count(),
+        "solo_mis_tickets": solo_mis_tickets,
+        "ver_todos": ver_todos,
+        "tickets_urgentes": tickets_urgentes,
+        "mis_tickets_activos": mis_tickets_activos,
+        "auditoria_reciente": auditoria_reciente,
+        "tickets_recientes": tickets_recientes,
+    }
 
 # ─── TICKETS ─────────────────────────────────────────────────────────────────
 
