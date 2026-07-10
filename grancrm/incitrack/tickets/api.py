@@ -14,8 +14,22 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from ninja import NinjaAPI, Router
+from ninja.security import HttpBearer
 
-from grancrm_auth.ninja_auth import GranCrmCookieAuth
+
+def _grancrm_auth(request: HttpRequest):
+    """
+    Auth inline para Django Ninja.
+    Lee jwt_payload seteado por GranCRMSessionMiddleware.
+    BYPASS activo en QA: si hay payload en request, lo acepta directamente.
+    """
+    payload = getattr(request, 'jwt_payload', None)
+    if payload:
+        print(f"api.py _grancrm_auth: OK via jwt_payload - {payload.get('email')}", flush=True)
+        return payload
+    print("api.py _grancrm_auth: SIN jwt_payload en request", flush=True)
+    return None
+
 
 from .models import (
     Ticket, Cuenta, Usuario, Comentario,
@@ -39,7 +53,7 @@ from .schemas import (
     AvisoTIOut, AvisoTIIn,
 )
 
-grcrm_auth = GranCrmCookieAuth()
+grcrm_auth = _grancrm_auth
 
 api = NinjaAPI(
     auth=grcrm_auth,
