@@ -27,8 +27,8 @@ class GranCRMSessionMiddleware:
         if not token:
             # Solo loguear en rutas de incitrack para no spamear
             if request.path.startswith('/incitrack'):
-                logger.error(f"grancrm_session: SIN COOKIE en {request.path}")
-                logger.error(f"grancrm_session: Cookies disponibles: {list(request.COOKIES.keys())}")
+                print(f"grancrm_session: SIN COOKIE en {request.path}", flush=True)
+                print(f"grancrm_session: Cookies disponibles: {list(request.COOKIES.keys())}", flush=True)
             return self.get_response(request)
 
         payload = self._validate(token)
