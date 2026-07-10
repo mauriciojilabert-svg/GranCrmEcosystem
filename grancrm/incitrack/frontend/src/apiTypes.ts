@@ -109,6 +109,7 @@ export interface TicketResumenItem {
 
 export interface DashboardStatsOut {
   total_filtrado: number;
+  total_global: number;
   periodo_activo: string;
   abiertos: number;
   en_proceso: number;

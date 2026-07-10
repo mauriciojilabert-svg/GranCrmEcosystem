@@ -183,10 +183,10 @@ export function DashboardPage() {
 
       {/* Page Header */}
       <PageHeader
-        title="Vista General"
+        title={isAdmin && !verTodos ? `Mis Tickets (${session?.nombre})` : "Vista General Global"}
         breadcrumbs={[
           { label: 'Inicio', href: '/' },
-          { label: 'Vista General' }
+          { label: isAdmin && !verTodos ? 'Mis Tickets' : 'Vista General Global' }
         ]}
       >
         <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
@@ -243,7 +243,9 @@ export function DashboardPage() {
                   label="TOTAL TICKETS"
                   footer={
                     <div className="d-flex gap-2 px-4 pb-2">
-                      <Link to="tickets" className="btn btn-outline-primary btn-sm flex-grow-1">Ver todos</Link>
+                      <Link to="tickets?ver_todos=1" className="btn btn-outline-primary btn-sm flex-grow-1">
+                        Ver todos ({stats.total_global})
+                      </Link>
                       <Link to="tickets/nuevo" className="btn btn-primary btn-sm flex-grow-1">+ Nuevo</Link>
                     </div>
                   }

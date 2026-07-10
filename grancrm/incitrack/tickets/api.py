@@ -110,33 +110,45 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         return 401, {"detail": "No autenticado"}
 
     ahora = timezone.now()
-    qs = tickets_visibles(usuario)
+    qs_base = tickets_visibles(usuario)
 
     solo_mis_tickets = usuario.es_admin and not ver_todos
     if solo_mis_tickets:
-        qs = qs.filter(asignado_a=usuario)
+        qs = qs_base.filter(asignado_a=usuario)
+    else:
+        qs = qs_base
 
-    ahora = timezone.now()
     ahora_local = timezone.localtime(ahora)
     hoy_date = ahora_local.date()
 
     qs_filtrado = qs
+    qs_global_filtrado = qs_base
     if periodo == 'hoy':
         qs_filtrado = qs.filter(fecha_creacion__date=hoy_date)
+        qs_global_filtrado = qs_base.filter(fecha_creacion__date=hoy_date)
     elif periodo == 'ayer':
-        qs_filtrado = qs.filter(fecha_creacion__date=hoy_date - timedelta(days=1))
+        ayer_date = hoy_date - timedelta(days=1)
+        qs_filtrado = qs.filter(fecha_creacion__date=ayer_date)
+        qs_global_filtrado = qs_base.filter(fecha_creacion__date=ayer_date)
     elif periodo == 'esta_semana':
         inicio_semana = hoy_date - timedelta(days=hoy_date.weekday())
         qs_filtrado = qs.filter(fecha_creacion__date__gte=inicio_semana)
+        qs_global_filtrado = qs_base.filter(fecha_creacion__date__gte=inicio_semana)
     elif periodo == 'este_mes':
         qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year, fecha_creacion__month=hoy_date.month)
+        qs_global_filtrado = qs_base.filter(fecha_creacion__year=hoy_date.year, fecha_creacion__month=hoy_date.month)
     elif periodo == 'mes_pasado':
         if hoy_date.month == 1:
             qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year - 1, fecha_creacion__month=12)
+            qs_global_filtrado = qs_base.filter(fecha_creacion__year=hoy_date.year - 1, fecha_creacion__month=12)
         else:
             qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year, fecha_creacion__month=hoy_date.month - 1)
+            qs_global_filtrado = qs_base.filter(fecha_creacion__year=hoy_date.year, fecha_creacion__month=hoy_date.month - 1)
     elif periodo == 'este_anio':
         qs_filtrado = qs.filter(fecha_creacion__year=hoy_date.year)
+        qs_global_filtrado = qs_base.filter(fecha_creacion__year=hoy_date.year)
+    
+    total_global = qs_global_filtrado.count()
     
     # 1. Aplicar filtro de período si existe
     
@@ -213,6 +225,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()
     return 200, {
         "total_filtrado": qs_filtrado.count(),
+        "total_global": total_global,
         "periodo_activo": periodo,
         "abiertos": qs_filtrado.filter(estado='abierto').count(),
         "en_proceso": qs_filtrado.filter(estado='en_proceso').count(),
