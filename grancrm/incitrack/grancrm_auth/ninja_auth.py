@@ -2,6 +2,9 @@ import jwt
 from django.conf import settings
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 class GranCrmCookieAuth:
     """
     Autenticación JWT para django-ninja.
@@ -19,7 +22,7 @@ class GranCrmCookieAuth:
         try:
             secret = getattr(settings, "GRANCRM_JWT_SECRET", None) or getattr(settings, "SECRET_KEY", None)
             if not secret:
-                print("ninja_auth: NO HAY SECRETO CONFIGURADO")
+                logger.error("ninja_auth: NO HAY SECRETO CONFIGURADO")
                 return None
             
             payload = jwt.decode(token, secret, algorithms=["HS256"])
@@ -44,11 +47,11 @@ class GranCrmCookieAuth:
 
             return payload
         except jwt.ExpiredSignatureError:
-            print("ninja_auth: *** TOKEN EXPIRADO ***")
+            logger.error("ninja_auth: *** TOKEN EXPIRADO ***")
             return None
         except jwt.InvalidSignatureError:
-            print(f"ninja_auth: *** FIRMA INVALIDA *** (secreto usado empieza con {str(secret)[:10]})")
+            logger.error(f"ninja_auth: *** FIRMA INVALIDA *** (secreto usado empieza con {str(secret)[:10]})")
             return None
         except Exception as e:
-            print(f"ninja_auth: *** ERROR DESCONOCIDO *** {type(e).__name__}: {e}")
+            logger.error(f"ninja_auth: *** ERROR DESCONOCIDO *** {type(e).__name__}: {e}")
             return None
