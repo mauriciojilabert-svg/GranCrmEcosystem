@@ -68,16 +68,15 @@ class GranCRMSessionMiddleware:
         return self.get_response(request)
 
     def _validate(self, token):
-        # Intentaremos con todas las llaves posibles conocidas
         secret_env = getattr(settings, 'GRANCRM_JWT_SECRET', None)
         secret_key = getattr(settings, 'SECRET_KEY', None)
         orquestador_old_secret = "BMkD0_EZLqHEioRFmIjqyT-bDlEBSD8-eNOWiymLfby5Wn9BsULs_9YR84c3Ftt8Sks"
         
-        secrets_to_try = [
-            secret_env,
-            secret_key,
-            orquestador_old_secret
-        ]
+        base_secrets = [secret_env, secret_key, orquestador_old_secret]
+        secrets_to_try = []
+        for s in base_secrets:
+            if s:
+                secrets_to_try.extend([s, s + '\r', s + '\n', s + '\r\n', s.strip()])
 
         payload = None
         for secret in secrets_to_try:
@@ -85,14 +84,13 @@ class GranCRMSessionMiddleware:
                 continue
             try:
                 payload = jwt.decode(token, secret, algorithms=["HS256"])
-                print(f"grancrm_session: EXITO! Token decodificado usando llave que empieza en: '{secret[:10]}...'", flush=True)
-                print(f"grancrm_session: Datos: email={payload.get('email')}, apps={payload.get('apps')}", flush=True)
+                # Loggear con repr para ver si tiene caracteres ocultos como \r
+                print(f"grancrm_session: EXITO! Token decodificado usando llave: {repr(secret[:15])}...", flush=True)
                 break
             except jwt.ExpiredSignatureError:
                 print("grancrm_session: ERROR - TOKEN EXPIRADO", flush=True)
                 return None
             except jwt.InvalidSignatureError:
-                # Intentar con el siguiente secreto
                 continue
             except Exception as e:
                 print(f"grancrm_session: ERROR DECODIFICANDO TOKEN - {e}", flush=True)

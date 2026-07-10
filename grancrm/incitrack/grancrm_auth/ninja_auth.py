@@ -24,7 +24,10 @@ class GranCrmCookieAuth:
             secret_key = getattr(settings, "SECRET_KEY", None)
             orquestador_old_secret = "BMkD0_EZLqHEioRFmIjqyT-bDlEBSD8-eNOWiymLfby5Wn9BsULs_9YR84c3Ftt8Sks"
             
-            secrets_to_try = [secret_env, secret_key, orquestador_old_secret]
+            base_secrets = [secret_env, secret_key, orquestador_old_secret]
+            secrets_to_try = []
+            for s in base_secrets:
+                if s: secrets_to_try.extend([s, s + '\r', s + '\n', s + '\r\n', s.strip()])
             
             payload = None
             for secret in secrets_to_try:
