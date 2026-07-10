@@ -122,6 +122,19 @@ export interface DashboardStatsOut {
   solo_mis_tickets: boolean;
   ver_todos: boolean;
   tickets_recientes: TicketResumenItem[];
+  tickets_urgentes?: TicketResumenItem[];
+  mis_tickets_activos?: TicketResumenItem[];
+  auditoria_reciente?: AuditoriaItem[];
+}
+
+export interface AuditoriaItem {
+  id: number;
+  ticket_id: number;
+  ticket_titulo: string;
+  autor_nombre: string;
+  contenido: string;
+  fecha: string;
+  tipo: string;
 }
 
 // ── Lookups ───────────────────────────────────────────────────────────────────

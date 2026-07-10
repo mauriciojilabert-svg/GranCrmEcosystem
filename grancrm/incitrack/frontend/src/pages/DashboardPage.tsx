@@ -155,7 +155,11 @@ export function DashboardPage() {
     setSearchParams(next, { replace: true });
   }
 
-  const isAdmin = session?.rol === 'admin' || session?.rol === 'sa';
+  const { session } = useSession();
+  const isAdmin = session?.rol === 'admin' || session?.rol === 'jefe';
+
+  const [activeTab, setActiveTab] = useState<'urgentes' | 'activos' | 'auditoria'>('urgentes');
+
   const today = new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   return (
@@ -350,14 +354,47 @@ export function DashboardPage() {
               </div>
             </div>
 
-            {/* Tickets recientes */}
+            {/* Panel Principal */}
             <div className="card stretch stretch-full">
-              <div className="card-header d-flex align-items-center justify-content-between">
-                <h5 className="card-title mb-0">
-                  <i className="feather-clock me-2 text-primary" />
-                  Actividad Reciente
-                </h5>
-                <div className="d-flex gap-2">
+              <div className="card-header p-0 d-flex justify-content-between align-items-center">
+                <ul className="nav nav-tabs card-header-tabs m-0 border-0">
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${activeTab === 'urgentes' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
+                      onClick={() => setActiveTab('urgentes')}
+                      style={{ color: activeTab === 'urgentes' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'urgentes' ? '#fff' : 'transparent', borderTop: activeTab === 'urgentes' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
+                    >
+                      <i className="feather-alert-triangle me-2" />
+                      Urgentes / Sin Asignar
+                      <span className="badge bg-warning-subtle text-warning ms-2">{(stats.tickets_urgentes || []).length}</span>
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${activeTab === 'activos' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
+                      onClick={() => setActiveTab('activos')}
+                      style={{ color: activeTab === 'activos' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'activos' ? '#fff' : 'transparent', borderTop: activeTab === 'activos' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
+                    >
+                      <i className="feather-user me-2" />
+                      Mis Pendientes
+                      <span className="badge bg-primary-subtle text-primary ms-2">{(stats.mis_tickets_activos || []).length}</span>
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      type="button"
+                      className={`nav-link ${activeTab === 'auditoria' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
+                      onClick={() => setActiveTab('auditoria')}
+                      style={{ color: activeTab === 'auditoria' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'auditoria' ? '#fff' : 'transparent', borderTop: activeTab === 'auditoria' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
+                    >
+                      <i className="feather-activity me-2" />
+                      Últimos Eventos
+                    </button>
+                  </li>
+                </ul>
+                <div className="d-flex gap-2 p-3">
                   {isAdmin && (
                     <button
                       type="button"
@@ -367,48 +404,80 @@ export function DashboardPage() {
                       {stats.solo_mis_tickets ? 'Mostrar todos' : 'Solo mis tickets'}
                     </button>
                   )}
-                  <Link to="tickets" className="btn btn-primary btn-sm">Lista completa →</Link>
+                  <Link to="tickets" className="btn btn-primary btn-sm">Explorar tickets →</Link>
                 </div>
               </div>
               <div className="card-body p-0" style={{ scrollbarGutter: 'stable' }}>
-                <div className="table-responsive">
-                  <table className="table table-hover mb-0" style={{ tableLayout: 'fixed', minWidth: 900 }}>
-                    <colgroup>
-                      <col style={{ width: 50 }} />
-                      <col style={{ width: 120 }} />
-                      <col style={{ width: 200 }} />
-                      <col style={{ width: 140 }} />
-                      <col style={{ width: 180 }} />
-                      <col style={{ width: 150 }} />
-                      <col style={{ width: 90 }} />
-                      <col style={{ width: 150 }} />
-                    </colgroup>
-                    <thead className="table-light">
-                      <tr>
-                        <th className="ps-3">#</th>
-                        <th>Creado por</th>
-                        <th>Título</th>
-                        <th>Cuenta</th>
-                        <th>Categoría</th>
-                        <th>Responsable TI</th>
-                        <th>Estado</th>
-                        <th>Fecha</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {stats.tickets_recientes.length === 0 ? (
+                {activeTab === 'auditoria' ? (
+                  <div className="p-4">
+                    {!(stats.auditoria_reciente || []).length ? (
+                      <div className="text-center text-muted py-4">
+                        <i className="feather-inbox fs-3 d-block mb-2" />
+                        No hay eventos recientes.
+                      </div>
+                    ) : (
+                      <div className="d-flex flex-column gap-3">
+                        {(stats.auditoria_reciente || []).map(a => (
+                          <div key={a.id} className="d-flex gap-3 p-3 rounded border" style={{ background: 'var(--bs-tertiary-bg)' }}>
+                            <div className="avatar-text mt-1 bg-primary text-white" style={{ width: 36, height: 36, flexShrink: 0 }}>
+                              {a.autor_nombre.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="fs-13">
+                                <span className="fw-semibold">{a.autor_nombre}</span> comentó en <Link to={`tickets/${a.ticket_id}`} className="fw-semibold text-primary">#{a.ticket_id} {a.ticket_titulo}</Link>
+                              </div>
+                              <div className="text-muted fs-13 mt-1">{a.contenido}</div>
+                              <div className="text-muted fs-11 mt-2"><i className="feather-clock me-1"></i>{fmtDatetime(a.fecha)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table table-hover mb-0" style={{ tableLayout: 'fixed', minWidth: 900 }}>
+                      <colgroup>
+                        <col style={{ width: 50 }} />
+                        <col style={{ width: 120 }} />
+                        <col style={{ width: 200 }} />
+                        <col style={{ width: 140 }} />
+                        <col style={{ width: 180 }} />
+                        <col style={{ width: 150 }} />
+                        <col style={{ width: 90 }} />
+                        <col style={{ width: 150 }} />
+                      </colgroup>
+                      <thead className="table-light">
                         <tr>
-                          <td colSpan={8} className="text-center text-muted py-4">
-                            <i className="feather-inbox fs-3 d-block mb-2" />
-                            No hay tickets recientes.
-                          </td>
+                          <th className="ps-3">#</th>
+                          <th>Creado por</th>
+                          <th>Título</th>
+                          <th>Cuenta</th>
+                          <th>Categoría</th>
+                          <th>Responsable TI</th>
+                          <th>Estado</th>
+                          <th>Fecha</th>
                         </tr>
-                      ) : (
-                        stats.tickets_recientes.map(t => <TicketRow key={t.id} t={t} />)
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          const list = activeTab === 'urgentes' ? (stats.tickets_urgentes || []) : (stats.mis_tickets_activos || []);
+                          if (list.length === 0) {
+                            return (
+                              <tr>
+                                <td colSpan={8} className="text-center text-muted py-5">
+                                  <i className="feather-check-circle fs-2 d-block mb-2 text-success" />
+                                  Excelente, no hay tickets en esta vista.
+                                </td>
+                              </tr>
+                            );
+                          }
+                          return list.map(t => <TicketRow key={t.id} t={t} />);
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           </>
