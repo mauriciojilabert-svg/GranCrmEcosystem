@@ -25,16 +25,14 @@ class GranCRMSessionMiddleware:
         token = request.COOKIES.get("grancrm_session")
 
         if not token:
-            # Solo loguear en rutas de incitrack para no spamear
-            if request.path.startswith('/incitrack'):
-                print(f"grancrm_session: SIN COOKIE en {request.path}", flush=True)
-                print(f"grancrm_session: Cookies disponibles: {list(request.COOKIES.keys())}", flush=True)
+            print(f"grancrm_session: SIN COOKIE en {request.path}", flush=True)
+            print(f"grancrm_session: Cookies disponibles: {list(request.COOKIES.keys())}", flush=True)
             return self.get_response(request)
 
         payload = self._validate(token)
 
         if payload is None:
-            print(f"grancrm_session: *** TOKEN INVALIDO en {request.path} ***")
+            print(f"grancrm_session: *** TOKEN INVALIDO en {request.path} ***", flush=True)
             if request.path.startswith('/incitrack/api/'):
                 response = JsonResponse({"detail": "Sesión expirada (token inválido)"}, status=401)
             else:
@@ -48,7 +46,7 @@ class GranCRMSessionMiddleware:
         # Verificar que el usuario tiene acceso a InciTrack
         apps_in_token = payload.get("apps", [])
         if INCITRACK_APP_ID not in apps_in_token:
-            print(f"grancrm_session: *** SIN ACCESO *** apps en token={apps_in_token}, buscando={INCITRACK_APP_ID} (tipo: {type(INCITRACK_APP_ID)})")
+            print(f"grancrm_session: *** SIN ACCESO *** apps en token={apps_in_token}, buscando={INCITRACK_APP_ID} (tipo: {type(INCITRACK_APP_ID)})", flush=True)
             print(f"grancrm_session: tipos en apps: {[type(a) for a in apps_in_token]}")
             if request.path.startswith('/incitrack/api/'):
                 response = JsonResponse({"detail": f"Sesión expirada (sin acceso a app {INCITRACK_APP_ID})"}, status=401)
@@ -72,22 +70,22 @@ class GranCRMSessionMiddleware:
     def _validate(self, token):
         secret = getattr(settings, 'GRANCRM_JWT_SECRET', None) or getattr(settings, 'SECRET_KEY', None)
         if not secret:
-            print("grancrm_session: ERROR - No hay secreto configurado (GRANCRM_JWT_SECRET ni SECRET_KEY)")
+            print("grancrm_session: ERROR - No hay secreto configurado (GRANCRM_JWT_SECRET ni SECRET_KEY)", flush=True)
             return None
-        print(f"grancrm_session: Secreto usado (primeros 10 chars): '{secret[:10]}...'")
-        print(f"grancrm_session: Token recibido (primeros 30 chars): '{token[:30]}...'")
+        print(f"grancrm_session: Secreto usado (primeros 10 chars): '{secret[:10]}...'", flush=True)
+        print(f"grancrm_session: Token recibido (primeros 30 chars): '{token[:30]}...'", flush=True)
         try:
             payload = jwt.decode(token, secret, algorithms=["HS256"])
             print(f"grancrm_session: Token decodificado OK: email={payload.get('email')}, apps={payload.get('apps')}")
             return payload
         except jwt.ExpiredSignatureError:
-            print("grancrm_session: ERROR - Token EXPIRADO (exp ya pasó)")
+            print("grancrm_session: ERROR - TOKEN EXPIRADO", flush=True)
             return None
         except jwt.InvalidSignatureError:
-            print(f"grancrm_session: ERROR - FIRMA INVALIDA (el secreto no coincide con el del orquestador)")
+            print("grancrm_session: ERROR - FIRMA INVALIDA (el secreto no coincide con el del orquestador)", flush=True)
             return None
         except Exception as e:
-            print(f"grancrm_session: ERROR - {type(e).__name__}: {e}")
+            print(f"grancrm_session: ERROR DECODIFICANDO TOKEN - {e}", flush=True)
             return None
 
     def _sync_user(self, request, payload):
