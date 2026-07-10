@@ -200,9 +200,10 @@ class DashboardStatsOut(Schema):
     sin_asignar: int
     solo_mis_tickets: bool
     ver_todos: bool
-    tickets_urgentes: list[dict]
-    mis_tickets_activos: list[dict]
-    auditoria_reciente: list[AuditoriaItem]
+    tickets_urgentes: list[dict] = []
+    mis_tickets_activos: list[dict] = []
+    auditoria_reciente: list[AuditoriaItem] = []
+    tickets_recientes: list[dict] = []
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NOTIFICACION

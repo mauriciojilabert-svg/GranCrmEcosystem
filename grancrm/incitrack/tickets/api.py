@@ -200,6 +200,18 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
             "tipo": "comentario"
         })
 
+    # BACKWARD COMPATIBILITY: Generar tickets_recientes para el frontend cacheado
+    tickets_recientes = list(qs_filtrado.order_by('-fecha_actualizacion').values(
+        'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
+        'cuenta__nombre', 'creado_por__nombre',
+        'asignado_a__nombre', 'asignado_a__id',
+        'categoria__nombre', 'subcategoria__nombre',
+        'plataforma_bi',
+    )[:10])
+    for t in tickets_recientes:
+        if t.get('fecha_creacion'):
+            t['fecha_creacion'] = t['fecha_creacion'].isoformat()
+
     return 200, DashboardStatsOut(
         total_filtrado=qs_filtrado.count(),
         periodo_activo=periodo,
@@ -216,6 +228,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         tickets_urgentes=tickets_urgentes,
         mis_tickets_activos=mis_tickets_activos,
         auditoria_reciente=auditoria_reciente,
+        tickets_recientes=tickets_recientes,
     )
 
 
