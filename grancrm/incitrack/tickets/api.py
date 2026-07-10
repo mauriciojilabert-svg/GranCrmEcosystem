@@ -112,7 +112,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     ahora = timezone.now()
     qs_base = tickets_visibles(usuario)
 
-    solo_mis_tickets = usuario.es_admin and not ver_todos
+    solo_mis_tickets = not ver_todos
     if solo_mis_tickets:
         qs = qs_base.filter(asignado_a=usuario)
     else:
