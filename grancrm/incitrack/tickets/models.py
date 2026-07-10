@@ -502,30 +502,3 @@ class AvisoTI(models.Model):
     def esta_vigente(self):
         return self.activo and timezone.now() < self.expira_en
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# TICKET AUDIT
-# ══════════════════════════════════════════════════════════════════════════════
-
-class TicketAudit(models.Model):
-    ticket = models.ForeignKey(
-        Ticket, on_delete=models.CASCADE,
-        related_name='auditorias'
-    )
-    usuario = models.ForeignKey(
-        Usuario, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name='auditorias_realizadas'
-    )
-    campo_modificado = models.CharField(max_length=100)
-    valor_anterior = models.TextField(blank=True, null=True)
-    valor_nuevo = models.TextField(blank=True, null=True)
-    fecha_modificacion = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = 'Auditoría de Ticket'
-        verbose_name_plural = 'Auditorías de Tickets'
-        ordering = ['-fecha_modificacion']
-
-    def __str__(self):
-        return f"Ticket #{self.ticket.id} - {self.campo_modificado} cambiado por {self.usuario.nombre if self.usuario else 'Sistema'}"

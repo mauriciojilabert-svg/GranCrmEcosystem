@@ -6,7 +6,6 @@ import type {
   DashboardStatsOut,
   TicketListItemOut,
   TicketOut,
-  TicketAuditOut,
   TicketCreateIn,
   TicketEditIn,
   ComentarioOut,
@@ -75,10 +74,6 @@ export function createTicket(data: TicketCreateIn): Promise<TicketOut> {
 
 export function editTicket(id: number, data: TicketEditIn): Promise<TicketOut> {
   return apiFetch<TicketOut>(`tickets/${id}/`, { method: 'PUT', body: JSON.stringify(data) });
-}
-
-export function getTicketAuditoria(id: number): Promise<TicketAuditOut[]> {
-  return apiFetch<TicketAuditOut[]>(`tickets/${id}/auditoria/`);
 }
 
 export function cerrarTicket(id: number): Promise<TicketOut> {

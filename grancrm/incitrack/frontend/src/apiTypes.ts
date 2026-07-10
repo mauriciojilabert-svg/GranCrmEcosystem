@@ -53,17 +53,6 @@ export interface TicketOut {
   comentarios: ComentarioOut[];
 }
 
-export interface TicketAuditOut {
-  id: number;
-  ticket_id: number;
-  usuario_id: number | null;
-  usuario_nombre: string | null;
-  campo_modificado: string;
-  valor_anterior: string | null;
-  valor_nuevo: string | null;
-  fecha_modificacion: string;
-}
-
 export interface TicketCreateIn {
   titulo: string;
   descripcion: string;
@@ -131,19 +120,7 @@ export interface DashboardStatsOut {
   sin_asignar: number;
   solo_mis_tickets: boolean;
   ver_todos: boolean;
-  tickets_urgentes: TicketResumenItem[];
-  mis_tickets_activos: TicketResumenItem[];
-  auditoria_reciente: AuditoriaItem[];
-}
-
-export interface AuditoriaItem {
-  id: number;
-  ticket_id: number;
-  ticket_titulo: string;
-  autor_nombre: string;
-  contenido: string;
-  fecha: string;
-  tipo: string;
+  tickets_recientes: TicketResumenItem[];
 }
 
 // ── Lookups ───────────────────────────────────────────────────────────────────

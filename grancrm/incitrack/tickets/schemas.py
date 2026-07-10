@@ -146,27 +146,6 @@ class ComentarioIn(Schema):
     interno: bool = False
 
 
-class AuditoriaItem(Schema):
-    id: int
-    ticket_id: int
-    ticket_titulo: str
-    autor_nombre: str
-    contenido: str
-    fecha: datetime
-    tipo: str
-
-
-class TicketAuditOut(Schema):
-    id: int
-    ticket_id: int
-    usuario_id: Optional[int] = None
-    usuario_nombre: Optional[str] = None
-    campo_modificado: str
-    valor_anterior: Optional[str] = None
-    valor_nuevo: Optional[str] = None
-    fecha_modificacion: datetime
-
-
 # ══════════════════════════════════════════════════════════════════════════════
 # DASHBOARD
 # ══════════════════════════════════════════════════════════════════════════════
@@ -200,9 +179,8 @@ class DashboardStatsOut(Schema):
     sin_asignar: int
     solo_mis_tickets: bool
     ver_todos: bool
-    tickets_urgentes: list[dict]
-    mis_tickets_activos: list[dict]
-    auditoria_reciente: list[AuditoriaItem]
+    tickets_recientes: list[dict]
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NOTIFICACION

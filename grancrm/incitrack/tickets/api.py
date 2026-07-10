@@ -20,7 +20,7 @@ from grancrm_auth.ninja_auth import GranCrmCookieAuth
 from .models import (
     Ticket, Cuenta, Usuario, Comentario,
     NotificacionServicio, Categoria, Subcategoria, ConfiguracionSLA,
-    AvisoTI, TicketAudit,
+    AvisoTI,
 )
 from .mixins import (
     tickets_visibles, cuentas_visibles, puede_ver_ticket,
@@ -28,7 +28,6 @@ from .mixins import (
 from .email_service import notificar_nuevo_ticket
 from .schemas import (
     TicketOut, TicketListItemOut, TicketCreateIn, TicketEditIn,
-    TicketAuditOut,
     ComentarioOut, ComentarioIn,
     DashboardStatsOut,
     UsuarioOut, UsuarioIn,
@@ -129,62 +128,17 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     ).count()
 
     ahora_local = timezone.localtime(ahora)
-    
-    from django.db.models import Q as DQ
-    
-    # 1. Tickets Urgentes (Por cerrar en 20h-24h o sin asignar)
-    qs_urgentes = qs.filter(
-        DQ(estado__in=['abierto', 'en_proceso']) &
-        (
-            DQ(asignado_a__isnull=True) |
-            (DQ(fecha_actualizacion__lte=limite_20h) & DQ(fecha_actualizacion__gte=limite_24h))
-        )
-    ).order_by('-fecha_actualizacion')
-    
-    tickets_urgentes = list(qs_urgentes.values(
+    tickets_recientes = list(qs.values(
         'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
         'cuenta__nombre', 'creado_por__nombre',
         'asignado_a__nombre', 'asignado_a__id',
         'categoria__nombre', 'subcategoria__nombre',
         'plataforma_bi',
     )[:10])
-    for t in tickets_urgentes:
+    # Convert datetimes to strings for JSON serialization
+    for t in tickets_recientes:
         if t.get('fecha_creacion'):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()
-
-    # 2. Mis Tickets Activos
-    qs_mis_activos = qs.filter(
-        asignado_a=usuario, 
-        estado__in=['abierto', 'en_proceso']
-    ).order_by('-fecha_actualizacion')
-    
-    mis_tickets_activos = list(qs_mis_activos.values(
-        'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
-        'cuenta__nombre', 'creado_por__nombre',
-        'asignado_a__nombre', 'asignado_a__id',
-        'categoria__nombre', 'subcategoria__nombre',
-        'plataforma_bi',
-    )[:10])
-    for t in mis_tickets_activos:
-        if t.get('fecha_creacion'):
-            t['fecha_creacion'] = t['fecha_creacion'].isoformat()
-
-    # 3. Auditoría Reciente (Últimos comentarios en tickets visibles)
-    comentarios_qs = Comentario.objects.filter(ticket__in=qs).select_related('autor', 'ticket').order_by('-fecha')
-    if not usuario.es_admin:
-        comentarios_qs = comentarios_qs.filter(interno=False)
-        
-    auditoria_reciente = []
-    for c in comentarios_qs[:10]:
-        auditoria_reciente.append({
-            "id": c.id,
-            "ticket_id": c.ticket_id,
-            "ticket_titulo": c.ticket.titulo,
-            "autor_nombre": c.autor.nombre,
-            "contenido": c.contenido,
-            "fecha": c.fecha,
-            "tipo": "comentario"
-        })
 
     return 200, DashboardStatsOut(
         total_filtrado=qs_filtrado.count(),
@@ -199,9 +153,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         sin_asignar=qs_filtrado.filter(estado__in=['abierto', 'en_proceso'], asignado_a__isnull=True).count(),
         solo_mis_tickets=solo_mis_tickets,
         ver_todos=ver_todos,
-        tickets_urgentes=tickets_urgentes,
-        mis_tickets_activos=mis_tickets_activos,
-        auditoria_reciente=auditoria_reciente,
+        tickets_recientes=tickets_recientes,
     )
 
 
@@ -472,38 +424,7 @@ def ticket_edit(request: HttpRequest, ticket_id: int, data: TicketEditIn):
     if data.asignado_a_id is not None:
         if data.asignado_a_id != responsable_anterior:
             ticket.fue_reasignado = True
-            
-            # Auditoría de reasignación
-            valor_anterior = str(responsable_anterior) if responsable_anterior else "Nadie"
-            if responsable_anterior:
-                u_ant = Usuario.objects.filter(id=responsable_anterior).first()
-                if u_ant: valor_anterior = u_ant.nombre
-            valor_nuevo = "Nadie"
-            if data.asignado_a_id:
-                u_nue = Usuario.objects.filter(id=data.asignado_a_id).first()
-                if u_nue: valor_nuevo = u_nue.nombre
-
-            TicketAudit.objects.create(
-                ticket=ticket,
-                usuario=usuario,
-                campo_modificado="Responsable",
-                valor_anterior=valor_anterior,
-                valor_nuevo=valor_nuevo
-            )
-
         ticket.asignado_a_id = data.asignado_a_id
-
-    # Auditoría de estado
-    estado_anterior = ticket.estado
-    if data.estado is not None and data.estado != estado_anterior:
-        TicketAudit.objects.create(
-            ticket=ticket,
-            usuario=usuario,
-            campo_modificado="Estado",
-            valor_anterior=estado_anterior,
-            valor_nuevo=data.estado
-        )
-        ticket.estado = data.estado
 
     ticket.save()
     ticket.refresh_from_db()
