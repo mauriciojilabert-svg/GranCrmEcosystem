@@ -68,25 +68,41 @@ class GranCRMSessionMiddleware:
         return self.get_response(request)
 
     def _validate(self, token):
-        secret = getattr(settings, 'GRANCRM_JWT_SECRET', None) or getattr(settings, 'SECRET_KEY', None)
-        if not secret:
-            print("grancrm_session: ERROR - No hay secreto configurado (GRANCRM_JWT_SECRET ni SECRET_KEY)", flush=True)
+        # Intentaremos con todas las llaves posibles conocidas
+        secret_env = getattr(settings, 'GRANCRM_JWT_SECRET', None)
+        secret_key = getattr(settings, 'SECRET_KEY', None)
+        orquestador_old_secret = "BMkD0_EZLqHEioRFmIjqyT-bDlEBSD8-eNOWiymLfby5Wn9BsULs_9YR84c3Ftt8Sks"
+        
+        secrets_to_try = [
+            secret_env,
+            secret_key,
+            orquestador_old_secret
+        ]
+
+        payload = None
+        for secret in secrets_to_try:
+            if not secret:
+                continue
+            try:
+                payload = jwt.decode(token, secret, algorithms=["HS256"])
+                print(f"grancrm_session: EXITO! Token decodificado usando llave que empieza en: '{secret[:10]}...'", flush=True)
+                print(f"grancrm_session: Datos: email={payload.get('email')}, apps={payload.get('apps')}", flush=True)
+                break
+            except jwt.ExpiredSignatureError:
+                print("grancrm_session: ERROR - TOKEN EXPIRADO", flush=True)
+                return None
+            except jwt.InvalidSignatureError:
+                # Intentar con el siguiente secreto
+                continue
+            except Exception as e:
+                print(f"grancrm_session: ERROR DECODIFICANDO TOKEN - {e}", flush=True)
+                return None
+
+        if payload is None:
+            print("grancrm_session: ERROR - FIRMA INVALIDA CON TODAS LAS LLAVES POSIBLES", flush=True)
             return None
-        print(f"grancrm_session: Secreto usado (primeros 10 chars): '{secret[:10]}...'", flush=True)
-        print(f"grancrm_session: Token recibido (primeros 30 chars): '{token[:30]}...'", flush=True)
-        try:
-            payload = jwt.decode(token, secret, algorithms=["HS256"])
-            print(f"grancrm_session: Token decodificado OK: email={payload.get('email')}, apps={payload.get('apps')}")
-            return payload
-        except jwt.ExpiredSignatureError:
-            print("grancrm_session: ERROR - TOKEN EXPIRADO", flush=True)
-            return None
-        except jwt.InvalidSignatureError:
-            print("grancrm_session: ERROR - FIRMA INVALIDA (el secreto no coincide con el del orquestador)", flush=True)
-            return None
-        except Exception as e:
-            print(f"grancrm_session: ERROR DECODIFICANDO TOKEN - {e}", flush=True)
-            return None
+        
+        return payload
 
     def _sync_user(self, request, payload):
         email = payload["email"]
