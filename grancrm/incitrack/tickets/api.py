@@ -100,7 +100,7 @@ def _require_admin_or_jefe(request: HttpRequest):
 
 # ─── DASHBOARD ───────────────────────────────────────────────────────────────
 
-@api.get("/dashboard/", response={200: DashboardStatsOut, 401: dict, 403: dict}, tags=["dashboard"])
+@api.get("/dashboard/", response={200: dict, 401: dict, 403: dict}, tags=["dashboard"])
 def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     """Estadísticas del dashboard para el usuario autenticado."""
     if not _require_auth(request):
