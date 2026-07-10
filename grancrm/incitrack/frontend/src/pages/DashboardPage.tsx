@@ -155,7 +155,6 @@ export function DashboardPage() {
     setSearchParams(next, { replace: true });
   }
 
-  const { session } = useSession();
   const isAdmin = session?.rol === 'admin' || session?.rol === 'jefe';
 
   const [activeTab, setActiveTab] = useState<'urgentes' | 'activos' | 'auditoria'>('urgentes');
