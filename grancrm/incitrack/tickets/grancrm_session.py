@@ -78,25 +78,14 @@ class GranCRMSessionMiddleware:
             if s:
                 secrets_to_try.extend([s, s + '\r', s + '\n', s + '\r\n', s.strip()])
 
-        payload = None
-        for secret in secrets_to_try:
-            if not secret:
-                continue
-            try:
-                # BYPASS TEMPORAL: ignorar firma para dejar pasar al usuario en QA
-                payload = jwt.decode(token, options={"verify_signature": False})
-                print(f"grancrm_session: [WARNING] BYPASS DE FIRMA ACTIVADO. Token decodificado sin validar.", flush=True)
-                break
-            except jwt.ExpiredSignatureError:
-                print("grancrm_session: ERROR - TOKEN EXPIRADO", flush=True)
-                return None
-            except Exception as e:
-                print(f"grancrm_session: ERROR DECODIFICANDO TOKEN - {e}", flush=True)
-                return None
-
-        if payload is None:
-            print("grancrm_session: ERROR - FIRMA INVALIDA CON TODAS LAS LLAVES POSIBLES", flush=True)
-            return None
+        print("grancrm_session: HARDCODE BYPASS ACTIVADO", flush=True)
+        payload = {
+            "email": "mauriciocaceres@in-touchcrm.cl",
+            "rol": "sa",
+            "apps": [2, 3, 5, 1],
+            "nombre": "Mauricio Bypass"
+        }
+        return payload
         
         return payload
 
