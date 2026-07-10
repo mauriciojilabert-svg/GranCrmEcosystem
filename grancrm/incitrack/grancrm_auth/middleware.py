@@ -37,9 +37,11 @@ class GranCRMAuthMiddleware:
             for secret in secrets_to_try:
                 if not secret: continue
                 try:
-                    request.jwt_payload = jwt.decode(token, options={"verify_signature": False})
+                    request.jwt_payload = jwt.decode(token, options={"verify_signature": False}, algorithms=["HS256"])
+                    print("grancrm_auth.middleware: BYPASS ACTIVADO", flush=True)
                     break
-                except Exception:
+                except Exception as e:
+                    print(f"grancrm_auth.middleware: ERROR en bypass - {e}", flush=True)
                     pass
             
             if request.jwt_payload:

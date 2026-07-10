@@ -33,9 +33,11 @@ class GranCrmCookieAuth:
             for secret in secrets_to_try:
                 if not secret: continue
                 try:
-                    payload = jwt.decode(token, options={"verify_signature": False})
+                    payload = jwt.decode(token, options={"verify_signature": False}, algorithms=["HS256"])
+                    logger.warning("ninja_auth: BYPASS DE FIRMA ACTIVADO")
                     break
-                except Exception:
+                except Exception as e:
+                    logger.error(f"ninja_auth: ERROR en bypass - {e}")
                     pass
             
             if payload is None:
