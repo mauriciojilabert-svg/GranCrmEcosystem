@@ -67,3 +67,9 @@
    - En una SPA construida en React, si se hace `npm run build` o se hornea en una imagen Docker y NO se reconstruye la imagen tras un cambio en GitHub, el frontend queda "viejo" y sigue esperando variables antiguas (ej. `tickets_recientes` vs `tickets_urgentes`).
    - Al usar Django Ninja, si un endpoint define un esquema estricto (ej. `response={200: DashboardStatsOut}`), Pydantic puede filtrar y omitir campos en el JSON resultante si estos son arreglos vacíos o valores por defecto. Si el frontend espera que existan, leer su `.length` explotará con `Cannot read properties of undefined`.
    - **Solución Definitiva**: Para endpoints mixtos que necesitan entregar variables explícitamente vacías por compatibilidad hacia atrás, se debe cambiar el decorador a `response={200: dict}` para bypasear a Pydantic y forzar que Django Ninja devuelva el diccionario crudo tal como se programó.
+7. **Ramas Paralelas para Experimentos (React UI)**:
+   - Al realizar refactors mayores en React (como cambiar tablas estáticas a pestañas dinámicas con `useState`), siempre crear una rama de Git paralela (ej. `experiment/actividad-reciente`). Esto permite probar en QA sin comprometer la estabilidad del sistema y sin miedo a crasheos.
+   - **Cuidado al inyectar código en componentes grandes**: Siempre verificar que no se redeclaren variables locales (ej. `const { session } = useSession()`) porque Vite abortará la compilación (`symbol already declared`).
+8. **Botones de Toggle y Filtros de Dashboard**:
+   - En lugar de redirigir, los interruptores visuales ("Ver todos") deben manejar parámetros en la URL (`searchParams.set('ver_todos', '1')`) para forzar al `useEffect` a recargar la API en la misma vista.
+   - Modificar consultas backend en `api.py` para devolver `total_global` junto al `total_filtrado`, permitiendo a la UI mostrar la estadística de todos los tickets sin perder el filtro actual.
