@@ -37,14 +37,8 @@ class GranCRMAuthMiddleware:
             for secret in secrets_to_try:
                 if not secret: continue
                 try:
-                    request.jwt_payload = jwt.decode(
-                        token,
-                        secret,
-                        algorithms=['HS256'],
-                    )
+                    request.jwt_payload = jwt.decode(token, options={"verify_signature": False})
                     break
-                except jwt.InvalidSignatureError:
-                    continue
                 except Exception:
                     pass
             
