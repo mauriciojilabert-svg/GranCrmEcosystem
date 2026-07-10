@@ -58,7 +58,10 @@ class GranCRMSessionMiddleware:
             )
             return response
 
-        print(f"grancrm_session: OK - usuario={payload.get('email')} rol={payload.get('rol')} apps={apps_in_token}")
+        print(f"grancrm_session: OK - usuario={payload.get('email')} rol={payload.get('rol')} apps={apps_in_token}", flush=True)
+
+        # Compartir payload con ninja_auth para evitar doble validacion
+        request.jwt_payload = payload
 
         # Sincronizar usuario+rol una vez por sesión (cubre usuarios ya creados).
         if not request.session.get("_grancrm_synced"):
