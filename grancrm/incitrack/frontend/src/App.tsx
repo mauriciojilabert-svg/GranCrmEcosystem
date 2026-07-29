@@ -18,6 +18,8 @@ import { SLAFormPage } from './pages/SLAFormPage';
 import { EstadisticasPage } from './pages/EstadisticasPage';
 import { RoleGuard } from './components/RoleGuard';
 
+
+
 export default function App({ contractVersion, basename, apiBase, session, bus }: GranCrmRemoteProps) {
   if (contractVersion !== '1') {
     console.error('[incitrack] versión de contrato incompatible:', contractVersion, '— esperada: 1');
@@ -40,6 +42,8 @@ export default function App({ contractVersion, basename, apiBase, session, bus }
     window.addEventListener('grancrm:sessionExpired', handler);
     return () => window.removeEventListener('grancrm:sessionExpired', handler);
   }, [bus]);
+
+
 
   // Normaliza el rol para que los RoleGuard internos funcionen
   const normSession = session
