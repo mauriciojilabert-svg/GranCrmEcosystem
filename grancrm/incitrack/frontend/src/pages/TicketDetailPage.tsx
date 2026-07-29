@@ -5,7 +5,7 @@ import type { TicketOut, ComentarioOut, UsuarioOut } from '../apiTypes';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { useSession } from '../context';
-import { PageHeader } from '../components/duralux/PageHeader';
+import { PageHeader } from '@duralux/ui';
 
 function fmtDatetime(iso: string): string {
   try {
@@ -446,3 +446,4 @@ export function TicketDetailPage() {
     </>
   );
 }
+

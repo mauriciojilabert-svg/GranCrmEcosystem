@@ -5,7 +5,7 @@ import { useFormSubmit } from '../hooks/useFormSubmit';
 import type { CategoriaLookupItem, CuentaLookupItem, SubcategoriaItem, SLALookupOut, TicketOut } from '../apiTypes';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { PageHeader } from '../components/duralux/PageHeader';
+import { PageHeader } from '@duralux/ui';
 
 type Mode = 'nuevo' | 'editar';
 
@@ -451,3 +451,4 @@ export function TicketFormPage({ mode }: Props) {
     </>
   );
 }
+

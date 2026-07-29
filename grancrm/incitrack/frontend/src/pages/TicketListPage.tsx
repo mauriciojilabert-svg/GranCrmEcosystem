@@ -7,7 +7,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { EstadoBadge } from '../components/EstadoBadge';
 import { ResponsiveTable } from '../components/ResponsiveTable';
 import { useSession } from '../context';
-import { PageHeader } from '../components/duralux/PageHeader';
+import { PageHeader } from '@duralux/ui';
 
 function fmtDatetime(iso: string): string {
   try {
@@ -395,3 +395,4 @@ export function TicketListPage() {
     </>
   );
 }
+

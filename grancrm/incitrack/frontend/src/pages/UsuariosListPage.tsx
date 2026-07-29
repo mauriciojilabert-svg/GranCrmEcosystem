@@ -5,7 +5,7 @@ import type { UsuarioOut, UsuarioRol } from '../apiTypes';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { ResponsiveTable } from '../components/ResponsiveTable';
-import { PageHeader } from '../components/duralux/PageHeader';
+import { PageHeader } from '@duralux/ui';
 
 const ROL_LABELS: Record<UsuarioRol, string> = {
   admin: 'Admin TI',
@@ -210,3 +210,4 @@ export function UsuariosListPage() {
     </>
   );
 }
+

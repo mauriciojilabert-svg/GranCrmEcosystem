@@ -8,7 +8,7 @@ import { useFormSubmit } from '../hooks/useFormSubmit';
 import type { CategoriaLookupItem, SubcategoriaItem } from '../apiTypes';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { PageHeader } from '../components/duralux/PageHeader';
+import { PageHeader } from '@duralux/ui';
 
 type Mode = 'nuevo' | 'editar';
 
@@ -418,3 +418,4 @@ export function SLAFormPage({ mode }: Props) {
     </>
   );
 }
+
