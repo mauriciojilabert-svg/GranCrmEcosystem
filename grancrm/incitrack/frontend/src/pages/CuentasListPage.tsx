@@ -6,7 +6,7 @@ import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { ResponsiveTable } from '../components/ResponsiveTable';
 import { useSession } from '../context';
-import { PageHeader } from '@duralux/ui';
+import { PageHeader } from '../components/duralux/PageHeader';
 
 export function CuentasListPage() {
   const session = useSession();
@@ -217,4 +217,3 @@ export function CuentasListPage() {
     </>
   );
 }
-

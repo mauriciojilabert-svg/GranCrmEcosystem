@@ -5,9 +5,9 @@ import type { DashboardStatsOut, TicketResumenItem } from '../apiTypes';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { useSession } from '../context';
-import { PageHeader } from '@duralux/ui';
-import { StatsCard } from '@duralux/ui';
-import { AvisosTIPanel } from '../components/AvisosTIPanel';
+import { PageHeader } from '../components/duralux/PageHeader';
+import { StatsCard } from '../components/duralux/StatsCard';
+import { AvisosTIPanel } from '../components/duralux/AvisosTIPanel';
 
 const PERIODOS = [
   { key: '', label: 'Total' },
@@ -402,4 +402,3 @@ export function DashboardPage() {
     </>
   );
 }
-

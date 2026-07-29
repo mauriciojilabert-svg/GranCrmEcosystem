@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { apiFetch } from '../api';
-import {
-  PageHeader,
-  ChartCard,
-  AreaChartWidget,
-  BarChartWidget,
-  PieChartWidget,
-  ColoredStatCard,
-  ProgressRing
-} from '@duralux/ui';
+import { PageHeader } from '../components/duralux/PageHeader';
+import { ChartCard } from '../components/duralux/charts/ChartCard';
+import { AreaChartWidget } from '../components/duralux/charts/AreaChartWidget';
+import { BarChartWidget } from '../components/duralux/charts/BarChartWidget';
+import { PieChartWidget } from '../components/duralux/charts/PieChartWidget';
+import { ColoredStatCard } from '../components/duralux/ui/ColoredStatCard';
+import { ProgressRing } from '../components/duralux/ui/ProgressRing';
 
 
 const ESTADOS_LISTA = ['abierto', 'en proceso', 'resuelto', 'cerrado'];
 const ESTADO_COLORS: Record<string, string> = {
-  abierto: 'var(--gcu-warning, #f59e0b)', 'en proceso': 'var(--gcu-info, #3b82f6)', resuelto: 'var(--gcu-success, #22c55e)', cerrado: 'var(--gcu-secondary, #6b7591)',
+  abierto: '#f59e0b', 'en proceso': '#3b82f6', resuelto: '#22c55e', cerrado: '#6b7591',
 };
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
@@ -29,14 +27,12 @@ function shortName(name: string, max: number = 16): string {
 
 // (Inline ProgressRing and StatCard removed, importing from UI now)
 
-import { Card, CardBody, CardHeader } from '@duralux/ui';
-
 // ─── Ranking Table (Duralux style) ─────────────────────────────────────────────
 function RankingTable({ data, valueLabel }: {
   data: { name: string; value: number }[]; valueLabel: string;
 }): JSX.Element {
   const maxVal = Math.max(...data.map(d => d.value), 1);
-  const bgClasses = ['bg-primary', 'bg-info', 'bg-success', 'bg-warning', 'bg-danger'];
+  const colors = ['#6c63ff', '#3b82f6', '#14b8a6', '#f59e0b', '#ec4899'];
   return (
     <div className="table-responsive">
       <table className="table table-hover mb-0">
@@ -49,29 +45,27 @@ function RankingTable({ data, valueLabel }: {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, i) => {
-            const bgClass = bgClasses[i % bgClasses.length];
-            return (
-              <tr key={i}>
-                <td className="border-0 py-2">
-                  <span className={`badge rounded-pill ${bgClass} fw-bold`}
-                    style={{ width: 24, height: 24, lineHeight: '24px', padding: 0, textAlign: 'center', display: 'inline-block' }}>
-                    {i + 1}
-                  </span>
-                </td>
-                <td className="border-0 py-2 fw-semibold fs-13 text-dark">{row.name}</td>
-                <td className="border-0 py-2 fw-bold fs-13 text-dark text-end">{row.value}</td>
-                <td className="border-0 py-2 align-middle">
-                  <div className="progress" style={{ height: 6, borderRadius: 3 }}>
-                    <div className={`progress-bar ${bgClass}`} style={{
-                      width: `${(row.value / maxVal) * 100}%`,
-                      borderRadius: 3,
-                    }}></div>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+          {data.map((row, i) => (
+            <tr key={i}>
+              <td className="border-0 py-2">
+                <span className="badge rounded-pill fw-bold"
+                  style={{ background: colors[i % colors.length], color: '#fff', width: 24, height: 24, lineHeight: '24px', textAlign: 'center', display: 'inline-block' }}>
+                  {i + 1}
+                </span>
+              </td>
+              <td className="border-0 py-2 fw-semibold fs-13 text-dark">{row.name}</td>
+              <td className="border-0 py-2 fw-bold fs-13 text-dark text-end">{row.value}</td>
+              <td className="border-0 py-2">
+                <div className="progress" style={{ height: 6, borderRadius: 3 }}>
+                  <div className="progress-bar" style={{
+                    width: `${(row.value / maxVal) * 100}%`,
+                    background: colors[i % colors.length],
+                    borderRadius: 3,
+                  }}></div>
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -89,8 +83,8 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
 }): JSX.Element {
   const hasFilters = fechaDesde || fechaHasta || adminTI || solicitante || categoria || cuenta;
   return (
-    <Card className="border-0 shadow-sm mb-4">
-      <CardBody className="py-3">
+    <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: 14 }}>
+      <div className="card-body py-3">
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h6 className="fw-bold mb-0"><i className="feather-filter me-2 text-muted"></i>Filtros</h6>
           {hasFilters && (
@@ -102,17 +96,17 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
         <div className="row g-2">
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Desde</label>
-            <input type="date" className="form-control form-control-sm" style={{ height: '32px' }} value={fechaDesde}
+            <input type="date" className="form-control" value={fechaDesde}
               onChange={e => onChange('fechaDesde', e.target.value)} />
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Hasta</label>
-            <input type="date" className="form-control form-control-sm" style={{ height: '32px' }} value={fechaHasta}
+            <input type="date" className="form-control" value={fechaHasta}
               onChange={e => onChange('fechaHasta', e.target.value)} />
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Admin TI</label>
-            <select className="form-select form-select-sm" style={{ height: '32px' }} value={adminTI}
+            <select className="form-control form-select" value={adminTI}
               onChange={e => onChange('adminTI', e.target.value)}>
               <option value="">Todos</option>
               {admins.map(a => <option key={a} value={a}>{a}</option>)}
@@ -120,7 +114,7 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Solicitante</label>
-            <select className="form-select form-select-sm" style={{ height: '32px' }} value={solicitante}
+            <select className="form-control form-select" value={solicitante}
               onChange={e => onChange('solicitante', e.target.value)}>
               <option value="">Todos</option>
               {solicitantes.map(s => <option key={s} value={s}>{s}</option>)}
@@ -128,7 +122,7 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Servicio</label>
-            <select className="form-select form-select-sm" style={{ height: '32px' }} value={categoria}
+            <select className="form-control form-select" value={categoria}
               onChange={e => onChange('categoria', e.target.value)}>
               <option value="">Todos</option>
               {categorias.map(c => <option key={c} value={c}>{c}</option>)}
@@ -136,15 +130,15 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Cuenta</label>
-            <select className="form-select form-select-sm" style={{ height: '32px' }} value={cuenta}
+            <select className="form-control form-select" value={cuenta}
               onChange={e => onChange('cuenta', e.target.value)}>
               <option value="">Todas</option>
               {cuentas.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -350,18 +344,18 @@ export function EstadisticasPage(): JSX.Element {
           {/* Progress Rings + Estado Donut */}
           <div className="row g-3 mb-3">
             <div className="col-12 col-md-6">
-              <Card className="border-0 shadow-sm h-100">
-                <CardBody className="d-flex align-items-center justify-content-around py-4">
+              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 14 }}>
+                <div className="card-body d-flex align-items-center justify-content-around py-4">
                   <div className="text-center">
-                    <ProgressRing value={metrics.tasa} color="var(--gcu-success)" />
+                    <ProgressRing value={metrics.tasa} color="#22c55e" />
                     <p className="fs-11 fw-bold text-muted mt-2 mb-0">Resolución</p>
                   </div>
                   <div className="text-center">
-                    <ProgressRing value={metrics.sla} color="var(--gcu-primary)" />
+                    <ProgressRing value={metrics.sla} color="#6c63ff" />
                     <p className="fs-11 fw-bold text-muted mt-2 mb-0">SLA</p>
                   </div>
-                </CardBody>
-              </Card>
+                </div>
+              </div>
             </div>
             <div className="col-12 col-md-6">
               <ChartCard title="Estado de Tickets">
@@ -375,14 +369,14 @@ export function EstadisticasPage(): JSX.Element {
             <div className="col-12 col-xl-6">
               <ChartCard title="Volumen Semanal (Lun–Sáb)" subtitle="Picos de operación esta semana">
                 <AreaChartWidget data={weekData}
-                  series={[{ key: 'Tickets', color: 'var(--gcu-primary)', label: 'Tickets' }]}
+                  series={[{ key: 'Tickets', color: '#6c63ff', label: 'Tickets' }]}
                   height={200} />
               </ChartCard>
             </div>
             <div className="col-12 col-xl-6">
               <ChartCard title="Distribución por Servicio" subtitle="Categorías con más incidencias">
                 <BarChartWidget data={topCategorias}
-                  series={[{ key: 'value', color: 'var(--gcu-warning)', label: 'Tickets' }]}
+                  series={[{ key: 'value', color: '#f59e0b', label: 'Tickets' }]}
                   height={200} barSize={30} />
               </ChartCard>
             </div>
@@ -393,7 +387,7 @@ export function EstadisticasPage(): JSX.Element {
             <div className="col-12 col-xl-4">
               <ChartCard title="Top Cuentas" subtitle="Mayor volumen de incidencias">
                 <BarChartWidget data={topCuentas}
-                  series={[{ key: 'value', color: 'var(--gcu-teal, #14b8a6)', label: 'Tickets' }]}
+                  series={[{ key: 'value', color: '#14b8a6', label: 'Tickets' }]}
                   layout="vertical" height={220} barSize={12} />
               </ChartCard>
             </div>
@@ -401,19 +395,19 @@ export function EstadisticasPage(): JSX.Element {
               <ChartCard title="Carga de Admins TI" subtitle="Activos vs resueltos por responsable">
                 <BarChartWidget data={adminCarga}
                   series={[
-                    { key: 'Activos', color: 'var(--gcu-warning)', label: 'Activos' },
-                    { key: 'Resueltos', color: 'var(--gcu-success)', label: 'Resueltos' },
+                    { key: 'Activos', color: '#f59e0b', label: 'Activos' },
+                    { key: 'Resueltos', color: '#22c55e', label: 'Resueltos' },
                   ]}
                   layout="vertical" height={220} barSize={12} stacked />
               </ChartCard>
             </div>
             <div className="col-12 col-xl-4">
-              <Card className="border-0 shadow-sm h-100">
-                <CardHeader className="bg-white border-0 pt-4 pb-0">
+              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 14 }}>
+                <div className="card-header bg-white border-0 pt-4 pb-0">
                   <h6 className="card-title fw-bold mb-0">Ranking Supervisores</h6>
                   <p className="fs-12 text-muted mb-0 mt-1">Usuarios que más solicitan</p>
-                </CardHeader>
-                <CardBody className="pt-3">
+                </div>
+                <div className="card-body pt-3">
                   {rankingSupervisores.length > 0 ? (
                     <RankingTable data={rankingSupervisores} valueLabel="Tkts" />
                   ) : (
@@ -421,8 +415,8 @@ export function EstadisticasPage(): JSX.Element {
                       <i className="feather-users me-2"></i>Sin datos
                     </p>
                   )}
-                </CardBody>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -431,32 +425,32 @@ export function EstadisticasPage(): JSX.Element {
             <div className="row g-3 mb-4">
               {alertaBacklog && (
                 <div className="col-12 col-md-6">
-                  <Card className="border-0 shadow-sm" style={{ background: 'var(--gcu-danger-100, #fef2f2)' }}>
-                    <CardBody className="d-flex align-items-center py-3">
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--gcu-danger-200, #fee2e2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div className="card border-0 shadow-sm" style={{ borderRadius: 14, background: '#fef2f2' }}>
+                    <div className="card-body d-flex align-items-center py-3">
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <i className="feather-alert-triangle text-danger fs-5"></i>
                       </div>
                       <div className="ms-3">
                         <h6 className="fw-bold mb-1 fs-13 text-danger">Backlog Crítico</h6>
-                        <p className="mb-0 fs-12" style={{ color: 'var(--gcu-danger-800, #991b1b)' }}>{alertaBacklog}</p>
+                        <p className="mb-0 fs-12" style={{ color: '#991b1b' }}>{alertaBacklog}</p>
                       </div>
-                    </CardBody>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               )}
               {alertaTendencia && (
                 <div className="col-12 col-md-6">
-                  <Card className="border-0 shadow-sm" style={{ background: 'var(--gcu-warning-100, #fffbeb)' }}>
-                    <CardBody className="d-flex align-items-center py-3">
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--gcu-warning-200, #fef3c7)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div className="card border-0 shadow-sm" style={{ borderRadius: 14, background: '#fffbeb' }}>
+                    <div className="card-body d-flex align-items-center py-3">
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <i className="feather-trending-up text-warning fs-5"></i>
                       </div>
                       <div className="ms-3">
                         <h6 className="fw-bold mb-1 fs-13 text-warning">Tendencia Detectada</h6>
-                        <p className="mb-0 fs-12" style={{ color: 'var(--gcu-warning-800, #92400e)' }}>{alertaTendencia}</p>
+                        <p className="mb-0 fs-12" style={{ color: '#92400e' }}>{alertaTendencia}</p>
                       </div>
-                    </CardBody>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

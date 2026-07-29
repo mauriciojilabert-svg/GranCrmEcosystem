@@ -5,7 +5,7 @@ import type { CuentaOut, UsuarioOut } from '../apiTypes';
 import { useFormSubmit } from '../hooks/useFormSubmit';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { PageHeader } from '@duralux/ui';
+import { PageHeader } from '../components/duralux/PageHeader';
 
 type Mode = 'nuevo' | 'editar';
 
@@ -220,4 +220,3 @@ export function CuentaFormPage({ mode }: Props) {
     </>
   );
 }
-

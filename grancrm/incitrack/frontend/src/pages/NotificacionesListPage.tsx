@@ -5,7 +5,7 @@ import type { NotificacionOut } from '../apiTypes';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { ResponsiveTable } from '../components/ResponsiveTable';
-import { PageHeader } from '@duralux/ui';
+import { PageHeader } from '../components/duralux/PageHeader';
 
 export function NotificacionesListPage() {
   const [notificaciones, setNotificaciones] = useState<NotificacionOut[]>([]);
@@ -200,4 +200,3 @@ export function NotificacionesListPage() {
     </>
   );
 }
-
