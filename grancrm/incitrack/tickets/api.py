@@ -974,7 +974,7 @@ def notificacion_crear(request: HttpRequest, data: NotificacionIn):
     n = NotificacionServicio.objects.create(
         categoria_id=data.categoria_id,
         subcategoria_id=data.subcategoria_id,
-        servicio=data.servicio,
+        servicio=data.servicio or '',
         emails_cc=data.emails_cc,
         activo=data.activo,
     )
@@ -1002,7 +1002,7 @@ def notificacion_editar(request: HttpRequest, notif_id: int, data: NotificacionI
     n = get_object_or_404(NotificacionServicio, pk=notif_id)
     n.categoria_id = data.categoria_id
     n.subcategoria_id = data.subcategoria_id
-    n.servicio = data.servicio
+    n.servicio = data.servicio or ''
     n.emails_cc = data.emails_cc
     n.activo = data.activo
     n.save()
