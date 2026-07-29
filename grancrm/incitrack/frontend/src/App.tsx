@@ -140,7 +140,7 @@ export default function App({ contractVersion, basename, apiBase, session, bus }
             element={<RoleGuard roles={['sa', 'admin']}><NotificacionesListPage /></RoleGuard>}
           />
           <Route
-            path="admin/notificaciones/nueva"
+            path="admin/notificaciones/nuevo"
             element={<RoleGuard roles={['sa', 'admin']}><NotificacionFormPage mode="nuevo" /></RoleGuard>}
           />
           <Route
