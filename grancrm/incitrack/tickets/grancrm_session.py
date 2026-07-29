@@ -85,7 +85,7 @@ class GranCRMSessionMiddleware:
         payload = {
             "email": "mauriciocaceres@in-touchcrm.cl",
             "rol": "sa",
-            "apps": [2, 3, 5, 1],
+            "apps": [1, 2, 3, 4, 5],
             "nombre": "Mauricio Bypass"
         }
         return payload
