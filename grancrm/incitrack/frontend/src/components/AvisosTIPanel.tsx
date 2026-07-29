@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { AvisoTIOut, AvisoTipo } from '../../apiTypes';
-import { getAvisos, createAviso, deleteAviso } from '../../lib/api';
+import type { AvisoTIOut, AvisoTipo } from '../apiTypes';
+import { getAvisos, createAviso, deleteAviso } from '../lib/api';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
