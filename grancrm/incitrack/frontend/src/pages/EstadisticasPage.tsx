@@ -102,17 +102,17 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
         <div className="row g-2">
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Desde</label>
-            <input type="date" className="form-control form-control-sm" value={fechaDesde}
+            <input type="date" className="form-control form-control-sm" style={{ height: '32px' }} value={fechaDesde}
               onChange={e => onChange('fechaDesde', e.target.value)} />
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Hasta</label>
-            <input type="date" className="form-control form-control-sm" value={fechaHasta}
+            <input type="date" className="form-control form-control-sm" style={{ height: '32px' }} value={fechaHasta}
               onChange={e => onChange('fechaHasta', e.target.value)} />
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Admin TI</label>
-            <select className="form-select form-select-sm" value={adminTI}
+            <select className="form-select form-select-sm" style={{ height: '32px' }} value={adminTI}
               onChange={e => onChange('adminTI', e.target.value)}>
               <option value="">Todos</option>
               {admins.map(a => <option key={a} value={a}>{a}</option>)}
@@ -120,7 +120,7 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Solicitante</label>
-            <select className="form-select form-select-sm" value={solicitante}
+            <select className="form-select form-select-sm" style={{ height: '32px' }} value={solicitante}
               onChange={e => onChange('solicitante', e.target.value)}>
               <option value="">Todos</option>
               {solicitantes.map(s => <option key={s} value={s}>{s}</option>)}
@@ -128,7 +128,7 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Servicio</label>
-            <select className="form-select form-select-sm" value={categoria}
+            <select className="form-select form-select-sm" style={{ height: '32px' }} value={categoria}
               onChange={e => onChange('categoria', e.target.value)}>
               <option value="">Todos</option>
               {categorias.map(c => <option key={c} value={c}>{c}</option>)}
@@ -136,7 +136,7 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
           </div>
           <div className="col-6 col-md-2">
             <label className="form-label fs-11 fw-semibold text-muted mb-1">Cuenta</label>
-            <select className="form-select form-select-sm" value={cuenta}
+            <select className="form-select form-select-sm" style={{ height: '32px' }} value={cuenta}
               onChange={e => onChange('cuenta', e.target.value)}>
               <option value="">Todas</option>
               {cuentas.map(c => <option key={c} value={c}>{c}</option>)}
