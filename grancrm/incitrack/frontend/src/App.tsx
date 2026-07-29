@@ -81,6 +81,14 @@ export default function App({ contractVersion, basename, apiBase, session, bus }
     }
 
     window.parent.postMessage({ type: 'grancrm:nav', items: navItems }, '*');
+    
+    // Fix race condition: if this component's useEffect fires before the parent Layout's useEffect,
+    // the parent misses the message. Resend it after a short delay.
+    const timer = setTimeout(() => {
+      window.parent.postMessage({ type: 'grancrm:nav', items: navItems }, '*');
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [session, basename]);
 
   return (

@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@duralux/ui": "github:Waryxxful/duralux-ui#553c320f3d642ec46703708733cbb4acc1a6cde6",
+    "@duralux/ui": "github:Waryxxful/duralux-ui#89b16810c79f89802c98186059c913c4bd21739a",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
