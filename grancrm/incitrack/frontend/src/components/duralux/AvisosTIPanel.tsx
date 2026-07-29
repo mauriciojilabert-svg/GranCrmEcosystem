@@ -162,8 +162,8 @@ export function AvisosTIPanel({ isAdmin }: AvisosTIPanelProps) {
 
   if (loading) return null;
 
-  // Si no hay avisos y el usuario no es admin, no mostrar nada
-  if (avisos.length === 0 && !isAdmin) return null;
+  // El panel siempre debe renderizarse para no dejar un hueco en el layout.
+  // Si no hay avisos, mostrará el estado vacío a todos los usuarios.
 
   return (
     <>
