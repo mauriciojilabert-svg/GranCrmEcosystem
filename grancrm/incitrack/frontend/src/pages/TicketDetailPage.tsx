@@ -6,6 +6,7 @@ import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { useSession } from '../context';
 import { PageHeader } from '../components/duralux/PageHeader';
+import { Card, StatusBadge } from '@duralux/ui';
 
 function fmtDatetime(iso: string): string {
   try {
@@ -17,11 +18,8 @@ function fmtDatetime(iso: string): string {
   }
 }
 
-const ESTADO_COLOR: Record<string, { color: string; bg: string }> = {
-  abierto:    { color: '#ef4444', bg: '#fef2f2' },
-  en_proceso: { color: '#f59e0b', bg: '#fffbeb' },
-  resuelto:   { color: '#10b981', bg: '#ecfdf5' },
-  cerrado:    { color: '#6b7280', bg: '#f3f4f6' },
+const ESTADO_VARIANT: Record<string, "danger" | "warning" | "success" | "secondary"> = {
+  abierto: 'danger', en_proceso: 'warning', resuelto: 'success', cerrado: 'secondary',
 };
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -139,7 +137,7 @@ export function TicketDetailPage() {
   if (!ticket) return null;
 
   const estaCerrado = ticket.estado === 'cerrado';
-  const estadoColor = ESTADO_COLOR[ticket.estado] ?? ESTADO_COLOR['abierto'];
+  const estadoVariant = ESTADO_VARIANT[ticket.estado] ?? 'danger';
 
   const clasificacion = [ticket.categoria_nombre, ticket.plataforma_bi, ticket.subcategoria_nombre]
     .filter(Boolean).join(' › ');
@@ -155,28 +153,20 @@ export function TicketDetailPage() {
           border-radius: 20px;
           font-size: 12px;
           font-weight: 500;
-          background: #f1f5f9;
-          color: #475569;
         }
         .comentario-item {
           border-radius: 10px;
           padding: 14px 16px;
           margin-bottom: 12px;
-          border: 1px solid #e9ecef;
-          background: #f8f9fa;
+          border: 1px solid var(--gcu-border, #e9ecef);
           transition: box-shadow 0.2s;
         }
         .comentario-item:hover {
           box-shadow: 0 2px 8px rgba(0,0,0,.06);
         }
-        .comentario-item.interno {
-          background: #fffbeb;
-          border-color: #fde68a;
-        }
         .avatar-circle {
           width: 32px; height: 32px;
           border-radius: 50%;
-          background: linear-gradient(135deg,#6366f1,#8b5cf6);
           display: flex; align-items: center; justify-content: center;
           font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
         }
@@ -188,14 +178,8 @@ export function TicketDetailPage() {
           <span className="d-flex align-items-center gap-2 flex-wrap">
             Ticket <span className="text-primary">#{ticket.id}</span>
             {/* Estado badge */}
-            <span className="ms-2" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700,
-              color: estadoColor.color, background: estadoColor.bg,
-              border: `1.5px solid ${estadoColor.color}40`,
-              letterSpacing: '0.5px', textTransform: 'uppercase',
-            }}>
-              {ESTADO_LABEL[ticket.estado] ?? ticket.estado}
+            <span className="ms-2">
+              <StatusBadge status={estadoVariant} label={ESTADO_LABEL[ticket.estado] ?? ticket.estado} soft />
             </span>
           </span>
         }
@@ -208,10 +192,9 @@ export function TicketDetailPage() {
         {!estaCerrado && (
           <button
             type="button"
-            className="btn btn-success btn-sm"
+            className="btn btn-success btn-sm fw-bold"
             onClick={handleCerrar}
             disabled={closing}
-            style={{ borderRadius: 8, fontWeight: 700 }}
           >
             <i className="feather-check-circle me-2" />
             {closing ? 'Cerrando...' : 'Cerrar Ticket'}
@@ -239,7 +222,7 @@ export function TicketDetailPage() {
           <div className={isAdmin && !estaCerrado ? 'col-lg-8' : 'col-12'}>
             
             {/* Ticket info */}
-            <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: 14 }}>
+            <Card className="mb-4">
               <div className="card-header">
                 <h5 className="card-title mb-0">
                   <i className="feather-file-text me-2" />
@@ -250,35 +233,35 @@ export function TicketDetailPage() {
 
                 {/* Meta chips */}
                 <div className="d-flex flex-wrap gap-2 mb-4">
-                  <span className="meta-chip">
+                  <span className="meta-chip bg-light text-muted">
                     <i className="feather-user" style={{ fontSize: 11 }} />{ticket.creado_por_nombre}
                   </span>
-                  <span className="meta-chip">
+                  <span className="meta-chip bg-light text-muted">
                     <i className="feather-calendar" style={{ fontSize: 11 }} />
                     {fmtDatetime(ticket.fecha_creacion)}
                   </span>
-                  <span className="meta-chip">
+                  <span className="meta-chip bg-light text-muted">
                     <i className="feather-refresh-cw" style={{ fontSize: 11 }} />
                     Actualizado: {fmtDatetime(ticket.fecha_actualizacion)}
                   </span>
                   {ticket.cuenta_nombre && (
-                    <span className="meta-chip" style={{ background: '#ede9fe', color: '#7c3aed' }}>
+                    <span className="meta-chip bg-soft-primary text-primary">
                       <i className="feather-briefcase" style={{ fontSize: 11 }} />{ticket.cuenta_nombre}
                     </span>
                   )}
                   {ticket.asignado_a_nombre && (
-                    <span className="meta-chip" style={{ background: '#fef3c7', color: '#b45309' }}>
+                    <span className="meta-chip bg-soft-warning text-warning">
                       <i className="feather-zap" style={{ fontSize: 11 }} />
                       Asignado: {ticket.asignado_a_nombre}
                     </span>
                   )}
                   {ticket.fue_reasignado && (
-                    <span className="meta-chip" style={{ background: '#fef3c7', color: '#b45309' }}>
+                    <span className="meta-chip bg-soft-warning text-warning">
                       <i className="feather-shuffle" style={{ fontSize: 11 }} />Reasignado
                     </span>
                   )}
                   {ticket.fecha_resolucion && (
-                    <span className="meta-chip" style={{ background: '#dcfce7', color: '#16a34a' }}>
+                    <span className="meta-chip bg-soft-success text-success">
                       <i className="feather-check" style={{ fontSize: 11 }} />
                       Cerrado: {fmtDatetime(ticket.fecha_resolucion)}
                     </span>
@@ -292,10 +275,10 @@ export function TicketDetailPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Comentarios */}
-            <div className="card border-0 shadow-sm mt-4" style={{ borderRadius: 14 }}>
+            <Card className="mt-4">
               <div className="card-header">
                 <h5 className="card-title mb-0">
                   <i className="feather-message-square me-2" />
@@ -311,17 +294,14 @@ export function TicketDetailPage() {
                 )}
 
                 {comentarios.map(com => (
-                  <div key={com.id} className={`comentario-item${com.interno ? ' interno' : ''}`}>
+                  <div key={com.id} className={`comentario-item ${com.interno ? 'bg-soft-warning border-warning border-opacity-25' : 'bg-light'}`}>
                     <div className="d-flex align-items-center gap-2 mb-2">
-                      <div className="avatar-circle">
+                      <div className="avatar-circle bg-primary">
                         {(com.autor_nombre ?? '?').slice(0, 1).toUpperCase()}
                       </div>
                       <strong style={{ fontSize: 13 }}>{com.autor_nombre}</strong>
                       {com.interno && (
-                        <span style={{
-                          padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600,
-                          color: '#b45309', background: '#fef3c7', border: '1px solid #fde68a',
-                        }}>
+                        <span className="badge bg-soft-warning text-warning border border-warning border-opacity-25 rounded-pill px-2">
                           🔒 Interno
                         </span>
                       )}
@@ -366,9 +346,8 @@ export function TicketDetailPage() {
                       ) : <span />}
                       <button
                         type="submit"
-                        className="btn btn-primary btn-sm"
+                        className="btn btn-primary btn-sm fw-bold px-3 py-2"
                         disabled={commentSaving}
-                        style={{ borderRadius: 8, fontWeight: 600, fontSize: 13, padding: '7px 18px' }}
                       >
                         <i className="feather-send me-1" />
                         {commentSaving ? 'Enviando...' : 'Comentar'}
@@ -377,13 +356,13 @@ export function TicketDetailPage() {
                   </form>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* ── Panel Admin TI ── */}
           {isAdmin && !estaCerrado && (
             <div className="col-lg-4">
-              <div className="card border-0 shadow-sm border-primary-subtle bg-primary-subtle" style={{ borderRadius: 14 }}>
+              <Card className="bg-soft-primary border-0 shadow-none">
                 <div className="card-header bg-transparent border-0 pb-0">
                   <h5 className="card-title text-primary mb-0">
                     <i className="feather-settings me-2" />Gestión Admin TI
@@ -438,7 +417,7 @@ export function TicketDetailPage() {
                     </button>
                   </form>
                 </div>
-              </div>
+              </Card>
             </div>
           )}
         </div>
