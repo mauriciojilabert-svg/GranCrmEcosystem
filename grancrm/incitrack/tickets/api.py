@@ -114,7 +114,12 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
 
     solo_mis_tickets = not ver_todos
     if solo_mis_tickets:
-        qs = qs_base.filter(asignado_a=usuario)
+        if usuario.es_admin:
+            qs = qs_base.filter(asignado_a=usuario)
+        elif usuario.es_jefe or usuario.rol == 'supervisor':
+            qs = qs_base  # Jefes y supervisores ven toda su cartera por defecto
+        else:
+            qs = qs_base.filter(creado_por=usuario)  # Usuarios normales ven los que ellos crearon
     else:
         qs = qs_base
 
@@ -177,11 +182,15 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         if t.get('fecha_creacion'):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()
             
-    # 2. Mis Tickets Activos
-    mis_tickets_activos = []
-    if not usuario.es_admin:
-        qs_mis_activos = qs.filter(estado__in=['abierto', 'en_proceso'], asignado_a=usuario).order_by('-fecha_actualizacion')
-        mis_tickets_activos = list(qs_mis_activos.values(
+    # 2. Mis Tickets Activos (Pendientes)
+    if usuario.es_admin:
+        qs_mis_activos = qs_base.filter(estado__in=['abierto', 'en_proceso'], asignado_a=usuario).order_by('-fecha_actualizacion')
+    elif usuario.es_jefe or usuario.rol == 'supervisor':
+        qs_mis_activos = qs_base.filter(estado__in=['abierto', 'en_proceso']).order_by('-fecha_actualizacion')
+    else:
+        qs_mis_activos = qs_base.filter(estado__in=['abierto', 'en_proceso'], creado_por=usuario).order_by('-fecha_actualizacion')
+        
+    mis_tickets_activos = list(qs_mis_activos.values(
             'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
             'cuenta__nombre', 'creado_por__nombre',
             'asignado_a__nombre', 'asignado_a__id',
