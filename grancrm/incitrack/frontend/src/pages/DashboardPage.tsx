@@ -312,7 +312,7 @@ export function DashboardPage() {
                   iconBg="bg-warning-subtle text-warning"
                   value={stats.por_cerrar}
                   label="Por Cerrar en 4h"
-                  progress={{ label: 'Atención urgente', value: pctUrgentes, color: 'warning' }}
+                  progress={{ label: 'SLA en riesgo', value: pctUrgentes, color: 'warning' }}
                   footer={
                     stats.por_cerrar > 0 ? (
                       <div className="px-4 pb-2">
@@ -365,7 +365,7 @@ export function DashboardPage() {
                       style={{ color: activeTab === 'urgentes' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'urgentes' ? '#fff' : 'transparent', borderTop: activeTab === 'urgentes' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
                     >
                       <i className="feather-alert-triangle me-2" />
-                      Urgentes / Sin Asignar
+                      Por Vencer SLA / Sin Asignar
                       <span className="badge bg-warning-subtle text-warning ms-2">{(stats.tickets_urgentes || []).length}</span>
                     </button>
                   </li>
