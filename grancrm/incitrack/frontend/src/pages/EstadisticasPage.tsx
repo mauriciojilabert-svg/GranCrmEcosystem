@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { apiFetch } from '../api';
+import { Card } from '@duralux/ui';
 import { PageHeader } from '../components/duralux/PageHeader';
 import { ChartCard } from '../components/duralux/charts/ChartCard';
 import { AreaChartWidget } from '../components/duralux/charts/AreaChartWidget';
@@ -32,7 +33,7 @@ function RankingTable({ data, valueLabel }: {
   data: { name: string; value: number }[]; valueLabel: string;
 }): JSX.Element {
   const maxVal = Math.max(...data.map(d => d.value), 1);
-  const colors = ['#6c63ff', '#3b82f6', '#14b8a6', '#f59e0b', '#ec4899'];
+  const bgClasses = ['bg-primary', 'bg-info', 'bg-success', 'bg-warning', 'bg-danger'];
   return (
     <div className="table-responsive">
       <table className="table table-hover mb-0">
@@ -45,27 +46,29 @@ function RankingTable({ data, valueLabel }: {
           </tr>
         </thead>
         <tbody>
-          {data.map((row, i) => (
-            <tr key={i}>
-              <td className="border-0 py-2">
-                <span className="badge rounded-pill fw-bold"
-                  style={{ background: colors[i % colors.length], color: '#fff', width: 24, height: 24, lineHeight: '24px', textAlign: 'center', display: 'inline-block' }}>
-                  {i + 1}
-                </span>
-              </td>
-              <td className="border-0 py-2 fw-semibold fs-13 text-dark">{row.name}</td>
-              <td className="border-0 py-2 fw-bold fs-13 text-dark text-end">{row.value}</td>
-              <td className="border-0 py-2">
-                <div className="progress" style={{ height: 6, borderRadius: 3 }}>
-                  <div className="progress-bar" style={{
-                    width: `${(row.value / maxVal) * 100}%`,
-                    background: colors[i % colors.length],
-                    borderRadius: 3,
-                  }}></div>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {data.map((row, i) => {
+            const bgClass = bgClasses[i % bgClasses.length];
+            return (
+              <tr key={i}>
+                <td className="border-0 py-2">
+                  <span className={`badge rounded-pill fw-bold ${bgClass}`}
+                    style={{ width: 24, height: 24, lineHeight: '24px', textAlign: 'center', display: 'inline-block' }}>
+                    {i + 1}
+                  </span>
+                </td>
+                <td className="border-0 py-2 fw-semibold fs-13 text-dark">{row.name}</td>
+                <td className="border-0 py-2 fw-bold fs-13 text-dark text-end">{row.value}</td>
+                <td className="border-0 py-2">
+                  <div className="progress" style={{ height: 6, borderRadius: 3 }}>
+                    <div className={`progress-bar ${bgClass}`} style={{
+                      width: `${(row.value / maxVal) * 100}%`,
+                      borderRadius: 3,
+                    }}></div>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -83,7 +86,7 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
 }): JSX.Element {
   const hasFilters = fechaDesde || fechaHasta || adminTI || solicitante || categoria || cuenta;
   return (
-    <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: 14 }}>
+    <Card className="mb-4">
       <div className="card-body py-3">
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h6 className="fw-bold mb-0"><i className="feather-filter me-2 text-muted"></i>Filtros</h6>
@@ -138,7 +141,7 @@ function FilterBar({ fechaDesde, fechaHasta, adminTI, solicitante, categoria, cu
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -344,7 +347,7 @@ export function EstadisticasPage(): JSX.Element {
           {/* Progress Rings + Estado Donut */}
           <div className="row g-3 mb-3">
             <div className="col-12 col-md-6">
-              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 14 }}>
+              <Card className="h-100">
                 <div className="card-body d-flex align-items-center justify-content-around py-4">
                   <div className="text-center">
                     <ProgressRing value={metrics.tasa} color="#22c55e" />
@@ -355,7 +358,7 @@ export function EstadisticasPage(): JSX.Element {
                     <p className="fs-11 fw-bold text-muted mt-2 mb-0">SLA</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
             <div className="col-12 col-md-6">
               <ChartCard title="Estado de Tickets">
@@ -402,8 +405,8 @@ export function EstadisticasPage(): JSX.Element {
               </ChartCard>
             </div>
             <div className="col-12 col-xl-4">
-              <div className="card border-0 shadow-sm h-100" style={{ borderRadius: 14 }}>
-                <div className="card-header bg-white border-0 pt-4 pb-0">
+              <Card className="h-100">
+                <div className="card-header bg-transparent border-0 pt-4 pb-0">
                   <h6 className="card-title fw-bold mb-0">Ranking Supervisores</h6>
                   <p className="fs-12 text-muted mb-0 mt-1">Usuarios que más solicitan</p>
                 </div>
@@ -416,7 +419,7 @@ export function EstadisticasPage(): JSX.Element {
                     </p>
                   )}
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
 
@@ -425,32 +428,32 @@ export function EstadisticasPage(): JSX.Element {
             <div className="row g-3 mb-4">
               {alertaBacklog && (
                 <div className="col-12 col-md-6">
-                  <div className="card border-0 shadow-sm" style={{ borderRadius: 14, background: '#fef2f2' }}>
+                  <Card className="bg-soft-danger border-0 shadow-none">
                     <div className="card-body d-flex align-items-center py-3">
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div className="bg-danger bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 44, height: 44, borderRadius: 12 }}>
                         <i className="feather-alert-triangle text-danger fs-5"></i>
                       </div>
                       <div className="ms-3">
                         <h6 className="fw-bold mb-1 fs-13 text-danger">Backlog Crítico</h6>
-                        <p className="mb-0 fs-12" style={{ color: '#991b1b' }}>{alertaBacklog}</p>
+                        <p className="mb-0 fs-12 text-danger">{alertaBacklog}</p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
               )}
               {alertaTendencia && (
                 <div className="col-12 col-md-6">
-                  <div className="card border-0 shadow-sm" style={{ borderRadius: 14, background: '#fffbeb' }}>
+                  <Card className="bg-soft-warning border-0 shadow-none">
                     <div className="card-body d-flex align-items-center py-3">
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div className="bg-warning bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 44, height: 44, borderRadius: 12 }}>
                         <i className="feather-trending-up text-warning fs-5"></i>
                       </div>
                       <div className="ms-3">
                         <h6 className="fw-bold mb-1 fs-13 text-warning">Tendencia Detectada</h6>
-                        <p className="mb-0 fs-12" style={{ color: '#92400e' }}>{alertaTendencia}</p>
+                        <p className="mb-0 fs-12 text-warning">{alertaTendencia}</p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
               )}
             </div>
