@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitectura y Flujo del Ecosistema GranCRM e InciTrack</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #fff;
+        }
+        h1, h2, h3 {
+            color: #1a202c;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        h1 {
+            font-size: 2.25rem;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #3182ce;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 30px;
+        }
+        code {
+            background-color: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .note-box {
+            background-color: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        @media print {
+            body {
+                max-width: 100%;
+                padding: 0;
+            }
+            .mermaid {
+                page-break-inside: avoid;
+            }
+            h2 {
+                page-break-before: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Arquitectura y Flujo del Ecosistema GranCRM e InciTrack</h1>
+
+<p>Este documento detalla a nivel arquitectónico e infraestructural cómo se componen y comunican los distintos sistemas del ecosistema GranCRM, haciendo énfasis en el ciclo de vida e inyección del módulo InciTrack.</p>
+
+<hr>
+
+<h2>1. Mapa Conceptual del Ecosistema</h2>
+<p>A continuación, se muestra cómo se organiza el universo de componentes en GranCRM:</p>
+
+<div class="mermaid">
+graph LR
+    ECO["GranCRM Ecosistema"]
+
+    ECO --- NG["Nginx Gateway"]
+    NG --- NG1["Proxy Inverso"]
+    NG --- NG2["Enrutamiento de URLs"]
+    NG --- NG3["Archivos Estáticos"]
+
+    ECO --- ORQ["Orquestador"]
+    ORQ --- ORQ1["Shell Frontend"]
+    ORQ --- ORQ2["Duralux UI Kit"]
+    ORQ --- ORQ3["Motor JWT"]
+    ORQ --- ORQ4["Mapeo de Roles"]
+
+    ECO --- MOD["Módulos Satélites"]
+    MOD --- IT["InciTrack"]
+    IT --- IT1["Micro-Frontend React"]
+    IT --- IT2["Backend Django Ninja"]
+    IT --- IT3["BD SQL Server"]
+    MOD --- CR["CallReviews"]
+    MOD --- OT["Otros Módulos"]
+
+    style ECO fill:#4a90d9,stroke:#2c5282,color:#fff,font-weight:bold
+    style NG fill:#e57373,stroke:#c62828,color:#fff
+    style ORQ fill:#81c784,stroke:#2e7d32,color:#fff
+    style MOD fill:#ffb74d,stroke:#e65100,color:#fff
+    style IT fill:#fff176,stroke:#f9a825,color:#333
+</div>
+
+<hr>
+
+<h2>2. Descripción Detallada de Componentes</h2>
+
+<h3>A. Nginx — El Proxy Inverso y Puerta de Enlace</h3>
+<p>Actúa como el guardia de tráfico de toda la red. Todas las peticiones del navegador de los usuarios llegan primero a Nginx.</p>
+<ul>
+    <li><strong>Función Principal:</strong> Lee la URL de la petición y decide a qué contenedor de Docker redirigirla.</li>
+    <li><strong>Ejemplo:</strong> Si pides <code>/</code>, te envía al Shell del Orquestador. Si pides <code>/mf/incitrack/</code>, Nginx sirve los archivos estáticos de React compilados del frontend de InciTrack. Si la petición es <code>/incitrack/api/</code>, redirige el tráfico al puerto interno donde escucha el backend en Python.</li>
+</ul>
+
+<h3>B. El Orquestador — Shell y Duralux</h3>
+<p>Es la plataforma "padre" de la aplicación.</p>
+<ul>
+    <li><strong>Shell (Frontend en React):</strong> Es el cascarón que envuelve todo. Se encarga de pintar el menú lateral, la barra superior y mantener el ciclo de vida del usuario activo.</li>
+    <li><strong>Duralux (Sistema de Diseño):</strong> Es la librería de componentes propios (UI Kit). Contiene el diseño y la lógica de los botones, tablas, pestañas y modales. Esto garantiza que sin importar quién programe un submódulo, todo se vea exactamente igual, manteniendo la coherencia de la marca.</li>
+    <li><strong>Motor de Autorización (JWT):</strong> Genera credenciales estandarizadas. En lugar de compartir contraseñas, entrega un token que contiene la información esencial y perfiles dinámicos del usuario (por ejemplo, <code>admin_0</code> o <code>sa_4</code>).</li>
+    <li><strong>Gestión del Menú (<code>dios.json</code>):</strong> El orquestador construye su menú de navegación leyendo los archivos manifiesto de los módulos instalados. Si InciTrack reporta en su archivo <code>.json</code> que necesita un botón llamado "Tickets", el Shell lo renderiza dinámicamente.</li>
+</ul>
+
+<h3>C. InciTrack — Módulo Desacoplado</h3>
+<p>Es la aplicación especializada en la gestión de tickets. Fue diseñada para vivir y morir de forma independiente al Orquestador, con el objetivo de prevenir bloqueos del sistema completo (tolerancia a fallos).</p>
+
+<ol>
+    <li><strong>Frontend Desacoplado (Micro-Frontend en React):</strong> En lugar de ser una web que se abre en otra pestaña, InciTrack es inyectado dentro del Shell utilizando la tecnología <strong>Webpack Module Federation</strong> de Vite.
+        <ul>
+            <li><strong>Inyección de Dependencias:</strong> El Shell pasa un objeto de estado (Props) que contiene el <code>session</code> (el Token y los roles del usuario) y una API base para que el frontend sepa a qué URL comunicarse.</li>
+        </ul>
+    </li>
+    <li><strong>Backend Dedicado (Django Ninja):</strong> Una API construida con Python que maneja la lógica fuerte, validaciones de negocio y creación de los incidentes.</li>
+    <li><strong>Mecanismo <code>grancrm_session.py</code> (Autenticación Híbrida):</strong> Como InciTrack no confía en conectarse a la base de datos principal, este archivo intercepta todas las peticiones, lee el Token JWT proporcionado por el Orquestador y lo valida. Si el usuario es válido, InciTrack lo <strong>sincroniza (lo clona o actualiza)</strong> dentro de su propia base de datos SQL Server, asegurándose de tener siempre un registro fidedigno del creador o responsable del ticket.</li>
+</ol>
+
+<hr>
+
+<h2>3. Diagrama de Componentes — Conexiones de Red</h2>
+<p>Este diagrama explica cómo están conectadas las piezas a nivel de red y protocolos:</p>
+
+<div class="mermaid">
+graph TD
+    User(("Usuario Web"))
+    Nginx["Nginx - Proxy Inverso"]
+
+    subgraph orq ["Orquestador Central"]
+        Shell["Shell Orquestador - React SPA"]
+        Duralux["Duralux UI - Design System"]
+        Auth["API Orquestador - Gestor JWT"]
+    end
+
+    subgraph inci ["InciTrack - Módulo"]
+        MF["Micro-Frontend - React y Vite"]
+        Backend["Backend API - Django Ninja"]
+        DB[("SQL Server - QAIntouch")]
+    end
+
+    User -->|"HTTPS"| Nginx
+    Nginx -->|"ruta /"| Shell
+    Nginx -->|"ruta /api/auth"| Auth
+    Nginx -->|"ruta /mf/incitrack"| MF
+    Nginx -->|"ruta /incitrack/api"| Backend
+
+    Shell -.->|"1 Inyecta remoto"| MF
+    MF -.->|"2 Importa componentes"| Duralux
+    MF -->|"3 Fetch REST"| Nginx
+    Backend -->|"4 Conexión ODBC"| DB
+
+    style User fill:#bbdefb,stroke:#1565c0,color:#333
+    style Nginx fill:#ef9a9a,stroke:#c62828,color:#333
+    style Shell fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style Duralux fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style Auth fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style MF fill:#fff9c4,stroke:#f9a825,color:#333
+    style Backend fill:#fff9c4,stroke:#f9a825,color:#333
+    style DB fill:#d1c4e9,stroke:#4527a0,color:#333
+</div>
+
+<hr>
+
+<h2>4. Diagrama UML de Secuencia — El Flujo Completo</h2>
+<p>Aquí se describe el ciclo de vida completo de extremo a extremo (End-to-End), desde que un usuario entra a la plataforma hasta que ve sus tickets en InciTrack.</p>
+
+<div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor U as Usuario
+    participant N as Nginx
+    participant O as Shell Orquestador
+    participant F as InciTrack Frontend
+    participant B as InciTrack Backend
+    participant DB as SQL Server
+
+    Note over U,O: FASE 1 - Autenticación Inicial
+    U->>N: Inicia sesión con credenciales
+    N->>O: Procesa Login
+    O-->>U: Devuelve Token JWT, carga Shell y Menú
+
+    Note over U,F: FASE 2 - Inyección del Micro-Frontend
+    U->>O: Clic en Tickets en el menú lateral
+    O->>N: Solicita remoteEntry.js de InciTrack
+    N-->>O: Devuelve archivos JS compilados
+    O->>F: Inyecta InciTrack en el DOM y transfiere Token JWT
+
+    Note over F,DB: FASE 3 - Intercambio de Datos
+    F->>N: fetch /incitrack/api/tickets con JWT en cookie
+    N->>B: Enruta petición al puerto 8000
+    Note over B: Middleware grancrm_session.py intercepta
+    B->>B: Desencripta y valida Token JWT
+    B->>DB: Busca si el usuario existe localmente
+    alt Usuario es Nuevo
+        B->>DB: Crea registro de usuario clonado
+    else Usuario ya Existe
+        B->>DB: Actualiza campos y roles dinámicos
+    end
+    B->>DB: Ejecuta Query SQL de Tickets
+    DB-->>B: Retorna datos
+    B-->>N: HTTP 200 JSON
+    N-->>F: Entrega JSON al Frontend
+
+    Note over U,F: FASE 4 - Renderizado
+    F->>F: Procesa JSON con componentes Duralux
+    F-->>U: Muestra listado de Tickets en pantalla
+</div>
+
+<hr>
+
+<h2>5. Diagrama de Despliegue — Contenedores Docker</h2>
+
+<div class="mermaid">
+graph TB
+    subgraph servidor ["Servidor QA - Linux Docker Host"]
+        subgraph docker ["Docker Compose"]
+            nginx_c["Contenedor: gateway-nginx-1<br/>Puerto: 80/443"]
+            orq_c["Contenedor: orquestador<br/>Puerto interno: 8001"]
+            inci_c["Contenedor: incitrack-modulo<br/>Puerto interno: 8000"]
+        end
+    end
+
+    sqlserver[("SQL Server 172.20.21.50<br/>BD: QAIntouch<br/>Puerto: 1433")]
+
+    nginx_c -->|"proxy_pass"| orq_c
+    nginx_c -->|"proxy_pass"| inci_c
+    inci_c -->|"ODBC Driver 18"| sqlserver
+
+    style servidor fill:#263238,stroke:#546e7a,color:#eceff1
+    style docker fill:#37474f,stroke:#78909c,color:#eceff1
+    style nginx_c fill:#ef5350,stroke:#b71c1c,color:#fff
+    style orq_c fill:#66bb6a,stroke:#2e7d32,color:#fff
+    style inci_c fill:#ffa726,stroke:#e65100,color:#fff
+    style sqlserver fill:#7e57c2,stroke:#311b92,color:#fff
+</div>
+
+<hr>
+
+<h2>6. Diagrama de Flujo de Roles — dios.json y Autorización</h2>
+
+<div class="mermaid">
+flowchart TD
+    A["Orquestador entrega rol: admin_0"] --> B{"grancrm_session.py<br/>separa prefijo"}
+    B -->|"Prefijo: admin"| C["Rol normalizado: admin"]
+    B -->|"Prefijo: sa"| D["Rol normalizado: supervisor"]
+    B -->|"Sin prefijo conocido"| E["Rol por defecto: supervisor"]
+
+    C --> F["RoleGuard en React<br/>permite acceso Admin"]
+    D --> G["RoleGuard en React<br/>permite acceso Supervisor"]
+    E --> G
+
+    F --> H["Dashboard completo<br/>Usuarios, Cuentas, SLA, Estadísticas"]
+    G --> I["Dashboard limitado<br/>Solo Tickets asignados"]
+
+    style A fill:#ffcc80,stroke:#e65100,color:#333
+    style B fill:#90caf9,stroke:#1565c0,color:#333
+    style C fill:#a5d6a7,stroke:#2e7d32,color:#333
+    style D fill:#a5d6a7,stroke:#2e7d32,color:#333
+    style E fill:#ef9a9a,stroke:#c62828,color:#333
+    style F fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style G fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style H fill:#e1bee7,stroke:#6a1b9a,color:#333
+    style I fill:#e1bee7,stroke:#6a1b9a,color:#333
+</div>
+
+<hr>
+
+<h2>7. Casos Especiales y Puntos Clave</h2>
+
+<ul>
+    <li><strong>Problemas de Caché Vite:</strong> A menudo, si se realizan despliegues en el Micro-Frontend de InciTrack sin purgar la caché del navegador, el Orquestador seguirá inyectando el código viejo (esperando variables antiguas, rompiendo la aplicación con <code>Cannot read properties of undefined</code>).</li>
+    <li><strong>Roles Dinámicos:</strong> Los roles como <code>admin_0</code> deben limpiarse antes de procesarse. El Orquestador entrega sufijos específicos que InciTrack internamente traduce a <code>admin</code> global, manejado directamente en los context y componentes como <code>RoleGuard</code>.</li>
+    <li><strong>Esquemas Estrictos de Pydantic:</strong> Puesto que se usa Django Ninja, hay que tener extremo cuidado con las respuestas (Schemas). Si se devuelven objetos que no cumplen al 100% el esquema esperado (ej. valores vacíos omitidos por Pydantic), el frontend se romperá. Por eso a veces se fuerza a retornar diccionarios estándar (<code>dict</code>) para preservar la retrocompatibilidad.</li>
+    <li><strong>Variables de Entorno:</strong> Nunca confundir <code>DB_PASSWORD</code> con <code>GRANCRM_JWT_SECRET</code>. Y tras editar el <code>.env</code>, se requiere <code>docker compose up -d</code> (no basta con <code>restart</code>).</li>
+    <li><strong>Migraciones Obligatorias:</strong> Si se agregan campos nuevos al modelo (ej. <code>categoria</code>, <code>subcategoria</code>), se debe ejecutar <code>python manage.py migrate</code> dentro del contenedor. Si no, los endpoints devolverán HTTP 500.</li>
+</ul>
+
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+</script>
+</body>
+</html>

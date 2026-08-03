@@ -172,7 +172,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         'asignado_a__nombre', 'asignado_a__id',
         'categoria__nombre', 'subcategoria__nombre',
         'plataforma_bi',
-    )[:10])
+    )[:100])
     for t in tickets_urgentes:
         if t.get('fecha_creacion'):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()
@@ -187,7 +187,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
             'asignado_a__nombre', 'asignado_a__id',
             'categoria__nombre', 'subcategoria__nombre',
             'plataforma_bi',
-        )[:10])
+        )[:100])
         for t in mis_tickets_activos:
             if t.get('fecha_creacion'):
                 t['fecha_creacion'] = t['fecha_creacion'].isoformat()
@@ -201,7 +201,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         comentarios_qs = comentarios_qs.filter(interno=False)
         
     auditoria_reciente = []
-    for c in comentarios_qs[:10]:
+    for c in comentarios_qs[:100]:
         auditoria_reciente.append({
             "id": c.id,
             "ticket_id": c.ticket_id,
@@ -219,7 +219,7 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         'asignado_a__nombre', 'asignado_a__id',
         'categoria__nombre', 'subcategoria__nombre',
         'plataforma_bi',
-    )[:10])
+    )[:100])
     for t in tickets_recientes:
         if t.get('fecha_creacion'):
             t['fecha_creacion'] = t['fecha_creacion'].isoformat()

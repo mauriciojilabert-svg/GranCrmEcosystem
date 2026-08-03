@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><style>
+  body { font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; }
+  .header { background: #1a73e8; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+  .body   { background: #f9f9f9; padding: 24px; border: 1px solid #ddd; }
+  .meta   { background: white; border-radius: 6px; padding: 16px; margin: 16px 0; }
+  .meta-row { display: flex; padding: 6px 0; border-bottom: 1px solid #eee; }
+  .meta-label { font-weight: bold; min-width: 130px; color: #555; }
+  .badge  { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+  .badge-abierto  { background: #e8f5e9; color: #2e7d32; }
+  .badge-proceso  { background: #fff3e0; color: #e65100; }
+  .descripcion { background: white; border-left: 4px solid #1a73e8; padding: 12px 16px; margin: 16px 0; white-space: pre-wrap; }
+  .footer { text-align: center; color: #999; font-size: 12px; padding: 16px; }
+  .btn { display: inline-block; padding: 10px 24px; background: #1a73e8; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 16px; }
+</style></head>
+<body>
+  <div class="header">
+    <h2 style="margin:0">⚙ InciTrack — Nuevo Ticket</h2>
+  </div>
+  <div class="body">
+    <p>Se ha creado un nuevo ticket de soporte técnico que requiere atención.</p>
+    <div class="meta">
+      <div class="meta-row"><span class="meta-label">ID Ticket:</span> <strong>#{{ ticket.pk }}</strong></div>
+      <div class="meta-row"><span class="meta-label">Título:</span> {{ ticket.titulo }}</div>
+      <div class="meta-row"><span class="meta-label">Servicio:</span> {{ ticket.tipo_incidencia }}</div>
+      <div class="meta-row"><span class="meta-label">Cuenta:</span> {{ ticket.cuenta.nombre }}</div>
+      <div class="meta-row"><span class="meta-label">Creado por:</span> {{ ticket.creado_por.nombre }} &lt;{{ ticket.creado_por.email }}&gt;</div>
+      <div class="meta-row"><span class="meta-label">Estado:</span> <span class="badge badge-abierto">Abierto</span></div>
+      <div class="meta-row"><span class="meta-label">Fecha:</span> {{ ticket.fecha_creacion }}</div>
+    </div>
+    <p><strong>Descripción:</strong></p>
+    <div class="descripcion">{{ ticket.descripcion }}</div>
+    <p>Ingresa al sistema para gestionar este ticket:</p>
+    <a href="{{ ticket_url }}" class="btn">Ver Ticket #{{ ticket.pk }}</a>
+  </div>
+  <div class="footer">InciTrack — Sistema de Gestión de Incidencias</div>
+</body>
+</html>

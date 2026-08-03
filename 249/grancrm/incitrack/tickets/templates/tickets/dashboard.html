@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% load incitrack_tags %}
+
+{% block title %}Dashboard — InciTrack{% endblock %}
+{% block nav_dashboard %}nxl-active{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block page_actions %}
+<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>En vivo
+</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.periodo-btn {
+  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  color:var(--bs-secondary-color);background:var(--bs-tertiary-bg);
+  border:1px solid var(--bs-border-color);text-decoration:none;transition:all .15s;
+}
+.periodo-btn.active { background:var(--bs-primary);color:#fff;border-color:var(--bs-primary); }
+.card-dx {
+  border: 1px solid var(--bs-border-color); border-radius: 0.5rem;
+  background-color: var(--bs-body-bg); transition: all 0.2s ease-in-out;
+  display: flex; flex-direction: column;
+}
+.card-dx:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); transform: translateY(-2px); }
+.avatar-dx {
+  width: 56px; height: 56px; border-radius: 0.5rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.avatar-dx i { line-height: 1; }
+.fs-20-dx { font-size: 1.25rem; font-weight: 700; }
+.fs-13-dx { font-size: 13px; font-weight: 600; }
+.text-truncate-1-line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.progress-dx { height: 4px; border-radius: 2px; background-color: var(--bs-secondary-bg); overflow: hidden; display: flex; }
+.estado-badge { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px; }
+.estado-abierto    { background:#fee2e2;color:#dc2626; }
+.estado-en_proceso { background:#fef3c7;color:#d97706; }
+.estado-resuelto   { background:#dcfce7;color:#16a34a; }
+.estado-cerrado    { background:#f1f5f9;color:#64748b; }
+.cuenta-tag { font-size:11.5px;font-weight:600;padding:2px 8px;background:var(--bs-primary-bg-subtle);color:var(--bs-primary);border-radius:6px;border:1px solid var(--bs-primary-border-subtle); }
+.ticket-id { font-weight:700;color:var(--bs-primary);text-decoration:none; }
+.ticket-titulo { color:var(--bs-body-color);text-decoration:none;font-weight:500; }
+.ticket-titulo:hover { color:var(--bs-primary); }
+.avatar-ini { width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filtro período -->
+<div class="d-flex align-items-center gap-2 flex-wrap mb-4">
+  <span class="text-muted fs-12 me-1">Período:</span>
+  <a href="?"                    class="periodo-btn {% if not periodo_activo %}active{% endif %}">Total</a>
+  <a href="?periodo=hoy"         class="periodo-btn {% if periodo_activo == 'hoy' %}active{% endif %}">Hoy</a>
+  <a href="?periodo=ayer"        class="periodo-btn {% if periodo_activo == 'ayer' %}active{% endif %}">Ayer</a>
+  <a href="?periodo=esta_semana" class="periodo-btn {% if periodo_activo == 'esta_semana' %}active{% endif %}">Esta Semana</a>
+  <a href="?periodo=este_mes"    class="periodo-btn {% if periodo_activo == 'este_mes' %}active{% endif %}">Este Mes</a>
+  <a href="?periodo=mes_pasado"  class="periodo-btn {% if periodo_activo == 'mes_pasado' %}active{% endif %}">Mes Pasado</a>
+  <a href="?periodo=este_año"    class="periodo-btn {% if periodo_activo == 'este_año' %}active{% endif %}">Este Año</a>
+</div>
+
+<!-- Métricas -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-4 col-md-6">
+    <div class="card-dx h-100 p-3">
+      <div class="d-flex align-items-start justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+          <div class="avatar-dx" style="background:rgba(var(--bs-primary-rgb),.12);color:var(--bs-primary);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+          </div>
+          <div>
+            <div class="fs-20-dx text-primary">{{ total_filtrado }}</div>
+            <h3 class="fs-13-dx text-muted mb-0 text-truncate-1-line text-uppercase">Total Tickets</h3>
+          </div>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex gap-2">
+          <a href="{% url 'ticket_lista' %}" class="btn btn-outline-primary btn-sm flex-grow-1">Ver todos</a>
+          <a href="{% url 'ticket_nuevo' %}" class="btn btn-primary btn-sm flex-grow-1">+ Nuevo</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-2 col-md-3 col-6">
+    <a href="{% url 'ticket_lista' %}?estado=abierto" class="card-dx text-decoration-none h-100 p-3">
+      <div class="d-flex gap-3 align-items-center mb-3">
+        <div class="avatar-dx" style="background:rgba(239,68,68,.12);color:#ef4444; width:44px; height:44px; font-size:20px;">
+          <i class="feather-alert-circle"></i>
+        </div>
+        <div>
+          <div class="fs-20-dx" style="color:#ef4444;">{{ abiertos }}</div>
+          <h3 class="fs-13-dx text-muted mb-0">Abiertos</h3>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="font-size:11px;">
+          <span class="text-muted">Tickets activos</span>
+        </div>
+        <div class="progress-dx">
+          <div class="progress-bar" style="background-color:#ef4444; width: 100%"></div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-xl-2 col-md-3 col-6">
+    <a href="{% url 'ticket_lista' %}?estado=en_proceso" class="card-dx text-decoration-none h-100 p-3">
+      <div class="d-flex gap-3 align-items-center mb-3">
+        <div class="avatar-dx" style="background:rgba(245,158,11,.12);color:#f59e0b; width:44px; height:44px; font-size:20px;">
+          <i class="feather-zap"></i>
+        </div>
+        <div>
+          <div class="fs-20-dx" style="color:#f59e0b;">{{ en_proceso }}</div>
+          <h3 class="fs-13-dx text-muted mb-0">En Proceso</h3>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="font-size:11px;">
+          <span class="text-muted">En atención</span>
+        </div>
+        <div class="progress-dx">
+          <div class="progress-bar" style="background-color:#f59e0b; width: 100%"></div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-xl-2 col-md-3 col-6">
+    <a href="{% url 'ticket_lista' %}?estado=resuelto" class="card-dx text-decoration-none h-100 p-3">
+      <div class="d-flex gap-3 align-items-center mb-3">
+        <div class="avatar-dx" style="background:rgba(34,197,94,.12);color:#22c55e; width:44px; height:44px; font-size:20px;">
+          <i class="feather-check-circle"></i>
+        </div>
+        <div>
+          <div class="fs-20-dx" style="color:#22c55e;">{{ resueltos }}</div>
+          <h3 class="fs-13-dx text-muted mb-0">Resueltos</h3>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="font-size:11px;">
+          <span class="text-muted">Solucionados</span>
+        </div>
+        <div class="progress-dx">
+          <div class="progress-bar" style="background-color:#22c55e; width: 100%"></div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-xl-2 col-md-3 col-6">
+    <a href="{% url 'ticket_lista' %}?estado=cerrado" class="card-dx text-decoration-none h-100 p-3">
+      <div class="d-flex gap-3 align-items-center mb-3">
+        <div class="avatar-dx" style="background:rgba(59,130,246,.12);color:#3b82f6; width:44px; height:44px; font-size:20px;">
+          <i class="feather-lock"></i>
+        </div>
+        <div>
+          <div class="fs-20-dx" style="color:#3b82f6;">{{ cerrados_48h }}</div>
+          <h3 class="fs-13-dx text-muted mb-0">Cerrados</h3>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="font-size:11px;">
+          <span class="text-muted">Últimas 48h</span>
+        </div>
+        <div class="progress-dx">
+          <div class="progress-bar" style="background-color:#3b82f6; width: 100%"></div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Segunda fila -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-4 col-md-6">
+    <div class="card-dx h-100 p-3">
+      <div class="d-flex align-items-start justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+          <div class="avatar-dx" style="background:rgba(245,158,11,.12);color:#f59e0b;">
+            <i class="feather-alert-triangle"></i>
+          </div>
+          <div>
+            <div class="fs-20-dx" style="color:#f59e0b;">{{ por_cerrar }}</div>
+            <h3 class="fs-13-dx text-muted mb-0">Por Cerrar en 4h</h3>
+          </div>
+        </div>
+        {% if por_cerrar > 0 %}
+          <a href="{% url 'ticket_lista' %}?estado=abierto&por_cerrar=1" class="btn btn-warning btn-sm">Atender</a>
+        {% endif %}
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="font-size:11px;">
+          <span class="text-muted">Atención urgente</span>
+        </div>
+        <div class="progress-dx">
+          <div class="progress-bar" style="background-color:#f59e0b; width: {% if por_cerrar > 0 %}100%{% else %}0%{% endif %}"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card-dx h-100 p-3">
+      <div class="d-flex align-items-start justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+          <div class="avatar-dx" style="background:var(--bs-primary-bg-subtle);color:var(--bs-primary);">
+            <i class="feather-calendar"></i>
+          </div>
+          <div>
+            <div class="fs-20-dx text-primary">{{ tickets_hoy }}</div>
+            <h3 class="fs-13-dx text-muted mb-0">Tickets Hoy</h3>
+          </div>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="font-size:11px;">
+          <span class="text-muted">Nuevos tickets</span>
+        </div>
+        <div class="progress-dx">
+          <div class="progress-bar bg-primary" style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card-dx h-100 p-3">
+      <div class="d-flex align-items-start justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+          <div class="avatar-dx" style="background:rgba(34,197,94,.12);color:#22c55e;">
+            <i class="feather-trending-up"></i>
+          </div>
+          <div>
+            <div class="fs-20-dx" style="color:#22c55e;">
+              {% if total_filtrado > 0 %}{% widthratio resueltos|add:cerrados total_filtrado 100 %}{% else %}0{% endif %}%
+            </div>
+            <h3 class="fs-13-dx text-muted mb-0">Tasa Resolución</h3>
+          </div>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="d-flex align-items-center justify-content-between mb-2" style="font-size:11px;">
+          <span class="text-muted">Efectividad</span>
+        </div>
+        <div class="progress-dx">
+          <div class="progress-bar" style="background-color:#22c55e; width: {% if total_filtrado > 0 %}{% widthratio resueltos|add:cerrados total_filtrado 100 %}{% else %}0{% endif %}%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-2 col-md-6">
+    <div class="card-dx h-100 p-3">
+      <div class="d-flex align-items-start justify-content-between mb-4">
+        <div class="d-flex gap-3 align-items-center">
+          <div class="avatar-dx" style="background:rgba(100,116,139,.12);color:#64748b;">
+            <i class="feather-clock"></i>
+          </div>
+          <div style="min-width: 110px;">
+            <div id="reloj-live" class="fs-20-dx" style="color:#64748b; font-variant-numeric:tabular-nums; font-size:1.15rem; white-space:nowrap;">{{ ahora|time:"h:i:s A" }}</div>
+            <h3 class="fs-13-dx text-muted mb-0">{{ ahora|date:"d/m/Y" }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tickets recientes -->
+<div class="card stretch stretch-full">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h5 class="card-title mb-0"><i class="feather-clock me-2 text-primary"></i>Tickets Recientes</h5>
+    <div class="d-flex gap-2">
+      {% if request.user.es_admin %}
+        {% if solo_mis_tickets %}
+          <a href="?ver_todos=1{% if periodo_activo %}&periodo={{ periodo_activo }}{% endif %}" class="btn btn-outline-primary btn-sm">Ver todos</a>
+        {% else %}
+          <a href="?{% if periodo_activo %}periodo={{ periodo_activo }}{% endif %}" class="btn btn-outline-secondary btn-sm">Solo mis tickets</a>
+        {% endif %}
+      {% endif %}
+      <a href="{% url 'ticket_lista' %}" class="btn btn-primary btn-sm">Ver todos →</a>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">#</th>
+            <th>Creado por</th>
+            <th>Título</th>
+            <th>Cuenta</th>
+            <th>Categoría</th>
+            <th>Responsable TI</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tickets_recientes %}
+          <tr>
+            <td class="ps-3"><a href="{% url 'ticket_detalle' t.id %}" class="ticket-id">#{{ t.id }}</a></td>
+            <td class="fs-12">{{ t.creado_por__nombre|default:"—" }}</td>
+            <td><a href="{% url 'ticket_detalle' t.id %}" class="ticket-titulo">{{ t.titulo }}</a></td>
+            <td><span class="cuenta-tag">{{ t.cuenta__nombre|default:"—" }}</span></td>
+            <td>
+              {% if t.categoria__nombre %}
+              <div class="d-flex flex-column gap-1">
+                <span style="font-size:11.5px;font-weight:700;color:var(--bs-primary);background:var(--bs-primary-bg-subtle);border:1px solid var(--bs-primary-border-subtle);border-radius:6px;padding:2px 8px;">
+                  {{ t.categoria__nombre }}
+                </span>
+                {% if t.subcategoria__nombre %}<small class="text-muted ps-1">› {{ t.subcategoria__nombre }}</small>{% endif %}
+              </div>
+              {% elif t.tipo_incidencia %}
+              <span class="text-muted fst-italic fs-12">{{ t.tipo_incidencia }}</span>
+              {% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td>
+              {% if t.asignado_a__nombre %}
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar-ini">{{ t.asignado_a__nombre|slice:":2"|upper }}</div>
+                <span class="fs-12 fw-600">{{ t.asignado_a__nombre }}</span>
+              </div>
+              {% if t.fue_reasignado %}<span class="badge bg-warning-subtle text-warning border border-warning-subtle ms-4" style="font-size:9px;">REASIGNADO</span>{% endif %}
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Sin asignar</span>
+              {% endif %}
+            </td>
+            <td><span class="estado-badge estado-{{ t.estado }}">{{ t.estado|upper }}</span></td>
+            <td class="text-muted fs-12 text-nowrap">{{ t.fecha_creacion|date:"d/m/Y H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4"><i class="feather-inbox fs-3 d-block mb-2"></i>No hay tickets.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function actualizarReloj() {
+    const a = new Date();
+    const el = document.getElementById('reloj-live');
+    if (el) {
+      let h = a.getHours();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      const m = String(a.getMinutes()).padStart(2,'0');
+      const s = String(a.getSeconds()).padStart(2,'0');
+      el.textContent = String(h).padStart(2,'0') + ':' + m + ':' + s + ' ' + ampm;
+    }
+  }
+  actualizarReloj();
+  setInterval(actualizarReloj, 1000);
+  setTimeout(()=>location.reload(), 60000);
+</script>
+{% endblock %}

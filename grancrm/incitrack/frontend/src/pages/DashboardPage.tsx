@@ -157,7 +157,14 @@ export function DashboardPage() {
 
   const isAdmin = session?.rol ? canManage(session.rol) : false;
 
-  const [activeTab, setActiveTab] = useState<'urgentes' | 'activos' | 'auditoria'>('urgentes');
+  const [activeTab, setActiveTab] = useState<'urgentes' | 'activos' | 'auditoria'>('auditoria');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const handleTabChange = (tab: 'urgentes' | 'activos' | 'auditoria') => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
   const today = new Date().toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
@@ -360,20 +367,19 @@ export function DashboardPage() {
                   <li className="nav-item">
                     <button
                       type="button"
-                      className={`nav-link ${activeTab === 'urgentes' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
-                      onClick={() => setActiveTab('urgentes')}
-                      style={{ color: activeTab === 'urgentes' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'urgentes' ? '#fff' : 'transparent', borderTop: activeTab === 'urgentes' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
+                      className={`nav-link ${activeTab === 'auditoria' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
+                      onClick={() => handleTabChange('auditoria')}
+                      style={{ color: activeTab === 'auditoria' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'auditoria' ? '#fff' : 'transparent', borderTop: activeTab === 'auditoria' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
                     >
-                      <i className="feather-alert-triangle me-2" />
-                      Por Vencer SLA / Sin Asignar
-                      <span className="badge bg-warning-subtle text-warning ms-2">{(stats.tickets_urgentes || []).length}</span>
+                      <i className="feather-activity me-2" />
+                      Últimos Eventos
                     </button>
                   </li>
                   <li className="nav-item">
                     <button
                       type="button"
                       className={`nav-link ${activeTab === 'activos' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
-                      onClick={() => setActiveTab('activos')}
+                      onClick={() => handleTabChange('activos')}
                       style={{ color: activeTab === 'activos' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'activos' ? '#fff' : 'transparent', borderTop: activeTab === 'activos' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
                     >
                       <i className="feather-user me-2" />
@@ -384,12 +390,13 @@ export function DashboardPage() {
                   <li className="nav-item">
                     <button
                       type="button"
-                      className={`nav-link ${activeTab === 'auditoria' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
-                      onClick={() => setActiveTab('auditoria')}
-                      style={{ color: activeTab === 'auditoria' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'auditoria' ? '#fff' : 'transparent', borderTop: activeTab === 'auditoria' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
+                      className={`nav-link ${activeTab === 'urgentes' ? 'active' : ''} px-3 py-3 border-0 fw-semibold`}
+                      onClick={() => handleTabChange('urgentes')}
+                      style={{ color: activeTab === 'urgentes' ? 'var(--bs-primary)' : 'var(--bs-secondary-color)', backgroundColor: activeTab === 'urgentes' ? '#fff' : 'transparent', borderTop: activeTab === 'urgentes' ? '3px solid var(--bs-primary)' : '3px solid transparent' }}
                     >
-                      <i className="feather-activity me-2" />
-                      Últimos Eventos
+                      <i className="feather-alert-triangle me-2" />
+                      Por Vencer SLA / Sin Asignar
+                      <span className="badge bg-warning-subtle text-warning ms-2">{(stats.tickets_urgentes || []).length}</span>
                     </button>
                   </li>
                 </ul>
@@ -416,20 +423,25 @@ export function DashboardPage() {
                       </div>
                     ) : (
                       <div className="d-flex flex-column gap-3">
-                        {(stats.auditoria_reciente || []).map(a => (
-                          <div key={a.id} className="d-flex gap-3 p-3 rounded border" style={{ background: 'var(--bs-tertiary-bg)' }}>
-                            <div className="avatar-text mt-1 bg-primary text-white" style={{ width: 36, height: 36, flexShrink: 0 }}>
-                              {a.autor_nombre.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="fs-13">
-                                <span className="fw-semibold">{a.autor_nombre}</span> comentó en <Link to={`tickets/${a.ticket_id}`} className="fw-semibold text-primary">#{a.ticket_id} {a.ticket_titulo}</Link>
+                        {(() => {
+                          const list = stats.auditoria_reciente || [];
+                          const start = (currentPage - 1) * itemsPerPage;
+                          const paged = list.slice(start, start + itemsPerPage);
+                          return paged.map(a => (
+                            <div key={a.id} className="d-flex gap-3 p-3 rounded border" style={{ background: 'var(--bs-tertiary-bg)' }}>
+                              <div className="avatar-text mt-1 bg-primary text-white" style={{ width: 36, height: 36, flexShrink: 0 }}>
+                                {a.autor_nombre.slice(0, 2).toUpperCase()}
                               </div>
-                              <div className="text-muted fs-13 mt-1">{a.contenido}</div>
-                              <div className="text-muted fs-11 mt-2"><i className="feather-clock me-1"></i>{fmtDatetime(a.fecha)}</div>
+                              <div>
+                                <div className="fs-13">
+                                  <span className="fw-semibold">{a.autor_nombre}</span> comentó en <Link to={`tickets/${a.ticket_id}`} className="fw-semibold text-primary">#{a.ticket_id} {a.ticket_titulo}</Link>
+                                </div>
+                                <div className="text-muted fs-13 mt-1">{a.contenido}</div>
+                                <div className="text-muted fs-11 mt-2"><i className="feather-clock me-1"></i>{fmtDatetime(a.fecha)}</div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ));
+                        })()}
                       </div>
                     )}
                   </div>
@@ -471,12 +483,59 @@ export function DashboardPage() {
                               </tr>
                             );
                           }
-                          return list.map(t => <TicketRow key={t.id} t={t} />);
+                          const start = (currentPage - 1) * itemsPerPage;
+                          const paged = list.slice(start, start + itemsPerPage);
+                          return paged.map(t => <TicketRow key={t.id} t={t} />);
                         })()}
                       </tbody>
                     </table>
                   </div>
                 )}
+              </div>
+              <div className="card-footer d-flex justify-content-between align-items-center bg-white border-top">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-muted fs-12 fw-semibold">Mostrar:</span>
+                  <select 
+                    className="form-select form-select-sm" 
+                    style={{ width: '75px', fontSize: '12px' }}
+                    value={itemsPerPage}
+                    onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+                <div className="d-flex align-items-center gap-3">
+                  {(() => {
+                    const list = activeTab === 'auditoria' 
+                      ? (stats.auditoria_reciente || []) 
+                      : (activeTab === 'urgentes' ? (stats.tickets_urgentes || []) : (stats.mis_tickets_activos || []));
+                    const totalPages = Math.ceil(list.length / itemsPerPage);
+                    return (
+                      <>
+                        <span className="text-muted fs-12 fw-medium">
+                          Página {currentPage} de {totalPages || 1} ({list.length} en total)
+                        </span>
+                        <div className="btn-group">
+                          <button 
+                            className="btn btn-sm btn-outline-secondary" 
+                            disabled={currentPage <= 1}
+                            onClick={() => setCurrentPage(p => p - 1)}
+                          >
+                            <i className="feather-chevron-left" /> Ant
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-outline-secondary" 
+                            disabled={currentPage >= totalPages || totalPages === 0}
+                            onClick={() => setCurrentPage(p => p + 1)}
+                          >
+                            Sig <i className="feather-chevron-right" />
+                          </button>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           </>

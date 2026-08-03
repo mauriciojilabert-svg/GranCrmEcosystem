@@ -34,6 +34,8 @@ export function TicketListPage() {
   const verTodos = searchParams.get('ver_todos') === '1';
 
   const [tickets, setTickets] = useState<TicketListItemOut[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [categorias, setCategorias] = useState<CategoriaLookupItem[]>([]);
   const [cuentas, setCuentas] = useState<CuentaLookupItem[]>([]);
   const [usuarios, setUsuarios] = useState<UsuarioOut[]>([]);
@@ -56,7 +58,7 @@ export function TicketListPage() {
     setLoading(true);
     setError(null);
     getTickets({ estado, categoria, q, cuenta, periodo, desde, hasta, responsable_ti: responsable, ver_todos: verTodos })
-      .then(data => { setTickets(data); setLoading(false); })
+      .then(data => { setTickets(data); setLoading(false); setCurrentPage(1); })
       .catch(e => { setError(String(e.message ?? e)); setLoading(false); });
   }, [estado, categoria, q, cuenta, periodo, desde, hasta, responsable, verTodos]);
 
@@ -331,8 +333,11 @@ export function TicketListPage() {
                       </td>
                     </tr>
                   ) : (
-                    tickets.map(t => {
-                      const initials = (t.asignado_a_nombre ?? '').slice(0, 2).toUpperCase();
+                    (() => {
+                      const start = (currentPage - 1) * itemsPerPage;
+                      const paged = tickets.slice(start, start + itemsPerPage);
+                      return paged.map(t => {
+                        const initials = (t.asignado_a_nombre ?? '').slice(0, 2).toUpperCase();
                       return (
                       <tr key={t.id} style={{ opacity: t.estado === 'cerrado' ? 0.7 : 1 }}>
                         <td className="ps-3">
@@ -383,10 +388,54 @@ export function TicketListPage() {
                         <td className="text-muted fs-12 text-nowrap">{fmtDatetime(t.fecha_creacion)}</td>
                       </tr>
                       );
-                    })
+                      })
+                    })()
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+          <div className="card-footer d-flex justify-content-between align-items-center bg-white border-top">
+            <div className="d-flex align-items-center gap-2">
+              <span className="text-muted fs-12 fw-semibold">Mostrar:</span>
+              <select 
+                className="form-select form-select-sm" 
+                style={{ width: '75px', fontSize: '12px' }}
+                value={itemsPerPage}
+                onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+            <div className="d-flex align-items-center gap-3">
+              {(() => {
+                const totalPages = Math.ceil(tickets.length / itemsPerPage);
+                return (
+                  <>
+                    <span className="text-muted fs-12 fw-medium">
+                      Página {currentPage} de {totalPages || 1} ({tickets.length} en total)
+                    </span>
+                    <div className="btn-group">
+                      <button 
+                        className="btn btn-sm btn-outline-secondary" 
+                        disabled={currentPage <= 1}
+                        onClick={() => setCurrentPage(p => p - 1)}
+                      >
+                        <i className="feather-chevron-left" /> Ant
+                      </button>
+                      <button 
+                        className="btn btn-sm btn-outline-secondary" 
+                        disabled={currentPage >= totalPages || totalPages === 0}
+                        onClick={() => setCurrentPage(p => p + 1)}
+                      >
+                        Sig <i className="feather-chevron-right" />
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Notificaciones — InciTrack{% endblock %}
+{% block nav_admin %}nxl-active{% endblock %}
+{% block page_title %}Notificaciones de Servicio{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Notificaciones</li>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'notificacion_crear' %}" class="btn btn-primary btn-sm"><i class="feather-plus me-1"></i>Nueva</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr><th class="ps-3">Servicio</th><th>Responsable TI</th><th>Emails CC</th><th>Estado</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+          {% for n in notificaciones %}
+          <tr>
+            <td class="ps-3"><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ n.clasificacion_display }}</span></td>
+            <td class="fs-12">{% for u in n.usuarios.all %}{{ u.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+            <td class="text-muted fs-12">{{ n.emails_cc|default:"—" }}</td>
+            <td>{% if n.activo %}<span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span>{% else %}<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Inactivo</span>{% endif %}</td>
+            <td>
+              <div class="d-flex gap-2">
+                <a href="{% url 'notificacion_editar' n.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmarEliminar({{ n.pk }}, '{{ n.clasificacion_display|escapejs }}')">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">Sin configuraciones de notificación.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger"><i class="feather-alert-circle me-2"></i>¿Eliminar notificación?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-nombre" class="text-muted mb-0"></p>
+        <p class="text-danger fs-12 mt-2">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form id="form-eliminar" method="post">{% csrf_token %}<button type="submit" class="btn btn-danger">Sí, eliminar</button></form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarEliminar(pk, nombre) {
+  document.getElementById('modal-nombre').textContent = 'Se eliminará la notificación para: ' + nombre;
+  document.getElementById('form-eliminar').action = '/incitrack/admin-panel/notificaciones/' + pk + '/eliminar/';
+  new bootstrap.Modal(document.getElementById('modalEliminar')).show();
+}
+</script>
+{% endblock %}
