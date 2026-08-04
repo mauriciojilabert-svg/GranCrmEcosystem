@@ -85,8 +85,8 @@ def notificar_nuevo_ticket(ticket, request=None):
     except Exception as e:
         logger.error(f"Error obteniendo NotificacionServicio: {e}")
 
-    if not to_list:
-        logger.warning(f"Ticket #{ticket.pk}: sin destinatarios configurados, email no enviado.")
+    if not to_list and not cc_list:
+        logger.warning(f"Ticket #{ticket.pk}: sin destinatarios (ni TO ni CC) configurados, email no enviado.")
         return
 
     subject = f"[InciTrack] Nuevo ticket #{ticket.pk}: {ticket.titulo}"
