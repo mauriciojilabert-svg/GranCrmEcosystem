@@ -191,15 +191,15 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
         qs_mis_activos = qs_base.filter(estado__in=['abierto', 'en_proceso'], creado_por=usuario).order_by('-fecha_actualizacion')
         
     mis_tickets_activos = list(qs_mis_activos.values(
-            'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
-            'cuenta__nombre', 'creado_por__nombre',
-            'asignado_a__nombre', 'asignado_a__id',
-            'categoria__nombre', 'subcategoria__nombre',
-            'plataforma_bi',
-        )[:100])
-        for t in mis_tickets_activos:
-            if t.get('fecha_creacion'):
-                t['fecha_creacion'] = t['fecha_creacion'].isoformat()
+        'id', 'titulo', 'estado', 'fecha_creacion', 'fue_reasignado', 'tipo_incidencia',
+        'cuenta__nombre', 'creado_por__nombre',
+        'asignado_a__nombre', 'asignado_a__id',
+        'categoria__nombre', 'subcategoria__nombre',
+        'plataforma_bi',
+    )[:100])
+    for t in mis_tickets_activos:
+        if t.get('fecha_creacion'):
+            t['fecha_creacion'] = t['fecha_creacion'].isoformat()
 
     limite_48h = ahora_local - timedelta(hours=48)
     por_cerrar = qs_filtrado.filter(estado__in=['abierto', 'en_proceso']).count()
