@@ -29,6 +29,13 @@ export interface TicketListItemOut {
   plataforma_bi: string | null;
 }
 
+export interface AdjuntoOut {
+  id: number;
+  nombre_original: string;
+  url: string;
+  fecha_subida: string;
+}
+
 export interface TicketOut {
   id: number;
   titulo: string;
@@ -51,6 +58,7 @@ export interface TicketOut {
   subcategoria_nombre: string | null;
   plataforma_bi: string | null;
   comentarios: ComentarioOut[];
+  adjuntos: AdjuntoOut[];
 }
 
 export interface TicketCreateIn {
@@ -82,6 +90,7 @@ export interface ComentarioOut {
   contenido: string;
   fecha: string;
   interno: boolean;
+  adjuntos: AdjuntoOut[];
 }
 
 export interface ComentarioIn {

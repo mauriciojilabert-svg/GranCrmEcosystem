@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getTicket, cerrarTicket, agregarComentario, editTicket, getUsuarios } from '../lib/api';
+import { getTicket, cerrarTicket, agregarComentario, editTicket, getUsuarios, uploadComentarioAdjunto } from '../lib/api';
 import type { TicketOut, ComentarioOut, UsuarioOut } from '../apiTypes';
 import { Loading } from '../components/Loading';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -40,6 +40,7 @@ export function TicketDetailPage() {
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
+  const [commentFile, setCommentFile] = useState<File | null>(null);
   const [interno, setInterno] = useState(false);
   const [commentSaving, setCommentSaving] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
@@ -113,18 +114,35 @@ export function TicketDetailPage() {
     }
   }
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
+          setCommentFile(file);
+        }
+      }
+    }
+  };
+
   async function handleComentario(e: React.FormEvent) {
     e.preventDefault();
-    if (!commentText.trim()) return;
+    if (!commentText.trim() && !commentFile) return;
     setCommentSaving(true);
     setCommentError(null);
     try {
-      const com = await agregarComentario(ticketId, { contenido: commentText, interno });
-      setComentarios(prev => [...prev, com]);
-      setCommentText('');
-      setInterno(false);
+      const com = await agregarComentario(ticketId, { contenido: commentText || 'Adjunto', interno });
+      if (commentFile) {
+        await uploadComentarioAdjunto(ticketId, com.id, commentFile);
+      }
       const updated = await getTicket(ticketId);
       setTicket(updated);
+      setComentarios(updated.comentarios ?? []);
+      setCommentText('');
+      setCommentFile(null);
+      setInterno(false);
     } catch (e) {
       setCommentError(String((e as Error).message ?? e));
     } finally {
@@ -274,6 +292,37 @@ export function TicketDetailPage() {
                     <span key={i}>{line}<br /></span>
                   ))}
                 </div>
+
+                {/* Adjuntos del Ticket */}
+                {ticket.adjuntos && ticket.adjuntos.length > 0 && (
+                  <div className="mt-4 pt-4 border-top">
+                    <h6 className="fw-semibold mb-3" style={{ fontSize: 13 }}><i className="feather-paperclip me-2" />Archivos Adjuntos</h6>
+                    <div className="d-flex flex-wrap gap-3">
+                      {ticket.adjuntos.map(adj => {
+                        const isVideo = adj.nombre_original.toLowerCase().endsWith('.mp4');
+                        const isImg = adj.nombre_original.toLowerCase().match(/\.(jpeg|jpg|gif|png|webp)$/) != null;
+                        return (
+                          <div key={adj.id} className="p-2 border rounded bg-light" style={{ maxWidth: '100%', overflow: 'hidden' }}>
+                            <div className="d-flex align-items-center mb-2 gap-2" style={{ fontSize: 12 }}>
+                              <i className={isVideo ? "feather-video text-primary" : (isImg ? "feather-image text-success" : "feather-file text-secondary")} />
+                              <a href={adj.url} target="_blank" rel="noreferrer" className="text-dark fw-medium text-truncate" title={adj.nombre_original}>
+                                {adj.nombre_original}
+                              </a>
+                            </div>
+                            {isImg && (
+                              <a href={adj.url} target="_blank" rel="noreferrer">
+                                <img src={adj.url} alt={adj.nombre_original} style={{ maxHeight: 200, maxWidth: '100%', objectFit: 'contain', borderRadius: 4 }} />
+                              </a>
+                            )}
+                            {isVideo && (
+                              <video src={adj.url} controls style={{ maxHeight: 300, maxWidth: '100%', borderRadius: 4 }} />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -313,6 +362,18 @@ export function TicketDetailPage() {
                       {com.contenido.split('\n').map((line, i) => (
                         <span key={i}>{line}<br /></span>
                       ))}
+                      {/* Adjuntos del comentario */}
+                      {com.adjuntos && com.adjuntos.length > 0 && (
+                        <div className="mt-3">
+                          {com.adjuntos.map(adj => (
+                            <div key={adj.id} className="mt-2">
+                              <a href={adj.url} target="_blank" rel="noreferrer">
+                                <img src={adj.url} alt={adj.nombre_original} style={{ maxHeight: 150, maxWidth: '100%', objectFit: 'contain', borderRadius: 6, border: '1px solid #e2e8f0' }} />
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -324,11 +385,26 @@ export function TicketDetailPage() {
                     <textarea
                       rows={3}
                       className="form-control mb-3"
-                      placeholder="Escribe un comentario..."
+                      placeholder="Escribe un comentario o pega una imagen (Ctrl+V)..."
                       value={commentText}
                       onChange={e => setCommentText(e.target.value)}
-                      required
+                      onPaste={handlePaste}
                     />
+                    <div className="mb-3">
+                      <input 
+                        type="file" 
+                        className="form-control form-control-sm" 
+                        accept="image/*"
+                        onChange={e => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            setCommentFile(e.target.files[0]);
+                          } else {
+                            setCommentFile(null);
+                          }
+                        }}
+                      />
+                      {commentFile && <small className="text-success mt-1 d-block"><i className="feather-check-circle me-1"/>{commentFile.name} adjunto</small>}
+                    </div>
                     <div className="d-flex align-items-center justify-content-between">
                       {isAdmin ? (
                         <div className="form-check custom-checkbox mb-0">

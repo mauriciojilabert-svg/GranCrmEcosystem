@@ -1,7 +1,7 @@
 /**
  * Typed wrappers around apiFetch/apiUpload for every InciTrack API endpoint.
  */
-import { apiFetch } from '../api';
+import { apiFetch, apiUpload } from '../api';
 import type {
   DashboardStatsOut,
   TicketListItemOut,
@@ -23,6 +23,7 @@ import type {
   SLAOut,
   SLAIn,
   AvisoTIOut,
+  AdjuntoOut,
 } from '../apiTypes';
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
@@ -87,6 +88,20 @@ export function agregarComentario(ticketId: number, data: ComentarioIn): Promise
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+// ── Adjuntos ──────────────────────────────────────────────────────────────────
+
+export function uploadTicketAdjunto(ticketId: number, file: File): Promise<AdjuntoOut> {
+  const form = new FormData();
+  form.append('file', file);
+  return apiUpload<AdjuntoOut>(`tickets/${ticketId}/adjuntos/`, form);
+}
+
+export function uploadComentarioAdjunto(ticketId: number, comentarioId: number, file: File): Promise<AdjuntoOut> {
+  const form = new FormData();
+  form.append('file', file);
+  return apiUpload<AdjuntoOut>(`tickets/${ticketId}/comentarios/${comentarioId}/adjuntos/`, form);
 }
 
 // ── Lookups ───────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getLookupCategorias, getLookupCuentas, getLookupSLA, getTicket, createTicket, editTicket } from '../lib/api';
+import { getLookupCategorias, getLookupCuentas, getLookupSLA, getTicket, createTicket, editTicket, uploadTicketAdjunto } from '../lib/api';
 import { useFormSubmit } from '../hooks/useFormSubmit';
 import type { CategoriaLookupItem, CuentaLookupItem, SubcategoriaItem, SLALookupOut, TicketOut } from '../apiTypes';
 import { Loading } from '../components/Loading';
@@ -140,6 +140,15 @@ export function TicketFormPage({ mode }: Props) {
           subcategoria_id: subcategoriaId ? Number(subcategoriaId) : null,
           plataforma_bi: plataformaBi || null,
         });
+
+        const uploadPromises = fileInputRefs.map(ref => {
+          if (ref.current && ref.current.files && ref.current.files.length > 0) {
+            return uploadTicketAdjunto(result.id, ref.current.files[0]);
+          }
+          return Promise.resolve(null);
+        });
+        await Promise.allSettled(uploadPromises);
+
         navigate(`../${result.id}`, { relative: 'path' });
       } else {
         if (!ticketId) return;
@@ -388,7 +397,7 @@ export function TicketFormPage({ mode }: Props) {
                           type="file" 
                           ref={fileInputRefs[idx]}
                           className="form-control"
-                          accept="image/*,.pdf,.doc,.docx"
+                          accept="image/*,video/mp4,.pdf,.doc,.docx"
                         />
                       </div>
                     ))}
