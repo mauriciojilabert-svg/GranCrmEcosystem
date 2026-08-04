@@ -73,3 +73,12 @@
 8. **Botones de Toggle y Filtros de Dashboard**:
    - En lugar de redirigir, los interruptores visuales ("Ver todos") deben manejar parámetros en la URL (`searchParams.set('ver_todos', '1')`) para forzar al `useEffect` a recargar la API en la misma vista.
    - Modificar consultas backend en `api.py` para devolver `total_global` junto al `total_filtrado`, permitiendo a la UI mostrar la estadística de todos los tickets sin perder el filtro actual.
+9. **Filtros por Roles en Dashboards (Mis Pendientes)**:
+   - Cuidado con usar `asignado_a=usuario` genéricamente. Los Jefes y Usuarios normales **no reciben asignación de tickets** (solo los técnicos Admin TI). Si se aplica ese filtro a un Jefe, el dashboard quedará vacío (0 tickets).
+   - La lógica correcta es: `asignado_a=usuario` para Admin TI, `creado_por=usuario` para usuarios normales, y `qs_base` (filtrado por `tickets_visibles`) para Jefes/Supervisores para que vean toda la actividad de su equipo.
+10. **Compatibilidad Hacia Atrás y Migración a Producción (Legacy Support)**:
+    - Incitrack V2 cambia la clasificación dura (texto) por relaciones de llaves foráneas (Categorías y Subcategorías dinámicas). 
+    - Para no perder la historia, el modelo `Ticket` conservó el campo `tipo_incidencia` como "Legacy". Al hacer paso a producción, ejecutar `python manage.py migrate` es 100% seguro: inyectará las columnas nuevas sin borrar los datos viejos. El frontend y backend tienen propiedades (`clasificacion_display`) para leer ambos.
+11. **Formato Visual del ShellHeader (Frontend)**:
+    - El `ShellHeader` de `@duralux/ui` espera un texto amigable en el prop `rol` (ej. "Jefe de Cuenta" en vez de "jefe"). 
+    - Asegurarse siempre de mapear la variable `session.rol` con un `switch` antes de inyectarla al header, y preferir usar `session.nombre` por sobre el email cuando esté disponible.
