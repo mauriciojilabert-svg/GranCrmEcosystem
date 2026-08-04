@@ -11,9 +11,12 @@ INCITRACK_APP_ID = getattr(settings, 'GRANCRM_APP_ID', 4)
 
 # Mapeo rol GranCRM (JWT `rol`) -> rol InciTrack.
 _ROLE_MAP = {
-    "sa":        "admin",
-    "admin":     "admin",
-    "ejecutivo": "supervisor",
+    "sa":           "admin",
+    "admin":        "admin",        # Fallback
+    "admin_ti":     "admin",
+    "admin_cuenta": "jefe",
+    "supervisor":   "supervisor",
+    "ejecutivo":    "supervisor",   # Fallback legacy
 }
 
 
@@ -52,6 +55,21 @@ class GranCRMSessionMiddleware:
                 response = JsonResponse({"detail": f"Sesión expirada (sin acceso a app {INCITRACK_APP_ID})"}, status=401)
             else:
                 response = redirect(settings.GRANCRM_ORCHESTRATOR_URL + "/login/?error=sin_acceso_incitrack")
+            response.delete_cookie(
+                "grancrm_session",
+                domain=getattr(settings, "GRANCRM_COOKIE_DOMAIN", None),
+            )
+            return response
+
+        # Bloquear acceso a los Agentes (Opción 3 de arquitectura)
+        grancrm_rol = payload.get("rol", "")
+        base_rol = grancrm_rol.split("_")[0] if "_" in grancrm_rol else grancrm_rol
+        if base_rol == "agente":
+            print(f"grancrm_session: *** ACCESO DENEGADO (Rol Agente no permitido) ***", flush=True)
+            if request.path.startswith('/incitrack/api/'):
+                response = JsonResponse({"detail": "Acceso denegado: El perfil Agente no está autorizado en InciTrack."}, status=403)
+            else:
+                response = redirect(settings.GRANCRM_ORCHESTRATOR_URL + "/login/?error=acceso_denegado_agente")
             response.delete_cookie(
                 "grancrm_session",
                 domain=getattr(settings, "GRANCRM_COOKIE_DOMAIN", None),
