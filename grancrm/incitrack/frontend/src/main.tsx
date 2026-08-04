@@ -29,6 +29,16 @@ function DevShellChrome({ props, email, rol }: { props: GranCrmRemoteProps; emai
     return -1;
   }
 
+  const formatRole = (r: string) => {
+    switch (r) {
+      case 'sa': return 'Super Administrador';
+      case 'admin': return 'Admin TI';
+      case 'jefe': return 'Jefe de Cuenta';
+      case 'supervisor': return 'Supervisor';
+      default: return 'Usuario';
+    }
+  };
+
   // same logic for active state as in Shell
   const mainItems = [
     { label: 'Dashboard', icon: 'airplay', href: '/', active: matchLength('/') >= 0 },
@@ -75,9 +85,9 @@ function DevShellChrome({ props, email, rol }: { props: GranCrmRemoteProps; emai
       )}
 
       <ShellHeader
-        nombre={email}
+        nombre={props.session.nombre || email}
         email={email}
-        rol={rol}
+        rol={formatRole(rol)}
         viewAsSa={false}
         cuentaNombre={null}
         cuentas={[]}
@@ -146,7 +156,7 @@ async function bootstrap() {
       user_id:   me.user_id  ?? 0,
       email:     me.email    ?? '',
       nombre:    me.nombre   ?? me.email ?? '',
-      rol:      (me.rol as GranCrmSession['rol']) || 'ejecutivo',
+      rol:      (me.rol as GranCrmSession['rol']) || 'usuario',
       tenant_id: me.tenant_id ?? 'dev',
       apps: [],
     },
