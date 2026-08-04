@@ -60,7 +60,7 @@ export function SLAListPage() {
       <PageHeader
         title="Configuración SLA"
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'SLA' }
         ]}
       >

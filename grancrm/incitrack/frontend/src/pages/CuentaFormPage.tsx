@@ -92,7 +92,7 @@ export function CuentaFormPage({ mode }: Props) {
       <PageHeader
         title={mode === 'nuevo' ? 'Nueva Cuenta' : 'Editar Cuenta'}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Cuentas', href: '..' },
           { label: mode === 'nuevo' ? 'Nueva' : 'Editar' }
         ]}

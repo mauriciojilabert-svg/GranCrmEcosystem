@@ -116,7 +116,7 @@ export function NotificacionFormPage({ mode }: Props) {
       <PageHeader
         title={mode === 'nuevo' ? 'Nueva Configuración' : 'Editar Configuración'}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Notificaciones', href: '..' },
           { label: mode === 'nuevo' ? 'Nueva' : 'Editar' }
         ]}

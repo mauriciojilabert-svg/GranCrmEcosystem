@@ -69,7 +69,7 @@ export function CuentasListPage() {
       <PageHeader
         title="Cuentas"
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Cuentas' }
         ]}
       >

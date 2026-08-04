@@ -60,7 +60,7 @@ export function UsuariosListPage() {
       <PageHeader
         title="Usuarios"
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Usuarios' }
         ]}
       >

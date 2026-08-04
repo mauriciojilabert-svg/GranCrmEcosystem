@@ -184,7 +184,7 @@ export function TicketDetailPage() {
           </span>
         }
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Tickets', href: '..' },
           { label: `#${ticket.id}` }
         ]}

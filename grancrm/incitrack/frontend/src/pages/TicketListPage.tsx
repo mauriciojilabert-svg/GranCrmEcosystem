@@ -124,7 +124,7 @@ export function TicketListPage() {
       <PageHeader
         title="Resumen de Tickets"
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Tickets' }
         ]}
       >

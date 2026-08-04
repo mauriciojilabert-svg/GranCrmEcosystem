@@ -91,7 +91,7 @@ export function UsuarioFormPage({ mode }: Props) {
       <PageHeader
         title={mode === 'nuevo' ? 'Nuevo Usuario' : 'Editar Usuario'}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Usuarios', href: '..' },
           { label: mode === 'nuevo' ? 'Nuevo' : 'Editar' }
         ]}

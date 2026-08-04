@@ -141,7 +141,7 @@ export function SLAFormPage({ mode }: Props) {
       <PageHeader
         title={mode === 'nuevo' ? 'Nuevo SLA' : 'Editar SLA'}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'SLA', href: '..' },
           { label: mode === 'nuevo' ? 'Nuevo' : 'Editar' }
         ]}

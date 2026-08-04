@@ -178,7 +178,7 @@ export function TicketFormPage({ mode }: Props) {
       <PageHeader
         title={mode === 'nuevo' ? 'Nuevo Ticket' : 'Editar Ticket'}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Tickets', href: mode === 'nuevo' ? '..' : '../..' },
           ...(mode === 'editar' && ticketId ? [{ label: `#${ticketId}`, href: '..' }] : []),
           { label: mode === 'nuevo' ? 'Nuevo' : 'Editar' }

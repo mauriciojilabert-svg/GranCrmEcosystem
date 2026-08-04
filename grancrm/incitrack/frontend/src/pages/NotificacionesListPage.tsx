@@ -54,7 +54,7 @@ export function NotificacionesListPage() {
       <PageHeader
         title="Notificaciones"
         breadcrumbs={[
-          { label: 'Dashboard', href: '/' },
+          { label: 'Dashboard', href: '/incitrack/' },
           { label: 'Notificaciones de Servicio' }
         ]}
       >

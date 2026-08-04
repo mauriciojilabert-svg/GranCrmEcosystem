@@ -195,7 +195,7 @@ export function DashboardPage() {
       <PageHeader
         title={!verTodos ? `Mis Tickets (${session?.nombre})` : "Vista General Global"}
         breadcrumbs={[
-          { label: 'Inicio', href: '/' },
+          { label: 'Inicio', href: '/incitrack/' },
           { label: !verTodos ? 'Mis Tickets' : 'Vista General Global' }
         ]}
       >
