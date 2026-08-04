@@ -104,6 +104,7 @@ class TicketOut(Schema):
     subcategoria_nombre: Optional[str] = None
     plataforma_bi: Optional[str] = None
     comentarios: list[ComentarioOut] = []
+    adjuntos: list[AdjuntoOut] = []
 
 
 class TicketCreateIn(Schema):
@@ -131,6 +132,13 @@ class TicketEditIn(Schema):
 # COMENTARIO
 # ══════════════════════════════════════════════════════════════════════════════
 
+class AdjuntoOut(Schema):
+    id: int
+    nombre_original: str
+    url: str
+    fecha_subida: datetime
+
+
 class ComentarioOut(Schema):
     id: int
     ticket_id: int
@@ -139,6 +147,7 @@ class ComentarioOut(Schema):
     contenido: str
     fecha: datetime
     interno: bool
+    adjuntos: list[AdjuntoOut] = []
 
 
 class ComentarioIn(Schema):

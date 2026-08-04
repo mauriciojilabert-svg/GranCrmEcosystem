@@ -34,7 +34,7 @@ def _grancrm_auth(request: HttpRequest):
 from .models import (
     Ticket, Cuenta, Usuario, Comentario,
     NotificacionServicio, Categoria, Subcategoria, ConfiguracionSLA,
-    AvisoTI, TicketAudit,
+    AvisoTI, TicketAudit, Adjunto,
 )
 from .mixins import (
     tickets_visibles, cuentas_visibles, puede_ver_ticket,
@@ -51,7 +51,7 @@ from .schemas import (
     SLAOut, SLAIn,
     SubcategoriasOut, SLALookupOut,
     CategoriaLookupItem, CuentaLookupItem,
-    AvisoTIOut, AvisoTIIn,
+    AvisoTIOut, AvisoTIIn, AdjuntoOut
 )
 
 grcrm_auth = _grancrm_auth
@@ -359,7 +359,7 @@ def ticket_detail(request: HttpRequest, ticket_id: int):
         return 403, {"detail": "Sin acceso a este ticket"}
 
     # Mirror ticket_detalle.html: internal comments only visible to admins
-    comentarios_qs = ticket.comentarios.select_related('autor').order_by('fecha')
+    comentarios_qs = ticket.comentarios.select_related('autor').prefetch_related('adjuntos').order_by('fecha')
     if not usuario.es_admin:
         comentarios_qs = comentarios_qs.filter(interno=False)
 
@@ -372,8 +372,25 @@ def ticket_detail(request: HttpRequest, ticket_id: int):
             contenido=c.contenido,
             fecha=c.fecha,
             interno=c.interno,
+            adjuntos=[
+                AdjuntoOut(
+                    id=a.id,
+                    nombre_original=a.nombre_original,
+                    url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
+                    fecha_subida=a.fecha_subida
+                ) for a in c.adjuntos.all()
+            ]
         )
         for c in comentarios_qs
+    ]
+    
+    ticket_adjuntos_out = [
+        AdjuntoOut(
+            id=a.id,
+            nombre_original=a.nombre_original,
+            url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
+            fecha_subida=a.fecha_subida
+        ) for a in ticket.adjuntos.filter(comentario__isnull=True)
     ]
 
     return 200, TicketOut(
@@ -399,6 +416,7 @@ def ticket_detail(request: HttpRequest, ticket_id: int):
         subcategoria_nombre=ticket.subcategoria.nombre if ticket.subcategoria else None,
         plataforma_bi=ticket.plataforma_bi,
         comentarios=comentarios_out,
+        adjuntos=ticket_adjuntos_out,
     )
 
 
@@ -669,6 +687,78 @@ def comentario_agregar(request: HttpRequest, ticket_id: int, data: ComentarioIn)
         contenido=comentario.contenido,
         fecha=comentario.fecha,
         interno=comentario.interno,
+        adjuntos=[]
+    )
+
+from ninja import File
+from ninja.files import UploadedFile
+
+@api.post("/tickets/{ticket_id}/adjuntos/", response={201: AdjuntoOut, 401: dict, 403: dict, 404: dict}, tags=["tickets"])
+def ticket_adjunto_upload(request: HttpRequest, ticket_id: int, file: UploadedFile = File(...)):
+    """Sube un adjunto al ticket."""
+    if not _require_auth(request):
+        return 401, {"detail": "No autenticado"}
+    usuario = _get_user(request)
+    if not usuario:
+        return 401, {"detail": "No autenticado"}
+
+    ticket = get_object_or_404(Ticket, pk=ticket_id)
+    if not puede_ver_ticket(usuario, ticket):
+        return 403, {"detail": "Sin acceso a este ticket"}
+    
+    # Validar que es imagen o video
+    if not file.content_type.startswith('image/') and not file.content_type.startswith('video/'):
+        return 400, {"detail": "Solo se permiten imágenes o videos en el ticket."}
+
+    adjunto = Adjunto(
+        ticket=ticket,
+        nombre_original=file.name,
+        nombre_guardado=file.name,
+        archivo=file
+    )
+    adjunto.save()
+    
+    return 201, AdjuntoOut(
+        id=adjunto.id,
+        nombre_original=adjunto.nombre_original,
+        url=request.build_absolute_uri(adjunto.archivo.url) if adjunto.archivo else "",
+        fecha_subida=adjunto.fecha_subida
+    )
+
+@api.post("/tickets/{ticket_id}/comentarios/{comentario_id}/adjuntos/", response={201: AdjuntoOut, 400: dict, 401: dict, 403: dict, 404: dict}, tags=["comentarios"])
+def comentario_adjunto_upload(request: HttpRequest, ticket_id: int, comentario_id: int, file: UploadedFile = File(...)):
+    """Sube un adjunto a un comentario."""
+    if not _require_auth(request):
+        return 401, {"detail": "No autenticado"}
+    usuario = _get_user(request)
+    if not usuario:
+        return 401, {"detail": "No autenticado"}
+
+    ticket = get_object_or_404(Ticket, pk=ticket_id)
+    if not puede_ver_ticket(usuario, ticket):
+        return 403, {"detail": "Sin acceso a este ticket"}
+        
+    comentario = get_object_or_404(Comentario, pk=comentario_id, ticket=ticket)
+    if comentario.autor != usuario and not usuario.es_admin:
+        return 403, {"detail": "Solo puedes adjuntar archivos a tus propios comentarios"}
+
+    if not file.content_type.startswith('image/'):
+        return 400, {"detail": "En las respuestas solo se permiten imágenes (fotografías o prints)."}
+
+    adjunto = Adjunto(
+        ticket=ticket,
+        comentario=comentario,
+        nombre_original=file.name,
+        nombre_guardado=file.name,
+        archivo=file
+    )
+    adjunto.save()
+    
+    return 201, AdjuntoOut(
+        id=adjunto.id,
+        nombre_original=adjunto.nombre_original,
+        url=request.build_absolute_uri(adjunto.archivo.url) if adjunto.archivo else "",
+        fecha_subida=adjunto.fecha_subida
     )
 
 
