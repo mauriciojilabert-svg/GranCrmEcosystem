@@ -138,10 +138,14 @@ class GranCRMSessionMiddleware:
         nombre = payload.get("nombre", email.split("@")[0])
         grancrm_rol = payload.get("rol", "")
         
-        # Eliminar el sufijo si existe (ej: "admin_0" -> "admin")
-        base_rol = grancrm_rol.split("_")[0] if "_" in grancrm_rol else grancrm_rol
+        # Try full role first, if not found, strip numeric suffix if present (e.g. admin_0 -> admin)
+        import re
+        base_rol = re.sub(r'_\d+$', '', grancrm_rol)
         
-        it_rol = _ROLE_MAP.get(base_rol, "supervisor")
+        it_rol = _ROLE_MAP.get(grancrm_rol)
+        if not it_rol:
+            it_rol = _ROLE_MAP.get(base_rol, "supervisor")
+
         is_super = base_rol == "sa"
 
         user, created = User.objects.get_or_create(

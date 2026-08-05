@@ -38,8 +38,11 @@ class VisibilityTest(TestCase):
         self.jefe = Usuario.objects.create(email="jefe@test.com", username="jefe@test.com", rol="jefe")
         self.cuenta_c.jefe = self.jefe
         self.cuenta_c.save()
-        # Jefe is also boss of supervisor through cuenta_c
-        self.cuenta_c.supervisores.add(self.supervisor)
+        # Jefe test will use a separate supervisor
+        self.supervisor_jefe = Usuario.objects.create(email="supjefe@test.com", username="supjefe@test.com", rol="supervisor")
+        self.cuenta_c.supervisores.add(self.supervisor_jefe)
+        self.cuenta_x = Cuenta.objects.create(nombre="Cuenta X")
+        self.cuenta_x.supervisores.add(self.supervisor_jefe)
 
         self.admin = Usuario.objects.create(email="admin@test.com", username="admin@test.com", rol="admin")
 
@@ -64,10 +67,10 @@ class VisibilityTest(TestCase):
 
     def test_jefe_sees_direct_plus_supervisor_cuentas(self):
         cuentas = cuentas_visibles(self.jefe)
-        self.assertEqual(cuentas.count(), 3)
-        self.assertIn(self.cuenta_a, cuentas)
-        self.assertIn(self.cuenta_b, cuentas)
+        self.assertEqual(cuentas.count(), 2)
         self.assertIn(self.cuenta_c, cuentas)
+        self.assertIn(self.cuenta_x, cuentas)
+        self.assertNotIn(self.cuenta_a, cuentas)
 
     def test_supervisor_lookup_cuentas_api_filtered(self):
         client = _auth_client(self.supervisor)
@@ -92,12 +95,13 @@ class VisibilityTest(TestCase):
         self.assertNotIn("Ticket C", titulos)
 
     def test_supervisor_cannot_create_ticket_in_other_cuenta(self):
+        cuenta_x = Cuenta.objects.create(nombre="Cuenta X")
         client = _auth_client(self.supervisor)
         payload = {
             "titulo": "New",
             "descripcion": "Desc",
             "prioridad": "media",
-            "cuenta_id": self.cuenta_c.pk,  # Not assigned
+            "cuenta_id": cuenta_x.pk,  # Not assigned
         }
         res = client.post("/incitrack/api/v1/tickets/", data=payload, content_type="application/json")
         self.assertEqual(res.status_code, 403)
