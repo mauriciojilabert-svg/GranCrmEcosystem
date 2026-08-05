@@ -345,7 +345,7 @@ def ticket_list(
     return 200, result
 
 
-@api.get("/tickets/{ticket_id}/", response={200: TicketOut, 401: dict, 403: dict, 404: dict}, tags=["tickets"])
+@api.get("/tickets/{ticket_id}/", response={200: TicketOut, 401: dict, 403: dict, 404: dict, 500: dict}, tags=["tickets"])
 def ticket_detail(request: HttpRequest, ticket_id: int):
     """Detalle de un ticket. Aplica puede_ver_ticket."""
     if not _require_auth(request):
@@ -358,66 +358,72 @@ def ticket_detail(request: HttpRequest, ticket_id: int):
     if not puede_ver_ticket(usuario, ticket):
         return 403, {"detail": "Sin acceso a este ticket"}
 
-    # Mirror ticket_detalle.html: internal comments only visible to admins
-    comentarios_qs = ticket.comentarios.select_related('autor').prefetch_related('adjuntos').order_by('fecha')
-    if not usuario.es_admin:
-        comentarios_qs = comentarios_qs.filter(interno=False)
+    try:
+        # Mirror ticket_detalle.html: internal comments only visible to admins
+        comentarios_qs = ticket.comentarios.select_related('autor').prefetch_related('adjuntos').order_by('fecha')
+        if not usuario.es_admin:
+            comentarios_qs = comentarios_qs.filter(interno=False)
 
-    comentarios_out = [
-        ComentarioOut(
-            id=c.id,
-            ticket_id=c.ticket_id,
-            autor_id=c.autor_id,
-            autor_nombre=c.autor.nombre,
-            contenido=c.contenido,
-            fecha=c.fecha,
-            interno=c.interno,
-            adjuntos=[
-                AdjuntoOut(
-                    id=a.id,
-                    nombre_original=a.nombre_original,
-                    url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
-                    fecha_subida=a.fecha_subida
-                ) for a in c.adjuntos.all()
-            ]
+        comentarios_out = [
+            ComentarioOut(
+                id=c.id,
+                ticket_id=c.ticket_id,
+                autor_id=c.autor_id,
+                autor_nombre=c.autor.nombre,
+                contenido=c.contenido,
+                fecha=c.fecha,
+                interno=c.interno,
+                adjuntos=[
+                    AdjuntoOut(
+                        id=a.id,
+                        nombre_original=a.nombre_original,
+                        url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
+                        fecha_subida=a.fecha_subida
+                    ) for a in c.adjuntos.all()
+                ]
+            )
+            for c in comentarios_qs
+        ]
+        
+        ticket_adjuntos_out = [
+            AdjuntoOut(
+                id=a.id,
+                nombre_original=a.nombre_original,
+                url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
+                fecha_subida=a.fecha_subida
+            ) for a in ticket.adjuntos.filter(comentario__isnull=True)
+        ]
+
+        return 200, TicketOut(
+            id=ticket.id,
+            titulo=ticket.titulo,
+            descripcion=ticket.descripcion,
+            estado=ticket.estado,
+            prioridad=ticket.prioridad,
+            fecha_creacion=ticket.fecha_creacion,
+            fecha_actualizacion=ticket.fecha_actualizacion,
+            fecha_resolucion=ticket.fecha_resolucion,
+            tipo_incidencia=ticket.tipo_incidencia,
+            fue_reasignado=ticket.fue_reasignado,
+            cuenta_id=ticket.cuenta_id,
+            cuenta_nombre=ticket.cuenta.nombre if ticket.cuenta else None,
+            creado_por_id=ticket.creado_por_id,
+            creado_por_nombre=ticket.creado_por.nombre if ticket.creado_por else None,
+            asignado_a_id=ticket.asignado_a_id,
+            asignado_a_nombre=ticket.asignado_a.nombre if ticket.asignado_a else None,
+            categoria_id=ticket.categoria_id,
+            categoria_nombre=ticket.categoria.nombre if ticket.categoria else None,
+            subcategoria_id=ticket.subcategoria_id,
+            subcategoria_nombre=ticket.subcategoria.nombre if ticket.subcategoria else None,
+            plataforma_bi=ticket.plataforma_bi or None,
+            comentarios=comentarios_out,
+            adjuntos=ticket_adjuntos_out,
         )
-        for c in comentarios_qs
-    ]
-    
-    ticket_adjuntos_out = [
-        AdjuntoOut(
-            id=a.id,
-            nombre_original=a.nombre_original,
-            url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
-            fecha_subida=a.fecha_subida
-        ) for a in ticket.adjuntos.filter(comentario__isnull=True)
-    ]
-
-    return 200, TicketOut(
-        id=ticket.id,
-        titulo=ticket.titulo,
-        descripcion=ticket.descripcion,
-        estado=ticket.estado,
-        prioridad=ticket.prioridad,
-        fecha_creacion=ticket.fecha_creacion,
-        fecha_actualizacion=ticket.fecha_actualizacion,
-        fecha_resolucion=ticket.fecha_resolucion,
-        tipo_incidencia=ticket.tipo_incidencia,
-        fue_reasignado=ticket.fue_reasignado,
-        cuenta_id=ticket.cuenta_id,
-        cuenta_nombre=ticket.cuenta.nombre if ticket.cuenta else None,
-        creado_por_id=ticket.creado_por_id,
-        creado_por_nombre=ticket.creado_por.nombre if ticket.creado_por else None,
-        asignado_a_id=ticket.asignado_a_id,
-        asignado_a_nombre=ticket.asignado_a.nombre if ticket.asignado_a else None,
-        categoria_id=ticket.categoria_id,
-        categoria_nombre=ticket.categoria.nombre if ticket.categoria else None,
-        subcategoria_id=ticket.subcategoria_id,
-        subcategoria_nombre=ticket.subcategoria.nombre if ticket.subcategoria else None,
-        plataforma_bi=ticket.plataforma_bi,
-        comentarios=comentarios_out,
-        adjuntos=ticket_adjuntos_out,
-    )
+    except Exception as exc:
+        import traceback
+        print(f"ERROR ticket_detail #{ticket_id}: {exc}", flush=True)
+        traceback.print_exc()
+        return 500, {"detail": f"Error interno: {exc}"}
 
 
 @api.post("/tickets/", response={201: TicketOut, 400: dict, 401: dict}, tags=["tickets"])
