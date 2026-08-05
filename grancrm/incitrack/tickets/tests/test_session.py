@@ -43,6 +43,9 @@ class SessionMiddlewareTest(TestCase):
         middleware = SessionMiddleware(self.get_response)
         middleware.process_request(request)
         request.session.save()
+        from django.contrib.auth.middleware import AuthenticationMiddleware
+        auth_middleware = AuthenticationMiddleware(self.get_response)
+        auth_middleware.process_request(request)
 
     def test_jwt_email_mismatch_triggers_resync(self):
         """
