@@ -853,6 +853,10 @@ def lookup_cuentas(request: HttpRequest):
         return 401, {"detail": "No autenticado"}
 
     qs = cuentas_visibles(usuario).filter(activa=True).order_by('nombre')
+    
+    print(f"DEBUG lookup_cuentas: user={usuario.email}, rol={usuario.rol}, es_admin={usuario.es_admin}, es_jefe={usuario.es_jefe}", flush=True)
+    print(f"DEBUG lookup_cuentas: cuentas retornadas = {qs.count()}", flush=True)
+
     return 200, [
         CuentaLookupItem(id=c.pk, nombre=c.nombre)
         for c in qs
@@ -897,10 +901,17 @@ def usuario_crear(request: HttpRequest, data: UsuarioIn):
     )
     u.set_unusable_password()
     u.save()
+
+    # Asignar cuentas si es supervisor
+    if u.rol == 'supervisor' and data.cuentas_asignadas_ids:
+        cuentas_sel_ids = set(data.cuentas_asignadas_ids)
+        for cuenta in Cuenta.objects.filter(id__in=cuentas_sel_ids, activa=True):
+            cuenta.supervisores.add(u)
+
     return 201, UsuarioOut(
         id=u.id, nombre=u.nombre, email=u.email,
         rol=u.rol, activo=u.activo, fecha_creacion=u.fecha_creacion,
-        cuentas_asignadas_ids=[],
+        cuentas_asignadas_ids=list(u.cuentas_asignadas.values_list('id', flat=True)),
     )
 
 

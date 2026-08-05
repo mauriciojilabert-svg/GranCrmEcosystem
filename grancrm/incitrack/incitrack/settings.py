@@ -145,6 +145,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://172.20.21.249:3002',
 ]
 
+SESSION_COOKIE_NAME = 'incitrack_sessionid'
+
 # ─── LOGGING ─────────────────────────────────────────────────────────────────
 LOGGING = {
     'version': 1,
