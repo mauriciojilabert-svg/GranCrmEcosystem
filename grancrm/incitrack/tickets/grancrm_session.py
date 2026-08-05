@@ -90,8 +90,17 @@ class GranCRMSessionMiddleware:
         # Compartir payload con ninja_auth para evitar doble validacion
         request.jwt_payload = payload
 
-        # Sincronizar usuario+rol una vez por sesión (cubre usuarios ya creados).
-        if not request.session.get("_grancrm_synced"):
+        # Sincronizar usuario+rol: SIEMPRE re-sincronizar si el email del JWT
+        # no coincide con el usuario actualmente logueado en la sesión de Django.
+        # Esto evita que la sesión de un usuario anterior (ej: admin) persista
+        # cuando otro usuario (ej: supervisor) inicia sesión.
+        current_email = getattr(request.user, 'email', None) if hasattr(request, 'user') and request.user and request.user.is_authenticated else None
+        jwt_email = payload.get("email", "")
+        
+        if current_email != jwt_email:
+            print(f"grancrm_session: RE-SYNC necesario: sesion={current_email} vs jwt={jwt_email}", flush=True)
+            self._sync_user(request, payload)
+        elif not request.session.get("_grancrm_synced"):
             self._sync_user(request, payload)
             request.session["_grancrm_synced"] = True
 
