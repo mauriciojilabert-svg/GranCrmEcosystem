@@ -100,6 +100,7 @@ class GranCRMSessionMiddleware:
         if current_email != jwt_email:
             print(f"grancrm_session: RE-SYNC necesario: sesion={current_email} vs jwt={jwt_email}", flush=True)
             self._sync_user(request, payload)
+            request.session["_grancrm_synced"] = True
         elif not request.session.get("_grancrm_synced"):
             self._sync_user(request, payload)
             request.session["_grancrm_synced"] = True
