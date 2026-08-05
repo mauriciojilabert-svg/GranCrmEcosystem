@@ -686,7 +686,7 @@ def comentario_agregar(request: HttpRequest, ticket_id: int, data: ComentarioIn)
         contenido=data.contenido,
         interno=interno,
     )
-    ticket.save(update_fields=['fecha_actualizacion'])
+    ticket.save()
 
     return 201, ComentarioOut(
         id=comentario.id,
@@ -716,16 +716,19 @@ def ticket_adjunto_upload(request: HttpRequest, ticket_id: int, file: UploadedFi
         return 403, {"detail": "Sin acceso a este ticket"}
     
     # Validar que es imagen o video
-    if not file.content_type.startswith('image/') and not file.content_type.startswith('video/'):
+    content_type = getattr(file, 'content_type', '') or ''
+    if not content_type.startswith('image/') and not content_type.startswith('video/'):
         return 400, {"detail": "Solo se permiten imágenes o videos en el ticket."}
 
+    file_name = getattr(file, 'name', '') or 'adjunto'
     adjunto = Adjunto(
         ticket=ticket,
-        nombre_original=file.name,
-        nombre_guardado=file.name,
+        nombre_original=file_name,
+        nombre_guardado=file_name,
         archivo=file
     )
     adjunto.save()
+    adjunto.refresh_from_db()
     
     return 201, AdjuntoOut(
         id=adjunto.id,
@@ -751,17 +754,20 @@ def comentario_adjunto_upload(request: HttpRequest, ticket_id: int, comentario_i
     if comentario.autor != usuario and not usuario.es_admin:
         return 403, {"detail": "Solo puedes adjuntar archivos a tus propios comentarios"}
 
-    if not file.content_type.startswith('image/'):
+    content_type = getattr(file, 'content_type', '') or ''
+    if not content_type.startswith('image/'):
         return 400, {"detail": "En las respuestas solo se permiten imágenes (fotografías o prints)."}
 
+    file_name = getattr(file, 'name', '') or 'adjunto'
     adjunto = Adjunto(
         ticket=ticket,
         comentario=comentario,
-        nombre_original=file.name,
-        nombre_guardado=file.name,
+        nombre_original=file_name,
+        nombre_guardado=file_name,
         archivo=file
     )
     adjunto.save()
+    adjunto.refresh_from_db()
     
     return 201, AdjuntoOut(
         id=adjunto.id,
