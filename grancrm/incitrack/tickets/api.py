@@ -284,7 +284,7 @@ def ticket_list(
     if solo_mis_tickets:
         qs = qs.filter(asignado_a=usuario)
 
-    if not usuario.es_admin:
+    if not usuario.es_admin and not usuario.es_jefe and usuario.rol != 'supervisor':
         qs = qs.filter(creado_por=usuario)
 
     if estado:
@@ -426,7 +426,7 @@ def ticket_detail(request: HttpRequest, ticket_id: int):
         return 500, {"detail": f"Error interno: {exc}"}
 
 
-@api.post("/tickets/", response={201: TicketOut, 400: dict, 401: dict}, tags=["tickets"])
+@api.post("/tickets/", response={201: TicketOut, 400: dict, 401: dict, 403: dict}, tags=["tickets"])
 def ticket_create(request: HttpRequest, data: TicketCreateIn):
     """Crea un nuevo ticket. Mirrors TicketNuevoView including auto-assign + email notification."""
     if not _require_auth(request):

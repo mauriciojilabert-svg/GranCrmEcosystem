@@ -88,8 +88,8 @@ class VisibilityTest(TestCase):
         res = client.get("/incitrack/api/v1/tickets/")
         self.assertEqual(res.status_code, 200)
         data = res.json()
-        self.assertEqual(len(data["tickets_recientes"]), 2)
-        titulos = [t["titulo"] for t in data["tickets_recientes"]]
+        self.assertEqual(len(data), 2)
+        titulos = [t["titulo"] for t in data]
         self.assertIn("Ticket A", titulos)
         self.assertIn("Ticket B", titulos)
         self.assertNotIn("Ticket C", titulos)
