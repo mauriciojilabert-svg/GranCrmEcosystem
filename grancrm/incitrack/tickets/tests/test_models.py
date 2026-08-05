@@ -49,7 +49,7 @@ class ModelsTest(TestCase):
         ticket_none = Ticket.objects.create(
             titulo="T3", descripcion="D3", cuenta=self.cuenta, creado_por=self.admin
         )
-        self.assertEqual(ticket_none.clasificacion_display, "Sin Clasificar")
+        self.assertEqual(ticket_none.clasificacion_display, "—")
 
     def test_sla_tiempo_display_formats(self):
         # We need to test the logic of SLA formatting which might be in the model.

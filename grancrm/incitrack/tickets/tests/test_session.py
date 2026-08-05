@@ -120,7 +120,7 @@ class SessionMiddlewareTest(TestCase):
 
     def test_agente_role_blocked(self):
         token = _make_jwt({"email": "agente@example.com", "rol": "agente"})
-        request = self.factory.get("/")
+        request = self.factory.get("/incitrack/api/v1/tickets/")
         self._add_session(request)
         request.COOKIES["grancrm_session"] = token
 

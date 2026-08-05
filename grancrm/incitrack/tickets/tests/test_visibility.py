@@ -88,20 +88,20 @@ class VisibilityTest(TestCase):
         res = client.get("/incitrack/api/v1/tickets/")
         self.assertEqual(res.status_code, 200)
         data = res.json()
-        self.assertEqual(len(data["items"]), 2)
-        titulos = [t["titulo"] for t in data["items"]]
+        self.assertEqual(len(data["tickets_recientes"]), 2)
+        titulos = [t["titulo"] for t in data["tickets_recientes"]]
         self.assertIn("Ticket A", titulos)
         self.assertIn("Ticket B", titulos)
         self.assertNotIn("Ticket C", titulos)
 
     def test_supervisor_cannot_create_ticket_in_other_cuenta(self):
-        cuenta_x = Cuenta.objects.create(nombre="Cuenta X")
+        cuenta_y = Cuenta.objects.create(nombre="Cuenta Y")
         client = _auth_client(self.supervisor)
         payload = {
             "titulo": "New",
             "descripcion": "Desc",
             "prioridad": "media",
-            "cuenta_id": cuenta_x.pk,  # Not assigned
+            "cuenta_id": cuenta_y.pk,  # Not assigned
         }
         res = client.post("/incitrack/api/v1/tickets/", data=payload, content_type="application/json")
         self.assertEqual(res.status_code, 403)
