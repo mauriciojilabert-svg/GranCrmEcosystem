@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Link } from 'react-router-dom';
 interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -25,7 +25,7 @@ export function PageHeader({ title, breadcrumbs = [], children }: PageHeaderProp
           <ul className="breadcrumb">
             {breadcrumbs.map((crumb, i) =>
               crumb.href
-                ? <li key={i} className="breadcrumb-item"><a href={crumb.href}>{crumb.label}</a></li>
+                ? <li key={i} className="breadcrumb-item"><Link to={crumb.href} relative="path">{crumb.label}</Link></li>
                 : <li key={i} className="breadcrumb-item">{crumb.label}</li>
             )}
           </ul>
