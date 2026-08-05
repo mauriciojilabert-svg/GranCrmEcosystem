@@ -436,6 +436,9 @@ def ticket_create(request: HttpRequest, data: TicketCreateIn):
         return 401, {"detail": "No autenticado"}
 
     cuenta = get_object_or_404(Cuenta, pk=data.cuenta_id)
+    from .mixins import cuentas_visibles
+    if not cuentas_visibles(usuario).filter(pk=cuenta.pk).exists():
+        return 403, {"detail": "Sin acceso a esta cuenta"}
     categoria = get_object_or_404(Categoria, pk=data.categoria_id) if data.categoria_id else None
     subcategoria = get_object_or_404(Subcategoria, pk=data.subcategoria_id) if data.subcategoria_id else None
 
