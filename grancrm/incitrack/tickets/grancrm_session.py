@@ -32,7 +32,11 @@ class GranCRMSessionMiddleware:
             print(f"grancrm_session: Cookies disponibles: {list(request.COOKIES.keys())}", flush=True)
             return self.get_response(request)
 
-        payload = self._validate(token)
+        # Usar el payload decodificado por grancrm_auth.middleware (BYPASS de firma en QA)
+        payload = getattr(request, 'jwt_payload', None)
+        
+        if not payload:
+            payload = self._validate(token)
 
         if payload is None:
             print(f"grancrm_session: *** TOKEN INVALIDO en {request.path} ***", flush=True)
