@@ -99,16 +99,21 @@ class GranCRMSessionMiddleware:
             if s:
                 secrets_to_try.extend([s, s + '\r', s + '\n', s + '\r\n', s.strip()])
 
-        print("grancrm_session: HARDCODE BYPASS ACTIVADO", flush=True)
-        payload = {
-            "email": "mauriciocaceres@in-touchcrm.cl",
-            "rol": "sa",
-            "apps": [1, 2, 3, 4, 5],
-            "nombre": "Mauricio Bypass"
-        }
-        return payload
-        
-        return payload
+        for s in secrets_to_try:
+            try:
+                # Decodificar el JWT. Orquestador usa HS256.
+                payload = jwt.decode(token, s, algorithms=["HS256"])
+                return payload
+            except jwt.ExpiredSignatureError:
+                print("grancrm_session: Token expirado.", flush=True)
+                return None
+            except jwt.InvalidTokenError as e:
+                # Si falla, probar con el siguiente secreto de la lista
+                print(f"grancrm_session: Intento de decodificar falló con un secreto: {e}", flush=True)
+                continue
+                
+        print("grancrm_session: Todos los intentos de decodificación fallaron.", flush=True)
+        return None
 
     def _sync_user(self, request, payload):
         email = payload["email"]
