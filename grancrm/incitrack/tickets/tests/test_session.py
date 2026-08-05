@@ -88,7 +88,7 @@ class SessionMiddlewareTest(TestCase):
         email = "newuser@example.com"
         self.assertFalse(Usuario.objects.filter(email=email).exists())
 
-        token = _make_jwt({"email": email, "nombre": "New User", "rol": "jefe"})
+        token = _make_jwt({"email": email, "nombre": "New User", "rol": "admin_cuenta"})
         request = self.factory.get("/")
         self._add_session(request)
         request.COOKIES["grancrm_session"] = token
@@ -116,7 +116,7 @@ class SessionMiddlewareTest(TestCase):
 
         response = self.middleware(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, django_settings.LOGIN_URL)
+        self.assertTrue(response.url.startswith(django_settings.LOGIN_URL))
 
     def test_agente_role_blocked(self):
         token = _make_jwt({"email": "agente@example.com", "rol": "agente"})

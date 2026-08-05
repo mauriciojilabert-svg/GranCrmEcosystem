@@ -38,9 +38,8 @@ class VisibilityTest(TestCase):
         self.jefe = Usuario.objects.create(email="jefe@test.com", username="jefe@test.com", rol="jefe")
         self.cuenta_c.jefe = self.jefe
         self.cuenta_c.save()
-        # Jefe is also boss of supervisor
-        self.supervisor.jefe = self.jefe
-        self.supervisor.save()
+        # Jefe is also boss of supervisor through cuenta_c
+        self.cuenta_c.supervisores.add(self.supervisor)
 
         self.admin = Usuario.objects.create(email="admin@test.com", username="admin@test.com", rol="admin")
 
