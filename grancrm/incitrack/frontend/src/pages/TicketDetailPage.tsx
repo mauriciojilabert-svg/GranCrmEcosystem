@@ -119,26 +119,23 @@ export function TicketDetailPage() {
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
       if (!e.clipboardData) return;
-      const items = e.clipboardData.items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const blob = items[i].getAsFile();
-          if (blob) {
-            const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
-            setCommentFile(file);
-            if (commentFileInputRef.current) {
-              const dt = new DataTransfer();
-              dt.items.add(file);
-              commentFileInputRef.current.files = dt.files;
-            }
-            const url = URL.createObjectURL(file);
-            setCommentPreviewUrl(prev => {
-              if (prev) URL.revokeObjectURL(prev);
-              return url;
-            });
-            break;
-          }
+      
+      const files = Array.from(e.clipboardData.files);
+      const imageFile = files.find(f => f.type.startsWith('image/'));
+
+      if (imageFile) {
+        const file = new File([imageFile], `Captura_${new Date().getTime()}.png`, { type: imageFile.type });
+        setCommentFile(file);
+        if (commentFileInputRef.current) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          commentFileInputRef.current.files = dt.files;
         }
+        const url = URL.createObjectURL(file);
+        setCommentPreviewUrl(prev => {
+          if (prev) URL.revokeObjectURL(prev);
+          return url;
+        });
       }
     };
     window.addEventListener('paste', handleGlobalPaste);

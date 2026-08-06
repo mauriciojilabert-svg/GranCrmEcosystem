@@ -49,34 +49,30 @@ export function TicketFormPage({ mode }: Props) {
 
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
-      // Don't intercept if user is typing in a text input and pasting text
       if (!e.clipboardData) return;
       
-      const items = e.clipboardData.items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          // It's an image paste, we can prevent default if we want, but it's fine.
-          const blob = items[i].getAsFile();
-          if (blob) {
-            const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
-            for (let j = 0; j < 3; j++) {
-              const input = fileInputRefs[j].current;
-              if (input && (!input.files || input.files.length === 0)) {
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                input.files = dt.files;
-                
-                // Update preview
-                const url = URL.createObjectURL(file);
-                setPreviewUrls(prev => {
-                  const next = [...prev];
-                  if (next[j]) URL.revokeObjectURL(next[j]);
-                  next[j] = url;
-                  return next;
-                });
-                break;
-              }
-            }
+      const files = Array.from(e.clipboardData.files);
+      const imageFile = files.find(f => f.type.startsWith('image/'));
+
+      if (imageFile) {
+        // En algunos navegadores el nombre es "image.png", le damos uno único
+        const file = new File([imageFile], `Captura_${new Date().getTime()}.png`, { type: imageFile.type });
+        for (let j = 0; j < 3; j++) {
+          const input = fileInputRefs[j].current;
+          if (input && (!input.files || input.files.length === 0)) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            
+            // Update preview
+            const url = URL.createObjectURL(file);
+            setPreviewUrls(prev => {
+              const next = [...prev];
+              if (next[j]) URL.revokeObjectURL(next[j]);
+              next[j] = url;
+              return next;
+            });
+            break;
           }
         }
       }
