@@ -758,23 +758,29 @@ def comentario_adjunto_upload(request: HttpRequest, ticket_id: int, comentario_i
     if not content_type.startswith('image/'):
         return 400, {"detail": "En las respuestas solo se permiten imágenes (fotografías o prints)."}
 
-    file_name = getattr(file, 'name', '') or 'adjunto'
-    adjunto = Adjunto(
-        ticket=ticket,
-        comentario=comentario,
-        nombre_original=file_name,
-        nombre_guardado=file_name,
-        archivo=file
-    )
-    adjunto.save()
-    adjunto.refresh_from_db()
-    
-    return 201, AdjuntoOut(
-        id=adjunto.id,
-        nombre_original=adjunto.nombre_original,
-        url=request.build_absolute_uri(adjunto.archivo.url) if adjunto.archivo else "",
-        fecha_subida=adjunto.fecha_subida
-    )
+    try:
+        file_name = getattr(file, 'name', '') or 'adjunto'
+        adjunto = Adjunto(
+            ticket=ticket,
+            comentario=comentario,
+            nombre_original=file_name,
+            nombre_guardado=file_name,
+            archivo=file
+        )
+        adjunto.save()
+        adjunto.refresh_from_db()
+        
+        return 201, AdjuntoOut(
+            id=adjunto.id,
+            nombre_original=adjunto.nombre_original,
+            url=request.build_absolute_uri(adjunto.archivo.url) if adjunto.archivo else "",
+            fecha_subida=adjunto.fecha_subida
+        )
+    except Exception as exc:
+        import traceback
+        print(f"ERROR comentario_adjunto_upload ticket={ticket_id} com={comentario_id}: {exc}", flush=True)
+        traceback.print_exc()
+        return 400, {"detail": f"Error al guardar adjunto: {exc}"}
 
 
 # ─── LOOKUPS ─────────────────────────────────────────────────────────────────
