@@ -41,6 +41,7 @@ export function TicketDetailPage() {
   const [closeError, setCloseError] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [commentFile, setCommentFile] = useState<File | null>(null);
+  const [commentPreviewUrl, setCommentPreviewUrl] = useState<string>('');
   const commentFileInputRef = React.useRef<HTMLInputElement>(null);
   const [interno, setInterno] = useState(false);
   const [commentSaving, setCommentSaving] = useState(false);
@@ -115,21 +116,63 @@ export function TicketDetailPage() {
     }
   }
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const items = e.clipboardData.items;
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf('image') !== -1) {
-        const blob = items[i].getAsFile();
-        if (blob) {
-          const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
-          setCommentFile(file);
-          if (commentFileInputRef.current) {
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            commentFileInputRef.current.files = dt.files;
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      if (!e.clipboardData) return;
+      const items = e.clipboardData.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          if (blob) {
+            const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
+            setCommentFile(file);
+            if (commentFileInputRef.current) {
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              commentFileInputRef.current.files = dt.files;
+            }
+            const url = URL.createObjectURL(file);
+            setCommentPreviewUrl(prev => {
+              if (prev) URL.revokeObjectURL(prev);
+              return url;
+            });
+            break;
           }
         }
       }
+    };
+    window.addEventListener('paste', handleGlobalPaste);
+    return () => window.removeEventListener('paste', handleGlobalPaste);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (commentPreviewUrl) URL.revokeObjectURL(commentPreviewUrl);
+    };
+  }, [commentPreviewUrl]);
+
+  const handleCommentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCommentFile(file);
+      if (file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        setCommentPreviewUrl(prev => {
+          if (prev) URL.revokeObjectURL(prev);
+          return url;
+        });
+      } else {
+        setCommentPreviewUrl(prev => {
+          if (prev) URL.revokeObjectURL(prev);
+          return '';
+        });
+      }
+    } else {
+      setCommentFile(null);
+      setCommentPreviewUrl(prev => {
+        if (prev) URL.revokeObjectURL(prev);
+        return '';
+      });
     }
   };
 
@@ -148,6 +191,10 @@ export function TicketDetailPage() {
       setComentarios(updated.comentarios ?? []);
       setCommentText('');
       setCommentFile(null);
+      setCommentPreviewUrl(prev => {
+        if (prev) URL.revokeObjectURL(prev);
+        return '';
+      });
       if (commentFileInputRef.current) {
         commentFileInputRef.current.value = '';
       }
@@ -397,7 +444,6 @@ export function TicketDetailPage() {
                       placeholder="Escribe un comentario o pega una imagen (Ctrl+V)..."
                       value={commentText}
                       onChange={e => setCommentText(e.target.value)}
-                      onPaste={handlePaste}
                     />
                     <div className="mb-3">
                       <input 
@@ -405,14 +451,17 @@ export function TicketDetailPage() {
                         ref={commentFileInputRef}
                         className="form-control form-control-sm" 
                         accept="image/*"
-                        onChange={e => {
-                          if (e.target.files && e.target.files.length > 0) {
-                            setCommentFile(e.target.files[0]);
-                          } else {
-                            setCommentFile(null);
-                          }
-                        }}
+                        onChange={handleCommentFileChange}
                       />
+                      {commentPreviewUrl && (
+                        <div className="mt-2 mb-2 text-center">
+                          <img 
+                            src={commentPreviewUrl} 
+                            alt="Preview" 
+                            style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid #e2e8f0' }} 
+                          />
+                        </div>
+                      )}
                       {commentFile && <small className="text-success mt-1 d-block"><i className="feather-check-circle me-1"/>{commentFile.name} adjunto</small>}
                     </div>
                     <div className="d-flex align-items-center justify-content-between">
