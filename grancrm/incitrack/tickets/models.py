@@ -272,6 +272,7 @@ def adjunto_upload_path(instance, filename):
 class Adjunto(models.Model):
     ticket          = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='adjuntos')
     comentario      = models.ForeignKey('Comentario', on_delete=models.CASCADE, related_name='adjuntos', null=True, blank=True)
+    subido_por      = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='adjuntos_subidos')
     nombre_original = models.CharField(max_length=255)
     nombre_guardado = models.CharField(max_length=255)
     archivo         = models.FileField(upload_to=adjunto_upload_path)

@@ -723,6 +723,7 @@ def ticket_adjunto_upload(request: HttpRequest, ticket_id: int, file: UploadedFi
     file_name = getattr(file, 'name', '') or 'adjunto'
     adjunto = Adjunto(
         ticket=ticket,
+        subido_por=usuario,
         nombre_original=file_name,
         nombre_guardado=file_name,
         archivo=file
@@ -763,6 +764,7 @@ def comentario_adjunto_upload(request: HttpRequest, ticket_id: int, comentario_i
         adjunto = Adjunto(
             ticket=ticket,
             comentario=comentario,
+            subido_por=usuario,
             nombre_original=file_name,
             nombre_guardado=file_name,
             archivo=file
