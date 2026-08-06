@@ -55,8 +55,9 @@ export function TicketFormPage({ mode }: Props) {
       const imageFile = files.find(f => f.type.startsWith('image/'));
 
       if (imageFile) {
-        // En algunos navegadores el nombre es "image.png", le damos uno único
+        e.preventDefault(); // Evitar que el navegador intente pegar nativamente e interfiera
         const file = new File([imageFile], `Captura_${new Date().getTime()}.png`, { type: imageFile.type });
+        
         for (let j = 0; j < 3; j++) {
           const input = fileInputRefs[j].current;
           if (input && (!input.files || input.files.length === 0)) {
@@ -64,14 +65,19 @@ export function TicketFormPage({ mode }: Props) {
             dt.items.add(file);
             input.files = dt.files;
             
-            // Update preview
-            const url = URL.createObjectURL(file);
-            setPreviewUrls(prev => {
-              const next = [...prev];
-              if (next[j]) URL.revokeObjectURL(next[j]);
-              next[j] = url;
-              return next;
-            });
+            // Usar FileReader para garantizar que la imagen se muestre siempre (base64)
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              if (ev.target?.result) {
+                const url = ev.target.result as string;
+                setPreviewUrls(prev => {
+                  const next = [...prev];
+                  next[j] = url;
+                  return next;
+                });
+              }
+            };
+            reader.readAsDataURL(file);
             break;
           }
         }
@@ -80,27 +86,27 @@ export function TicketFormPage({ mode }: Props) {
     window.addEventListener('paste', handleGlobalPaste);
     return () => {
       window.removeEventListener('paste', handleGlobalPaste);
-      // Cleanup object URLs on unmount
-      previewUrls.forEach(url => {
-        if (url) URL.revokeObjectURL(url);
-      });
     };
   }, []);
 
   const handleFileChange = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrls(prev => {
-        const next = [...prev];
-        if (next[idx]) URL.revokeObjectURL(next[idx]);
-        next[idx] = url;
-        return next;
-      });
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          const url = ev.target.result as string;
+          setPreviewUrls(prev => {
+            const next = [...prev];
+            next[idx] = url;
+            return next;
+          });
+        }
+      };
+      reader.readAsDataURL(file);
     } else {
       setPreviewUrls(prev => {
         const next = [...prev];
-        if (next[idx]) URL.revokeObjectURL(next[idx]);
         next[idx] = '';
         return next;
       });

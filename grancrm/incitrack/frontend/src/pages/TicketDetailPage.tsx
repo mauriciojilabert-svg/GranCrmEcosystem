@@ -124,6 +124,7 @@ export function TicketDetailPage() {
       const imageFile = files.find(f => f.type.startsWith('image/'));
 
       if (imageFile) {
+        e.preventDefault();
         const file = new File([imageFile], `Captura_${new Date().getTime()}.png`, { type: imageFile.type });
         setCommentFile(file);
         if (commentFileInputRef.current) {
@@ -131,46 +132,34 @@ export function TicketDetailPage() {
           dt.items.add(file);
           commentFileInputRef.current.files = dt.files;
         }
-        const url = URL.createObjectURL(file);
-        setCommentPreviewUrl(prev => {
-          if (prev) URL.revokeObjectURL(prev);
-          return url;
-        });
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          if (ev.target?.result) {
+            setCommentPreviewUrl(ev.target.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
       }
     };
     window.addEventListener('paste', handleGlobalPaste);
     return () => window.removeEventListener('paste', handleGlobalPaste);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (commentPreviewUrl) URL.revokeObjectURL(commentPreviewUrl);
-    };
-  }, [commentPreviewUrl]);
-
   const handleCommentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setCommentFile(file);
-      if (file.type.startsWith('image/')) {
-        const url = URL.createObjectURL(file);
-        setCommentPreviewUrl(prev => {
-          if (prev) URL.revokeObjectURL(prev);
-          return url;
-        });
-      } else {
-        setCommentPreviewUrl(prev => {
-          if (prev) URL.revokeObjectURL(prev);
-          return '';
-        });
-      }
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          setCommentPreviewUrl(ev.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     } else {
-      setCommentFile(null);
-      setCommentPreviewUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return '';
-      });
+      setCommentPreviewUrl('');
     }
+    setCommentFile(file || null);
   };
 
   async function handleComentario(e: React.FormEvent) {
