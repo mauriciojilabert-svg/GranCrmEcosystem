@@ -10,7 +10,7 @@
    - Se realizan los cambios de código a nivel local.
    - **Subir cambios**: Se realiza commit y `git push` a la rama `main` en GitHub.
    - **Bajar cambios en Servidores**: Se accede al servidor mediante PuTTY, se realiza `git pull` en la carpeta correcta y se compila/reinicia Docker.
-     - **Ruta QA**: `cd /home/admincrm/249`
+     - **Ruta QA**: `cd /home/admincrm/grancrm`
      - **Ruta Producción**: (Por definir en la máquina productiva)
 
 ---
