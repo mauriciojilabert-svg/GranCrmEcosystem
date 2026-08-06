@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getTicket, cerrarTicket, agregarComentario, editTicket, getUsuarios, uploadComentarioAdjunto } from '../lib/api';
 import type { TicketOut, ComentarioOut, UsuarioOut } from '../apiTypes';
@@ -42,7 +42,7 @@ export function TicketDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [commentFile, setCommentFile] = useState<File | null>(null);
   const [commentPreviewUrl, setCommentPreviewUrl] = useState<string>('');
-  const commentFileInputRef = React.useRef<HTMLInputElement>(null);
+  const commentFileInputRef = useRef<HTMLInputElement>(null);
   const [interno, setInterno] = useState(false);
   const [commentSaving, setCommentSaving] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
