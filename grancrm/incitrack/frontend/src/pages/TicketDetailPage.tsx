@@ -41,6 +41,7 @@ export function TicketDetailPage() {
   const [closeError, setCloseError] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [commentFile, setCommentFile] = useState<File | null>(null);
+  const commentFileInputRef = React.useRef<HTMLInputElement>(null);
   const [interno, setInterno] = useState(false);
   const [commentSaving, setCommentSaving] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
@@ -122,6 +123,11 @@ export function TicketDetailPage() {
         if (blob) {
           const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
           setCommentFile(file);
+          if (commentFileInputRef.current) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            commentFileInputRef.current.files = dt.files;
+          }
         }
       }
     }
@@ -142,6 +148,9 @@ export function TicketDetailPage() {
       setComentarios(updated.comentarios ?? []);
       setCommentText('');
       setCommentFile(null);
+      if (commentFileInputRef.current) {
+        commentFileInputRef.current.value = '';
+      }
       setInterno(false);
     } catch (e) {
       setCommentError(String((e as Error).message ?? e));
@@ -393,6 +402,7 @@ export function TicketDetailPage() {
                     <div className="mb-3">
                       <input 
                         type="file" 
+                        ref={commentFileInputRef}
                         className="form-control form-control-sm" 
                         accept="image/*"
                         onChange={e => {
