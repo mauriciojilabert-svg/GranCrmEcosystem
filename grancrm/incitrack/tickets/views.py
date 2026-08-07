@@ -39,19 +39,20 @@ logger = logging.getLogger(__name__)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _guardar_adjunto(ticket, archivo):
+def _guardar_adjunto(ticket, archivo, usuario):
     nombre_original = archivo.name
     ext = os.path.splitext(nombre_original)[1]
     nombre_guardado = f"{uuid.uuid4().hex}{ext}"
     Adjunto.objects.create(
         ticket=ticket,
+        subido_por=usuario,
         nombre_original=nombre_original,
         nombre_guardado=nombre_guardado,
         archivo=archivo,
     )
 
 
-def _guardar_screenshot(ticket, data_url):
+def _guardar_screenshot(ticket, data_url, usuario):
     try:
         if ',' not in data_url:
             return
@@ -62,6 +63,7 @@ def _guardar_screenshot(ticket, data_url):
         content = ContentFile(base64.b64decode(data), name=nombre)
         adj = Adjunto(
             ticket=ticket,
+            subido_por=usuario,
             nombre_original=f"captura_pantalla.{ext}",
             nombre_guardado=nombre,
         )
@@ -312,10 +314,10 @@ class TicketNuevoView(LoginRequiredMixin, View):
             for i in range(1, 4):
                 f = request.FILES.get(f'adjunto_{i}')
                 if f:
-                    _guardar_adjunto(ticket, f)
+                    _guardar_adjunto(ticket, f, request.user)
             screenshot = form.cleaned_data.get('screenshot_data', '')
             if screenshot:
-                _guardar_screenshot(ticket, screenshot)
+                _guardar_screenshot(ticket, screenshot, request.user)
             notificar_nuevo_ticket(ticket, request)
             messages.success(request, f"Ticket #{ticket.pk} creado exitosamente.")
             return redirect('ticket_detalle', pk=ticket.pk)
