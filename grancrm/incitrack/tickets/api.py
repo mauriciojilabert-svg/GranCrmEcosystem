@@ -205,7 +205,8 @@ def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     por_cerrar = qs_filtrado.filter(estado__in=['abierto', 'en_proceso']).count()
     
     # 3. Auditoría Reciente (Últimos comentarios en tickets visibles)
-    comentarios_qs = Comentario.objects.filter(ticket__in=qs).select_related('autor', 'ticket').order_by('-fecha')
+    ticket_ids = list(qs.values_list('id', flat=True))
+    comentarios_qs = Comentario.objects.filter(ticket_id__in=ticket_ids).select_related('autor', 'ticket').order_by('-fecha')
     if not usuario.es_admin:
         comentarios_qs = comentarios_qs.filter(interno=False)
         
