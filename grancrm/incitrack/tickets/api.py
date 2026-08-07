@@ -100,20 +100,7 @@ def _require_admin_or_jefe(request: HttpRequest):
 
 # ─── DASHBOARD ───────────────────────────────────────────────────────────────
 
-import traceback
-
-def catch_500(func):
-    import functools
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            return 500, {"detail": str(e), "traceback": traceback.format_exc()}
-    return wrapper
-
-@api.get("/dashboard/", response={200: dict, 401: dict, 403: dict, 500: dict}, tags=["dashboard"])
-@catch_500
+@api.get("/dashboard/", response={200: dict, 401: dict, 403: dict}, tags=["dashboard"])
 def dashboard(request: HttpRequest, periodo: str = "", ver_todos: bool = False):
     """Estadísticas del dashboard para el usuario autenticado."""
     if not _require_auth(request):
