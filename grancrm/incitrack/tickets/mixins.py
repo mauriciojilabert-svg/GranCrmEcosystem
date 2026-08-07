@@ -61,8 +61,9 @@ def tickets_visibles(usuario):
     if usuario.es_admin:
         return Ticket.objects.all()
 
-    cuentas = cuentas_visibles(usuario)
-    return Ticket.objects.filter(cuenta__in=cuentas)
+    cuentas_qs = cuentas_visibles(usuario)
+    cuentas_ids = list(cuentas_qs.values_list('id', flat=True))
+    return Ticket.objects.filter(cuenta_id__in=cuentas_ids)
 
 
 def puede_ver_ticket(usuario, ticket):
