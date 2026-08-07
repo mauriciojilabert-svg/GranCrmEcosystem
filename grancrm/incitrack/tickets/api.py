@@ -377,7 +377,7 @@ def ticket_detail(request: HttpRequest, ticket_id: int):
                     AdjuntoOut(
                         id=a.id,
                         nombre_original=a.nombre_original,
-                        url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
+                        url=request.build_absolute_uri(f"/incitrack/api/v1/adjuntos/{a.id}/download/") if a.archivo else "",
                         fecha_subida=a.fecha_subida
                     ) for a in c.adjuntos.all()
                 ]
@@ -389,7 +389,7 @@ def ticket_detail(request: HttpRequest, ticket_id: int):
             AdjuntoOut(
                 id=a.id,
                 nombre_original=a.nombre_original,
-                url=request.build_absolute_uri(a.archivo.url) if a.archivo else "",
+                url=request.build_absolute_uri(f"/incitrack/api/v1/adjuntos/{a.id}/download/") if a.archivo else "",
                 fecha_subida=a.fecha_subida
             ) for a in ticket.adjuntos.filter(comentario__isnull=True)
         ]
@@ -734,7 +734,7 @@ def ticket_adjunto_upload(request: HttpRequest, ticket_id: int, file: UploadedFi
     return 201, AdjuntoOut(
         id=adjunto.id,
         nombre_original=adjunto.nombre_original,
-        url=request.build_absolute_uri(adjunto.archivo.url) if adjunto.archivo else "",
+        url=request.build_absolute_uri(f"/incitrack/api/v1/adjuntos/{adjunto.id}/download/") if adjunto.archivo else "",
         fecha_subida=adjunto.fecha_subida
     )
 
@@ -775,7 +775,7 @@ def comentario_adjunto_upload(request: HttpRequest, ticket_id: int, comentario_i
         return 201, AdjuntoOut(
             id=adjunto.id,
             nombre_original=adjunto.nombre_original,
-            url=request.build_absolute_uri(adjunto.archivo.url) if adjunto.archivo else "",
+            url=request.build_absolute_uri(f"/incitrack/api/v1/adjuntos/{adjunto.id}/download/") if adjunto.archivo else "",
             fecha_subida=adjunto.fecha_subida
         )
     except Exception as exc:
@@ -783,6 +783,22 @@ def comentario_adjunto_upload(request: HttpRequest, ticket_id: int, comentario_i
         print(f"ERROR comentario_adjunto_upload ticket={ticket_id} com={comentario_id}: {exc}", flush=True)
         traceback.print_exc()
         return 400, {"detail": f"Error al guardar adjunto: {exc}"}
+
+
+# ─── DESCARGA DE ADJUNTOS ────────────────────────────────────────────────────
+
+from django.http import FileResponse
+
+@api.get("/adjuntos/{adjunto_id}/download/", auth=None, tags=["adjuntos"])
+def adjunto_download(request: HttpRequest, adjunto_id: int):
+    """Sirve el archivo adjunto directamente (bypass de Nginx/React Router)."""
+    import mimetypes
+    adjunto = get_object_or_404(Adjunto, pk=adjunto_id)
+    if not adjunto.archivo:
+        return api.create_response(request, {"detail": "Sin archivo"}, status=404)
+    ct, _ = mimetypes.guess_type(adjunto.nombre_original)
+    ct = ct or 'application/octet-stream'
+    return FileResponse(adjunto.archivo.open('rb'), content_type=ct, filename=adjunto.nombre_original)
 
 
 # ─── LOOKUPS ─────────────────────────────────────────────────────────────────
