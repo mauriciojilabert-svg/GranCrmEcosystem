@@ -13,4 +13,5 @@ urlpatterns = [
     path('incitrack/logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('incitrack/', include('tickets.urls')),
     re_path(r'^assets/(?P<path>.*)$', serve, {'document_root': os.path.join(str(settings.BASE_DIR), 'assets')}),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    re_path(r'^incitrack/media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
