@@ -27,6 +27,8 @@ services:
       - ./incitrack/incitrack/urls.py:/app/incitrack/urls.py
       - ./incitrack/tickets/grancrm_session.py:/app/tickets/grancrm_session.py
       - ./incitrack/tickets/api.py:/app/tickets/api.py
+      - ./incitrack/tickets/models.py:/app/tickets/models.py
+      - ./incitrack/tickets/schemas.py:/app/tickets/schemas.py
       - ./incitrack/tickets/email_service.py:/app/tickets/email_service.py
       - "/home/admincrm/orquestador/plantilla duralux/duralux-admin/assets:/app/assets:ro"
       - ./incitrack/dios.json:/app/dios.json:ro
