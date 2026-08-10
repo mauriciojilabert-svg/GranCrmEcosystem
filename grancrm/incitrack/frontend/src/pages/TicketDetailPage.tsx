@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getTicket, cerrarTicket, agregarComentario, editTicket, getUsuarios, uploadComentarioAdjunto } from '../lib/api';
 import type { TicketOut, ComentarioOut, UsuarioOut } from '../apiTypes';
@@ -41,8 +41,6 @@ export function TicketDetailPage() {
   const [closeError, setCloseError] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [commentFile, setCommentFile] = useState<File | null>(null);
-  const [commentPreviewUrl, setCommentPreviewUrl] = useState<string>('');
-  const commentFileInputRef = useRef<HTMLInputElement>(null);
   const [interno, setInterno] = useState(false);
   const [commentSaving, setCommentSaving] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
@@ -116,50 +114,17 @@ export function TicketDetailPage() {
     }
   }
 
-  useEffect(() => {
-    const handleGlobalPaste = (e: ClipboardEvent) => {
-      if (!e.clipboardData) return;
-      
-      const files = Array.from(e.clipboardData.files);
-      const imageFile = files.find(f => f.type.startsWith('image/'));
-
-      if (imageFile) {
-        e.preventDefault();
-        const file = new File([imageFile], `Captura_${new Date().getTime()}.png`, { type: imageFile.type });
-        setCommentFile(file);
-        if (commentFileInputRef.current) {
-          const dt = new DataTransfer();
-          dt.items.add(file);
-          commentFileInputRef.current.files = dt.files;
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
+          setCommentFile(file);
         }
-        
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (ev.target?.result) {
-            setCommentPreviewUrl(ev.target.result as string);
-          }
-        };
-        reader.readAsDataURL(file);
       }
-    };
-    window.addEventListener('paste', handleGlobalPaste);
-    return () => window.removeEventListener('paste', handleGlobalPaste);
-  }, []);
-
-  const handleCommentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setCommentPreviewUrl(ev.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setCommentPreviewUrl('');
     }
-    setCommentFile(file || null);
   };
 
   async function handleComentario(e: React.FormEvent) {
@@ -177,13 +142,6 @@ export function TicketDetailPage() {
       setComentarios(updated.comentarios ?? []);
       setCommentText('');
       setCommentFile(null);
-      setCommentPreviewUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return '';
-      });
-      if (commentFileInputRef.current) {
-        commentFileInputRef.current.value = '';
-      }
       setInterno(false);
     } catch (e) {
       setCommentError(String((e as Error).message ?? e));
@@ -430,24 +388,21 @@ export function TicketDetailPage() {
                       placeholder="Escribe un comentario o pega una imagen (Ctrl+V)..."
                       value={commentText}
                       onChange={e => setCommentText(e.target.value)}
+                      onPaste={handlePaste}
                     />
                     <div className="mb-3">
                       <input 
                         type="file" 
-                        ref={commentFileInputRef}
                         className="form-control form-control-sm" 
                         accept="image/*"
-                        onChange={handleCommentFileChange}
+                        onChange={e => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            setCommentFile(e.target.files[0]);
+                          } else {
+                            setCommentFile(null);
+                          }
+                        }}
                       />
-                      {commentPreviewUrl && (
-                        <div className="mt-2 mb-2 text-center">
-                          <img 
-                            src={commentPreviewUrl} 
-                            alt="Preview" 
-                            style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid #e2e8f0' }} 
-                          />
-                        </div>
-                      )}
                       {commentFile && <small className="text-success mt-1 d-block"><i className="feather-check-circle me-1"/>{commentFile.name} adjunto</small>}
                     </div>
                     <div className="d-flex align-items-center justify-content-between">

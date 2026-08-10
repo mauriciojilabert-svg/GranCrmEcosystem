@@ -45,75 +45,27 @@ export function TicketFormPage({ mode }: Props) {
 
 
   const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
-  const [previewUrls, setPreviewUrls] = useState<string[]>(['', '', '']);
 
-  useEffect(() => {
-    const handleGlobalPaste = (e: ClipboardEvent) => {
-      if (!e.clipboardData) return;
-      
-      const files = Array.from(e.clipboardData.files);
-      const imageFile = files.find(f => f.type.startsWith('image/'));
-
-      if (imageFile) {
-        e.preventDefault(); // Evitar que el navegador intente pegar nativamente e interfiera
-        const file = new File([imageFile], `Captura_${new Date().getTime()}.png`, { type: imageFile.type });
-        
-        for (let j = 0; j < 3; j++) {
-          const input = fileInputRefs[j].current;
-          if (input && (!input.files || input.files.length === 0)) {
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            input.files = dt.files;
-            
-            // Usar FileReader para garantizar que la imagen se muestre siempre (base64)
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              if (ev.target?.result) {
-                const url = ev.target.result as string;
-                setPreviewUrls(prev => {
-                  const next = [...prev];
-                  next[j] = url;
-                  return next;
-                });
-              }
-            };
-            reader.readAsDataURL(file);
-            break;
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const file = new File([blob], `Captura_${new Date().getTime()}.png`, { type: blob.type });
+          for (let j = 0; j < 3; j++) {
+            const input = fileInputRefs[j].current;
+            if (input && (!input.files || input.files.length === 0)) {
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              input.files = dt.files;
+              break;
+            }
           }
         }
       }
-    };
-    window.addEventListener('paste', handleGlobalPaste);
-    return () => {
-      window.removeEventListener('paste', handleGlobalPaste);
-    };
-  }, []);
-
-  const handleFileChange = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          const url = ev.target.result as string;
-          setPreviewUrls(prev => {
-            const next = [...prev];
-            next[idx] = url;
-            return next;
-          });
-        }
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setPreviewUrls(prev => {
-        const next = [...prev];
-        next[idx] = '';
-        return next;
-      });
     }
   };
-
-
 
   // Load lookups
   useEffect(() => {
@@ -406,6 +358,7 @@ export function TicketFormPage({ mode }: Props) {
                       rows={5}
                       value={descripcion}
                       onChange={e => setDescripcion(e.target.value)}
+                      onPaste={handlePaste}
                       required
                       placeholder="Describe el problema con el mayor detalle posible... ¿Qué ocurre? ¿Desde cuándo? ¿A cuántos afecta?"
                     />
@@ -445,17 +398,7 @@ export function TicketFormPage({ mode }: Props) {
                           ref={fileInputRefs[idx]}
                           className="form-control"
                           accept="image/*,video/mp4,.pdf,.doc,.docx"
-                          onChange={e => handleFileChange(idx, e)}
                         />
-                        {previewUrls[idx] && (
-                          <div className="mt-2 text-center">
-                            <img 
-                              src={previewUrls[idx]} 
-                              alt={`Preview ${num}`} 
-                              style={{ maxHeight: '120px', maxWidth: '100%', objectFit: 'contain', borderRadius: '4px', border: '1px solid #e2e8f0' }} 
-                            />
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>
