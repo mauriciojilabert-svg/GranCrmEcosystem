@@ -66,15 +66,8 @@ export default function App({ contractVersion, basename, apiBase, session, bus }
     if (isAdmin) {
       navItems.push(
         { label: 'Usuarios', icon: 'feather-users', href: `${base}/admin/usuarios/` },
-        { label: 'Cuentas', icon: 'feather-home', href: `${base}/admin/cuentas/` }
-      );
-    }
-    
-    // Notificaciones no tiene restricción en dios.json original
-    navItems.push({ label: 'Notificaciones', icon: 'feather-bell', href: `${base}/admin/notificaciones/` });
-    
-    if (isAdmin) {
-      navItems.push(
+        { label: 'Cuentas', icon: 'feather-home', href: `${base}/admin/cuentas/` },
+        { label: 'Notificaciones', icon: 'feather-bell', href: `${base}/admin/notificaciones/` },
         { label: 'Config. SLA', icon: 'feather-sliders', href: `${base}/sla/` },
         { label: 'Estadísticas', icon: 'feather-pie-chart', href: `${base}/estadisticas/` }
       );
