@@ -992,7 +992,7 @@ def usuario_editar(request: HttpRequest, usuario_id: int, data: UsuarioIn):
     )
 
 
-@api.delete("/usuarios/{usuario_id}/", response={204: None, 401: dict, 403: dict, 404: dict}, tags=["admin"])
+@api.delete("/usuarios/{usuario_id}/", response={204: None, 400: dict, 401: dict, 403: dict, 404: dict}, tags=["admin"])
 def usuario_eliminar(request: HttpRequest, usuario_id: int):
     """Elimina un usuario. Solo Admin."""
     if not _require_auth(request):
@@ -1002,7 +1002,13 @@ def usuario_eliminar(request: HttpRequest, usuario_id: int):
     u = get_object_or_404(Usuario, pk=usuario_id)
     if u.pk == request.user.pk:
         return 403, {"detail": "No puedes eliminar tu propia cuenta"}
-    u.delete()
+    
+    from django.db.models.deletion import ProtectedError
+    try:
+        u.delete()
+    except ProtectedError:
+        return 400, {"detail": "No se puede eliminar este usuario porque tiene tickets asociados. Por favor, desactívalo en su lugar."}
+    
     return 204, None
 
 
@@ -1077,7 +1083,7 @@ def cuenta_editar(request: HttpRequest, cuenta_id: int, data: CuentaIn):
     )
 
 
-@api.delete("/cuentas/{cuenta_id}/", response={204: None, 401: dict, 403: dict, 404: dict}, tags=["admin"])
+@api.delete("/cuentas/{cuenta_id}/", response={204: None, 400: dict, 401: dict, 403: dict, 404: dict}, tags=["admin"])
 def cuenta_eliminar(request: HttpRequest, cuenta_id: int):
     """Elimina una cuenta. Solo Admin."""
     if not _require_auth(request):
@@ -1085,7 +1091,13 @@ def cuenta_eliminar(request: HttpRequest, cuenta_id: int):
     if not _require_admin(request):
         return 403, {"detail": "Solo Admin TI"}
     c = get_object_or_404(Cuenta, pk=cuenta_id)
-    c.delete()
+    
+    from django.db.models.deletion import ProtectedError
+    try:
+        c.delete()
+    except ProtectedError:
+        return 400, {"detail": "No se puede eliminar esta cuenta porque tiene tickets asociados. Por favor, desactívala en su lugar."}
+        
     return 204, None
 
 
