@@ -98,12 +98,14 @@ graph LR
     ORQ --- ORQ2["Duralux UI Kit"]
     ORQ --- ORQ3["Motor JWT"]
     ORQ --- ORQ4["Mapeo de Roles"]
+    ORQ --- ORQ5["JWT_ROLES_COMPAT"]
 
     ECO --- MOD["Módulos Satélites"]
     MOD --- IT["InciTrack"]
     IT --- IT1["Micro-Frontend React"]
     IT --- IT2["Backend Django Ninja"]
-    IT --- IT3["BD SQL Server"]
+    IT --- IT3["BD SQL Server - default"]
+    IT --- IT4["NO Multi-Tenant"]
     MOD --- CR["CallReviews"]
     MOD --- OT["Otros Módulos"]
 
@@ -130,7 +132,7 @@ graph LR
 <ul>
     <li><strong>Shell (Frontend en React):</strong> Es el cascarón que envuelve todo. Se encarga de pintar el menú lateral, la barra superior y mantener el ciclo de vida del usuario activo.</li>
     <li><strong>Duralux (Sistema de Diseño):</strong> Es la librería de componentes propios (UI Kit). Contiene el diseño y la lógica de los botones, tablas, pestañas y modales. Esto garantiza que sin importar quién programe un submódulo, todo se vea exactamente igual, manteniendo la coherencia de la marca.</li>
-    <li><strong>Motor de Autorización (JWT):</strong> Genera credenciales estandarizadas. En lugar de compartir contraseñas, entrega un token que contiene la información esencial y perfiles dinámicos del usuario (por ejemplo, <code>admin_0</code> o <code>sa_4</code>).</li>
+    <li><strong>Motor de Autorización (JWT):</strong> Genera credenciales estandarizadas. En lugar de compartir contraseñas, entrega un token que contiene la información esencial y perfiles dinámicos del usuario. <strong>Importante:</strong> El Orquestador opera con <code>JWT_ROLES_COMPAT=True</code>, lo que significa que el campo <code>rol</code> del JWT contiene un valor de compatibilidad (ej: <code>admin</code>, <code>ejecutivo</code>, <code>sa</code>), mientras que el campo <code>rol_real</code> contiene el rol verdadero (<code>admin_cuenta</code>, <code>agente</code>, <code>admin_ti</code>). InciTrack debe leer <strong>siempre</strong> <code>rol_real</code> primero.</li>
     <li><strong>Gestión del Menú (<code>dios.json</code>):</strong> El orquestador construye su menú de navegación leyendo los archivos manifiesto de los módulos instalados. Si InciTrack reporta en su archivo <code>.json</code> que necesita un botón llamado "Tickets", el Shell lo renderiza dinámicamente.</li>
 </ul>
 
@@ -144,7 +146,10 @@ graph LR
         </ul>
     </li>
     <li><strong>Backend Dedicado (Django Ninja):</strong> Una API construida con Python que maneja la lógica fuerte, validaciones de negocio y creación de los incidentes.</li>
-    <li><strong>Mecanismo <code>grancrm_session.py</code> (Autenticación Híbrida):</strong> Como InciTrack no confía en conectarse a la base de datos principal, este archivo intercepta todas las peticiones, lee el Token JWT proporcionado por el Orquestador y lo valida. Si el usuario es válido, InciTrack lo <strong>sincroniza (lo clona o actualiza)</strong> dentro de su propia base de datos SQL Server, asegurándose de tener siempre un registro fidedigno del creador o responsable del ticket.</li>
+    <li><strong>Mecanismo <code>grancrm_session.py</code> (Autenticación Híbrida):</strong> Como InciTrack no confía en conectarse a la base de datos principal, este archivo intercepta todas las peticiones, lee el Token JWT proporcionado por el Orquestador y lo valida. Si el usuario es válido, InciTrack lo <strong>sincroniza (lo clona o actualiza)</strong> dentro de su propia base de datos SQL Server, asegurándose de tener siempre un registro fidedigno del creador o responsable del ticket. Lee el campo <code>rol_real</code> del JWT para obtener el rol verdadero del usuario.</li>
+    <li><strong>Base de Datos Única (NO Multi-Tenant):</strong> InciTrack tiene una sola base de datos propia y <strong>no participa en multi-tenancy</strong>. El <code>TenantDatabaseRouter</code> siempre retorna <code>'default'</code>. Aunque el <code>TenantDatabaseMiddleware</code> está en el stack de middlewares (para otros módulos del ecosistema), InciTrack lo ignora a nivel de router. Si se modifica el router para usar la BD del tenant, usuarios de otros tenants recibirán <code>Error 500: Invalid object name 'tickets_ticket'</code>.</li>
+    <li><strong>Arquitectura Cuenta → Jefe → Supervisores:</strong> La asociación de roles se centraliza en la <strong>Cuenta (Cliente)</strong>. Cada Cuenta tiene un Jefe asignado (FK) y múltiples Supervisores (M2M). El Jefe hereda automáticamente acceso a todos los Tickets y Supervisores de sus Cuentas. No existe un panel directo de "Supervisores asignados" en el perfil del Jefe.</li>
+    <li><strong>Protección de Integridad Referencial:</strong> Los modelos usan <code>models.PROTECT</code> en relaciones críticas (ej: tickets → usuario creador). Esto impide eliminar usuarios o cuentas con tickets asociados. La API captura <code>ProtectedError</code> y retorna un HTTP 400 con mensaje claro en lugar de un Error 500.</li>
 </ol>
 
 <hr>
@@ -219,15 +224,17 @@ sequenceDiagram
     Note over F,DB: FASE 3 - Intercambio de Datos
     F->>N: fetch /incitrack/api/tickets con JWT en cookie
     N->>B: Enruta petición al puerto 8000
-    Note over B: Middleware grancrm_session.py intercepta
-    B->>B: Desencripta y valida Token JWT
-    B->>DB: Busca si el usuario existe localmente
+    Note over B: Cadena de Middlewares
+    B->>B: 1. GranCRMAuthMiddleware decodifica JWT
+    B->>B: 2. GranCRMSessionMiddleware lee rol_real del JWT
+    B->>DB: Busca si el usuario existe localmente en BD default
     alt Usuario es Nuevo
-        B->>DB: Crea registro de usuario clonado
+        B->>DB: Crea registro con rol mapeado desde rol_real
     else Usuario ya Existe
-        B->>DB: Actualiza campos y roles dinámicos
+        B->>DB: Actualiza nombre y rol si cambiaron
     end
-    B->>DB: Ejecuta Query SQL de Tickets
+    B->>B: 3. TenantDatabaseMiddleware se ejecuta pero Router lo ignora
+    B->>DB: Ejecuta Query SQL en BD default siempre
     DB-->>B: Retorna datos
     B-->>N: HTTP 200 JSON
     N-->>F: Entrega JSON al Frontend
@@ -267,43 +274,142 @@ graph TB
 
 <hr>
 
-<h2>6. Diagrama de Flujo de Roles — dios.json y Autorización</h2>
+<h2>6. Diagrama de Flujo de Roles — JWT rol_real y Autorización</h2>
 
 <div class="mermaid">
 flowchart TD
-    A["Orquestador entrega rol: admin_0"] --> B{"grancrm_session.py<br/>separa prefijo"}
-    B -->|"Prefijo: admin"| C["Rol normalizado: admin"]
-    B -->|"Prefijo: sa"| D["Rol normalizado: supervisor"]
-    B -->|"Sin prefijo conocido"| E["Rol por defecto: supervisor"]
+    A["JWT del Orquestador"] --> A1["campo rol: valor compat"]
+    A --> A2["campo rol_real: valor verdadero"]
 
-    C --> F["RoleGuard en React<br/>permite acceso Admin"]
-    D --> G["RoleGuard en React<br/>permite acceso Supervisor"]
-    E --> G
+    A2 --> B{"grancrm_session.py<br/>lee rol_real primero"}
+    B -->|"admin_ti"| C["InciTrack rol: admin<br/>Admin TI"]
+    B -->|"admin_cuenta"| D["InciTrack rol: jefe<br/>Jefe de Cuenta"]
+    B -->|"supervisor"| E["InciTrack rol: supervisor<br/>Supervisor"]
+    B -->|"agente"| F["BLOQUEADO<br/>HTTP 403"]
 
-    F --> H["Dashboard completo<br/>Usuarios, Cuentas, SLA, Estadísticas"]
-    G --> I["Dashboard limitado<br/>Solo Tickets asignados"]
+    C --> G["Sidebar Admin TI"]
+    D --> H["Sidebar Jefe"]
+    E --> I["Sidebar Supervisor"]
+
+    G --> G1["Dashboard, Tickets, Nuevo Ticket<br/>Cuentas, Usuarios, Config SLA, Notificaciones"]
+    H --> H1["Dashboard, Tickets, Nuevo Ticket"]
+    I --> I1["Dashboard, Tickets, Nuevo Ticket"]
 
     style A fill:#ffcc80,stroke:#e65100,color:#333
+    style A1 fill:#ef9a9a,stroke:#c62828,color:#333
+    style A2 fill:#a5d6a7,stroke:#2e7d32,color:#333
     style B fill:#90caf9,stroke:#1565c0,color:#333
-    style C fill:#a5d6a7,stroke:#2e7d32,color:#333
-    style D fill:#a5d6a7,stroke:#2e7d32,color:#333
-    style E fill:#ef9a9a,stroke:#c62828,color:#333
-    style F fill:#c8e6c9,stroke:#2e7d32,color:#333
-    style G fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style C fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style D fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style E fill:#c8e6c9,stroke:#2e7d32,color:#333
+    style F fill:#ef9a9a,stroke:#c62828,color:#fff
+    style G fill:#e1bee7,stroke:#6a1b9a,color:#333
     style H fill:#e1bee7,stroke:#6a1b9a,color:#333
     style I fill:#e1bee7,stroke:#6a1b9a,color:#333
+    style G1 fill:#f3e5f5,stroke:#6a1b9a,color:#333
+    style H1 fill:#f3e5f5,stroke:#6a1b9a,color:#333
+    style I1 fill:#f3e5f5,stroke:#6a1b9a,color:#333
 </div>
 
 <hr>
 
-<h2>7. Casos Especiales y Puntos Clave</h2>
+<h2>7. Cadena de Middlewares — Orden de Ejecución</h2>
+
+<div class="note-box">
+    <strong>Orden crítico:</strong> La sincronización del usuario (paso 2) ocurre ANTES del switch de BD tenant (paso 3), por lo que el usuario siempre se guarda en la BD <code>default</code> de InciTrack.
+</div>
+
+<ol>
+    <li><code>GranCRMAuthMiddleware</code> — Decodifica el JWT de la cookie (BYPASS firma en QA). Establece <code>request.jwt_payload</code>.</li>
+    <li><code>GranCRMSessionMiddleware</code> — Lee <code>rol_real</code> del payload. Sincroniza (crea o actualiza) el usuario en la BD <code>default</code> de InciTrack. Mapea roles del Orquestador a roles internos.</li>
+    <li><code>TenantDatabaseMiddleware</code> — Lee <code>db_name</code> del JWT y registra la BD del tenant. <strong>InciTrack lo ignora:</strong> el <code>TenantDatabaseRouter</code> siempre retorna <code>'default'</code>.</li>
+</ol>
+
+<hr>
+
+<h2>8. Tabla de Compatibilidad JWT del Orquestador</h2>
+
+<div class="note-box">
+    <strong>Configuración actual:</strong> <code>JWT_ROLES_COMPAT=True</code> en <code>core/jwt_utils.py</code> del Orquestador. Esto transforma los roles reales antes de enviarlos en el campo <code>rol</code> del JWT, pero preserva el valor original en <code>rol_real</code>.
+</div>
+
+<table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+    <thead>
+        <tr style="background-color: #edf2f7;">
+            <th style="border: 1px solid #e2e8f0; padding: 10px; text-align: left;">Rol real (BD Orquestador)</th>
+            <th style="border: 1px solid #e2e8f0; padding: 10px; text-align: left;">JWT campo <code>rol</code> (compat)</th>
+            <th style="border: 1px solid #e2e8f0; padding: 10px; text-align: left;">JWT campo <code>rol_real</code></th>
+            <th style="border: 1px solid #e2e8f0; padding: 10px; text-align: left;">Rol en InciTrack</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>agente</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>ejecutivo</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>agente</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px; color: #c62828;"><strong>BLOQUEADO (403)</strong></td>
+        </tr>
+        <tr style="background-color: #f7fafc;">
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>supervisor</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>ejecutivo</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>supervisor</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>supervisor</code> (Supervisor)</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>admin_cuenta</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>admin</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>admin_cuenta</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>jefe</code> (Jefe de Cuenta)</td>
+        </tr>
+        <tr style="background-color: #f7fafc;">
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>admin_ti</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>sa</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>admin_ti</code></td>
+            <td style="border: 1px solid #e2e8f0; padding: 10px;"><code>admin</code> (Admin TI)</td>
+        </tr>
+    </tbody>
+</table>
+
+<hr>
+
+<h2>9. Arquitectura de Cuenta — Jefe — Supervisores</h2>
+
+<div class="mermaid">
+flowchart TD
+    CTA["Cuenta (Cliente)<br/>ej: QA Intouch"] --> JEFE["Jefe de Cuenta<br/>FK - 1 por cuenta"]
+    CTA --> SUP["Supervisores<br/>M2M - N por cuenta"]
+    SUP --> TK1["Ticket 1"]
+    SUP --> TK2["Ticket 2"]
+    JEFE -.->|"hereda acceso"| TK1
+    JEFE -.->|"hereda acceso"| TK2
+
+    style CTA fill:#4a90d9,stroke:#2c5282,color:#fff,font-weight:bold
+    style JEFE fill:#ffcc80,stroke:#e65100,color:#333
+    style SUP fill:#a5d6a7,stroke:#2e7d32,color:#333
+    style TK1 fill:#f3e5f5,stroke:#6a1b9a,color:#333
+    style TK2 fill:#f3e5f5,stroke:#6a1b9a,color:#333
+</div>
+
+<p>La asociación se gestiona desde dos puntos en la interfaz:</p>
+<ul>
+    <li><strong>Pantalla de Cuentas:</strong> Se asigna el Jefe de Cuenta (dropdown).</li>
+    <li><strong>Pantalla de Usuarios (Supervisor):</strong> Se asignan las Cuentas al supervisor (checkboxes de "Cuentas asignadas", visibles solo cuando <code>rol === 'supervisor'</code>).</li>
+</ul>
+
+<hr>
+
+<h2>10. Casos Especiales y Puntos Clave</h2>
 
 <ul>
     <li><strong>Problemas de Caché Vite:</strong> A menudo, si se realizan despliegues en el Micro-Frontend de InciTrack sin purgar la caché del navegador, el Orquestador seguirá inyectando el código viejo (esperando variables antiguas, rompiendo la aplicación con <code>Cannot read properties of undefined</code>).</li>
-    <li><strong>Roles Dinámicos:</strong> Los roles como <code>admin_0</code> deben limpiarse antes de procesarse. El Orquestador entrega sufijos específicos que InciTrack internamente traduce a <code>admin</code> global, manejado directamente en los context y componentes como <code>RoleGuard</code>.</li>
+    <li><strong>JWT <code>rol_real</code> vs <code>rol</code>:</strong> InciTrack debe leer siempre <code>rol_real</code> del JWT. El campo <code>rol</code> contiene un valor de compatibilidad que <strong>no sirve</strong> para el mapeo correcto de roles. Esto se controla en <code>grancrm_session.py</code> con: <code>payload.get("rol_real", payload.get("rol", ""))</code>.</li>
+    <li><strong>InciTrack NO es Multi-Tenant:</strong> El <code>TenantDatabaseRouter</code> siempre retorna <code>'default'</code>. Nunca debe usar <code>get_current_db()</code> del <code>TenantDatabaseMiddleware</code>, o usuarios de otros tenants recibirán Error 500.</li>
+    <li><strong>Eliminación Protegida:</strong> Usuarios y Cuentas con tickets asociados <strong>no pueden eliminarse</strong> (ProtectedError). La API retorna HTTP 400 con un mensaje claro. La alternativa es <strong>desactivar</strong> el usuario/cuenta en lugar de eliminarlo.</li>
+    <li><strong>Roles Dinámicos:</strong> Los roles como <code>admin_0</code> deben limpiarse antes de procesarse. El Orquestador entrega sufijos específicos que InciTrack internamente traduce, manejado directamente en los context y componentes como <code>RoleGuard</code>.</li>
     <li><strong>Esquemas Estrictos de Pydantic:</strong> Puesto que se usa Django Ninja, hay que tener extremo cuidado con las respuestas (Schemas). Si se devuelven objetos que no cumplen al 100% el esquema esperado (ej. valores vacíos omitidos por Pydantic), el frontend se romperá. Por eso a veces se fuerza a retornar diccionarios estándar (<code>dict</code>) para preservar la retrocompatibilidad.</li>
     <li><strong>Variables de Entorno:</strong> Nunca confundir <code>DB_PASSWORD</code> con <code>GRANCRM_JWT_SECRET</code>. Y tras editar el <code>.env</code>, se requiere <code>docker compose up -d</code> (no basta con <code>restart</code>).</li>
     <li><strong>Migraciones Obligatorias:</strong> Si se agregan campos nuevos al modelo (ej. <code>categoria</code>, <code>subcategoria</code>), se debe ejecutar <code>python manage.py migrate</code> dentro del contenedor. Si no, los endpoints devolverán HTTP 500.</li>
+    <li><strong>Categorías Dinámicas:</strong> Las categorías y subcategorías son registros en BD (modelo <code>Categoria</code> y <code>Subcategoria</code>), no strings hardcodeados. Se renombran directamente con <code>manage.py shell</code> sin tocar código.</li>
 </ul>
 
 <script>
