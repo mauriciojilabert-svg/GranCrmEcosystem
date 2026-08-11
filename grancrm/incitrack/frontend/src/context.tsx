@@ -30,8 +30,8 @@ export function useAppPath() {
 // Pliega los valores de rol VIEJOS (compat) y NUEVOS al canónico viejo
 export function normalizeRole(rol: string): string {
   if (rol === 'sa' || rol === 'admin_ti') return 'sa';
-  if (rol === 'admin' || rol === 'admin_cuenta') return 'admin';
-  if (rol === 'supervisor' || rol === 'agente') return 'ejecutivo';
+  if (rol === 'admin') return 'admin';
+  if (rol === 'admin_cuenta' || rol === 'supervisor' || rol === 'agente') return 'ejecutivo';
   return rol;
 }
 

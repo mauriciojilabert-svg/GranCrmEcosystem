@@ -41,9 +41,12 @@ def cuentas_visibles(usuario):
             cuentas_asignadas__jefe=usuario
         ).distinct()
 
+        # Bugfix mssql-django: Evaluar el QuerySet a una lista de IDs para evitar subconsultas en __in
+        supervisores_ids = list(supervisores_bajo_jefe.values_list('id', flat=True))
+
         # Todas las cuentas donde esos supervisores están asignados
         cuentas_supervisores = Cuenta.objects.filter(
-            supervisores__in=supervisores_bajo_jefe
+            supervisores__in=supervisores_ids
         )
 
         return (cuentas_directas | cuentas_supervisores).distinct()
