@@ -58,7 +58,11 @@
     {
       "label": "Notificaciones",
       "icon": "feather-bell",
-      "inner": "/incitrack/admin/notificaciones/"
+      "inner": "/incitrack/admin/notificaciones/",
+      "roles": [
+        "sa",
+        "admin"
+      ]
     },
     {
       "label": "Config. SLA",
