@@ -147,6 +147,8 @@ class GranCRMSessionMiddleware:
         if not it_rol:
             it_rol = _ROLE_MAP.get(base_rol, "supervisor")
 
+        print(f"grancrm_session._sync_user: email={email} jwt_rol='{grancrm_rol}' base_rol='{base_rol}' -> it_rol='{it_rol}'", flush=True)
+
         is_super = base_rol == "sa"
 
         user, created = User.objects.get_or_create(

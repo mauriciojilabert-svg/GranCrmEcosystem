@@ -1,16 +1,14 @@
-from .tenant_middleware import get_current_db
-
-
 class TenantDatabaseRouter:
     """
-    Redirige todos los reads/writes a la BD del tenant actual.
+    InciTrack es un módulo independiente con una sola BD.
+    Siempre usa 'default' — no participa en multi-tenancy.
     Las migraciones solo corren en 'default'.
     """
     def db_for_read(self, model, **hints):
-        return get_current_db()
+        return 'default'
 
     def db_for_write(self, model, **hints):
-        return get_current_db()
+        return 'default'
 
     def allow_relation(self, obj1, obj2, **hints):
         return True
