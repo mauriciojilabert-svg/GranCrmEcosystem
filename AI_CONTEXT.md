@@ -37,8 +37,14 @@
    - Modificar `.env` requiere **`sudo docker compose up -d`** (restart no basta).
 
 5. **Frontend React y Caché**:
-   - Compilar frontend: `export PATH="/home/admincrm/.node20/bin:$PATH"` y usar `pnpm build`.
+   - **Compilar frontend en QA**: No existe un contenedor de frontend. Se debe compilar en el host y luego reconstruir el contenedor de backend que lo absorbe:
+     1. `cd incitrack/frontend`
+     2. `export PATH="/home/admincrm/.node20/bin:$PATH"`
+     3. `pnpm install && pnpm build`
+     4. `cd ../..` (volver a la raíz del ecosistema)
+     5. `sudo docker compose up -d --build incitrack-modulo`
    - **Caché en navegador**: Siempre pedir al usuario vaciar caché (F12 -> Cargar de forma rígida) al actualizar UI.
+   - **Sidebar Override**: El menú lateral no solo depende de `dios.json`. El frontend en React inyecta dinámicamente los ítems a través de `window.parent.postMessage({ type: 'grancrm:nav', items: ... })`. Las restricciones de rol de la interfaz gráfica deben aplicarse explícitamente en el archivo `frontend/src/App.tsx`.
    - Para respuestas de Django Ninja con atributos vacíos, usar `response={200: dict}` para evitar que Pydantic omita claves.
    - El pegado de imágenes (Ctrl+V) está soportado visualmente tanto en creación de tickets (`TicketFormPage`) como en comentarios (`TicketDetailPage`).
 
