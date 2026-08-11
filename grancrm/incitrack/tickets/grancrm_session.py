@@ -71,7 +71,7 @@ class GranCRMSessionMiddleware:
             # return response
 
         # Bloquear acceso a los Agentes (Opción 3 de arquitectura)
-        grancrm_rol = payload.get("rol", "")
+        grancrm_rol = payload.get("rol_real", payload.get("rol", ""))
         base_rol = grancrm_rol.split("_")[0] if "_" in grancrm_rol else grancrm_rol
         if base_rol == "agente":
             print(f"grancrm_session: *** ACCESO DENEGADO (Rol Agente no permitido) ***", flush=True)
@@ -137,7 +137,7 @@ class GranCRMSessionMiddleware:
     def _sync_user(self, request, payload):
         email = payload["email"]
         nombre = payload.get("nombre", email.split("@")[0])
-        grancrm_rol = payload.get("rol", "")
+        grancrm_rol = payload.get("rol_real", payload.get("rol", ""))
         
         # Try full role first, if not found, strip numeric suffix if present (e.g. admin_0 -> admin)
         import re
