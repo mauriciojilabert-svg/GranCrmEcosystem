@@ -42,7 +42,7 @@ def cuentas_visibles(usuario):
         ).distinct()
 
         # Bugfix mssql-django: Evaluar el QuerySet a una lista de IDs para evitar subconsultas en __in
-        supervisores_ids = list(supervisores_bajo_jefe.values_list('id', flat=True))
+        supervisores_ids = list(supervisores_bajo_jefe.order_by('id').values_list('id', flat=True))
 
         # Todas las cuentas donde esos supervisores están asignados
         cuentas_supervisores = Cuenta.objects.filter(
@@ -65,7 +65,7 @@ def tickets_visibles(usuario):
         return Ticket.objects.all()
 
     cuentas_qs = cuentas_visibles(usuario)
-    cuentas_ids = list(cuentas_qs.values_list('id', flat=True))
+    cuentas_ids = list(cuentas_qs.order_by('id').values_list('id', flat=True))
     return Ticket.objects.filter(cuenta_id__in=cuentas_ids)
 
 
