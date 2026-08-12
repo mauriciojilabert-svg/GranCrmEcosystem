@@ -165,3 +165,35 @@ MIDDLEWARE = [
 2. **Archivos Base**: Usar la carpeta `PRODUCCION/` local para almacenar `dios_incitrack.json`, `env_incitrack` u otros configurables para clonar a producción fácilmente.
 3. **Desactivar modo compatibilidad JWT**: Cuando el equipo del Orquestador esté listo, se puede cambiar `JWT_ROLES_COMPAT=False` para que el JWT envíe los roles reales directamente en el campo `rol`. InciTrack ya soporta ambos modos gracias al fallback `rol_real → rol`.
 
+---
+
+## 🚀 Estado Actual (Cierre 12 Ago 2026)
+
+**Aprendizajes Críticos de Arquitectura y Despliegue en Producción:**
+
+1. **Cloudflare Cache & Module Federation (Error 522 / "Script error"):** 
+   - Cloudflare cachea agresivamente los archivos de Module Federation (`remoteEntry.js`). Esto causa bloqueos y errores 522/520 silenciosos que impiden que el módulo cargue.
+   - **Solución implementada:** Se debe inyectar una regla en Nginx (`location /mf/incitrack/`) que incluya `add_header Cache-Control "no-cache, must-revalidate";` para forzar a Cloudflare a ir siempre al servidor de origen (Bypass de caché).
+
+2. **Nginx, Docker y Bind Mounts (Archivos Fantasma):**
+   - El archivo `/etc/nginx/nginx.conf` dentro del contenedor `dash-gateway` es un "bind mount" de Solo Lectura (`ro`) hacia `/var/www/dash/gateway/nginx/nginx.conf` en el host.
+   - Si se edita el archivo en el host usando scripts (Python `open().write()` o editores que cambian el inodo del archivo), el contenedor de Docker **ignora los cambios** y sigue leyendo el inodo antiguo en la memoria RAM.
+   - Consecuencia: Hacer `docker exec dash-gateway nginx -s reload` NO recarga los cambios hechos en el host.
+   - **Regla de oro:** Siempre se debe reiniciar el contenedor completo (`sudo docker restart dash-gateway`) después de modificar el archivo `nginx.conf` en el host para que el contenedor monte el inodo nuevo.
+
+3. **Sintaxis Estricta de Nginx:**
+   - Nginx se rehúsa a arrancar (Error 521 de Cloudflare, `emerg` en logs) si existen bloques `location` afuera del bloque principal `server { ... }`.
+   - Al inyectar reglas, SIEMPRE hay que asegurarse de que queden dentro del bloque del servidor y que la llave final del bloque `http` no se rompa o se elimine por error.
+
+4. **Sincronización de Base de Datos (Django y SQL Server):**
+   - El ecosistema usa SQL Server. Si se introducen nuevos campos en el código (ej. `contenido` en `tickets_comentario`) y las migraciones no están sincronizadas, la aplicación arrojará **HTTP 500** (`Invalid column name`).
+   - Las migraciones `0001_initial` en InciTrack fueron "generadas a mano". Si el campo se agrega directamente al código y al archivo `0001_initial.py` en lugar de generar una migración nueva (vía `makemigrations`), Django creerá falsamente que el esquema ya está aplicado en SQL Server.
+   - **Solución temporal:** Inyectar las columnas ausentes usando `ALTER TABLE` directamente en la base de datos (vía `python manage.py shell`).
+   - **Regla de oro:** JAMÁS modificar archivos de migración viejos si ya fueron ejecutados en la base de datos productiva. Siempre generar migraciones nuevas (`0004`, `0005`, etc.).
+
+**Estado en Vivo (ÉXITO TOTAL - 12 Ago 2026):**
+- El Orquestador ahora enruta exitosamente las peticiones del frontend MFE (`remoteEntry.js`) sin bloqueos de Cloudflare gracias al Bypass de caché.
+- Nginx en el `dash-gateway` de producción está correctamente configurado (bloques `location` anidados correctamente) y el contenedor ha sido reiniciado. El proxy-pass hacia el backend de InciTrack (`127.0.0.1:8000`) funciona perfecto.
+- Se resolvieron los errores 500 (desincronización fantasma de migraciones en SQL Server) inyectando manualmente las columnas faltantes (`contenido`, `fecha`, `interno` en la tabla `tickets_comentario`) vía sentencias `ALTER TABLE` en el shell de Django.
+- El Dashboard de InciTrack carga en producción sin errores, listando todos los tickets y estadísticas correctamente. ¡Despliegue a Producción Completado!
+
