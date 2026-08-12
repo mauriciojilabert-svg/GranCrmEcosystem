@@ -3,35 +3,37 @@
 Sigue estos pasos en tu terminal PuTTY conectada a `172.20.21.10` para desplegar InciTrack.
 
 ## 1. Descargar el Código Limpio
-Asegúrate de estar en la carpeta donde tienes GranCRM y bájate la última versión de la rama principal (la cual ya no tiene la basura del dashboard).
+Ve a la ruta raíz `/var/www/dash` (donde vive el orquestador) y clona el ecosistema limpio:
 
 ```bash
-cd /home/admincrm/grancrm
-git pull origin main
+cd /var/www/dash
+git clone https://github.com/mauriciojilabert-svg/GranCrmEcosystem.git grancrm
+cd grancrm
 ```
+*(Si te pide credenciales, ingresa las tuyas de GitHub o usa un token).*
 
 ## 2. Configurar Variables de Entorno (.env)
-Si aún no existe el archivo `.env` para InciTrack, usa la plantilla que armamos:
+Copia la plantilla de producción que acabamos de armar hacia la carpeta interna de InciTrack:
 
 ```bash
-cd grancrm/incitrack
-cp ../../deploy_prod/.env.prod.example .env
+cd /var/www/dash/grancrm/incitrack
+cp ../deploy_prod/.env.prod.example .env
 ```
-*(Si ya existe, verifica que los datos en `grancrm/incitrack/.env` coincidan con lo que tenemos en `deploy_prod/.env.prod.example`)*.
+*(Puedes revisar que todo esté en orden ejecutando `cat .env`)*.
 
 ## 3. Registrar el Módulo en el Orquestador
-Copia el manifiesto al Orquestador para que aparezcan los botones de InciTrack en el menú lateral:
+Copia el archivo `dios` hacia la carpeta del Orquestador para que el frontend lo cargue en el menú lateral:
 
 ```bash
-cp ../../deploy_prod/dios_incitrack.json /home/admincrm/grancrm/modulos/dios_incitrack.json
+cp /var/www/dash/grancrm/deploy_prod/dios_incitrack.json /var/www/dash/orquestador/modulos/dios_incitrack.json
 ```
 
-## 4. Modificar docker-compose.yml de Producción
-Si el archivo `docker-compose.yml` en la raíz (`/home/admincrm/grancrm/docker-compose.yml`) aún no tiene el contenedor de InciTrack, debes asegurarte de que el servicio esté listado (y que la red de Docker permita la comunicación con Nginx).
-Para iniciar/reiniciar todo:
+## 4. Modificar docker-compose.yml y Levantar
+Asegúrate de que `/var/www/dash/grancrm/docker-compose.yml` esté listo para producción (que el contenedor `incitrack-modulo` esté mapeado a la red de producción).
+Para iniciar el servicio:
 
 ```bash
-cd /home/admincrm/grancrm
+cd /var/www/dash/grancrm
 sudo docker compose build incitrack-modulo
 sudo docker compose up -d incitrack-modulo
 ```
