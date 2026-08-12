@@ -36,14 +36,12 @@ content = re.sub(r'\s*location /incitrack/\s*\{[^}]*\}\s*', '\n', content)
 content = re.sub(r'\n{3,}', '\n\n', content)
 
 # Ahora insertar el bloque limpio antes de location /crs/api/
-anchor = "    location /crs/api/"
-if anchor not in content:
+content, n = re.subn(r'([ \t]*location /crs/api/\s*\{)', r'\n' + INCITRACK_BLOCK + r'\1', content, count=1)
+if n == 0:
     print("ERROR: No se encontro 'location /crs/api/' como ancla")
     print("Contenido actual:")
     print(content)
     sys.exit(1)
-
-content = content.replace(anchor, INCITRACK_BLOCK + anchor)
 
 with open(NGINX_CONF, 'w') as f:
     f.write(content)
