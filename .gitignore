@@ -4,20 +4,17 @@ jspm_packages/
 web_drivers/
 **/orquestador/
 
+# Environment files (cada servidor tiene el suyo propio)
+.env
+.env.*
+*.env
+
 
 # Build and distribution directories
 dist/
 build/
 out/
 staticfiles/
-
-# Environment files
-# .env
-# .env.local
-# .env.development.local
-# .env.test.local
-# .env.production.local
-# *.env
 
 # Python files
 **/__pycache__/
