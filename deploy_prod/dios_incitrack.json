@@ -14,7 +14,7 @@
   "modo": "spa_remote",
   "slug": "incitrack",
   "route_prefix": "/incitrack",
-  "remote_entry_url": "/mf/incitrack/remoteEntry.js",
+  "remote_entry_url": "/mf/incitrack/remoteEntry.js?v=20260813",
   "remote_scope": "incitrack",
   "contract_version": "1",
   "nav": [
