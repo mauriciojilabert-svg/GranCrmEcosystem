@@ -251,3 +251,27 @@ export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" &
 - Se resolvieron los errores 500 (desincronización fantasma de migraciones en SQL Server) inyectando manualmente las columnas faltantes (`contenido`, `fecha`, `interno` en la tabla `tickets_comentario`) vía sentencias `ALTER TABLE` en el shell de Django.
 - El Dashboard de InciTrack carga en producción sin errores, listando todos los tickets y estadísticas correctamente. ¡Despliegue a Producción Completado!
 
+## 🚀 Actualización (13 Ago 2026): Troubleshooting Orquestador y Frontend React
+
+5. **Recompilación Obligatoria del Frontend React:**
+   - Hacer `git pull` y reiniciar los contenedores de backend (`docker restart`) **NO actualiza** la interfaz de React.
+   - El código fuente `.tsx` debe ser compilado explícitamente en el servidor para que Nginx sirva los nuevos archivos estáticos en `/home/admincrm/staticfiles/mf/incitrack/`.
+   - **Regla de oro:** Al subir cambios visuales (frontend), SIEMPRE se debe ejecutar:
+     ```bash
+     cd /var/www/dash/grancrm/grancrm/incitrack/frontend
+     pnpm install && pnpm build
+     ```
+
+6. **Error de Montaje Falso en Docker (`not a directory`):**
+   - Si el Orquestador falla al arrancar con el error `Are you trying to mount a directory onto a file?` sobre `tenants.json`, significa que el archivo original no existía en el host al momento de arrancar el contenedor.
+   - Docker asume erróneamente que es una carpeta y crea un directorio vacío con ese nombre, corrompiendo el montaje.
+   - **Solución:** Borrar la carpeta falsa (`rm -rf tenants.json`) y crear un archivo válido vacío (`echo "{}" > tenants.json`) antes de reiniciar el contenedor.
+
+7. **Registro Silencioso en DIOS (`dios.json`):**
+   - InciTrack intenta registrarse en el Orquestador al arrancar enviando su configuración a `http://orquestador:9000`.
+   - Dado que InciTrack usa `network_mode: host`, no puede resolver el hostname `orquestador` (falla el DNS interno de Docker) y el registro **falla silenciosamente**.
+   - **Solución Permanente:** Se debe agregar `DIOS_URL=http://127.0.0.1:9000` en el `.env` de InciTrack.
+   - **Solución Rápida (Bypass sin reinicio):** Se puede inyectar la configuración directamente enviando un curl desde el host:
+     ```bash
+     curl -X POST http://127.0.0.1:9000/internal/register-app/ -H "Content-Type: application/json" -d @/var/www/dash/grancrm/grancrm/incitrack/dios.json
+     ```
