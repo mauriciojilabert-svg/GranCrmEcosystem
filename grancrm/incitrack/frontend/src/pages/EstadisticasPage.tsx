@@ -439,7 +439,7 @@ export function EstadisticasPage(): JSX.Element {
               <ChartCard title="SLA por Servicio" subtitle="% Cumplimiento">
                 <BarChartWidget data={slaCategoriasData}
                   series={[{ key: 'SLA', color: '#22c55e', label: '% SLA' }]}
-                  height={200} barSize={25} />
+                  layout="vertical" height={200} barSize={12} />
               </ChartCard>
             </div>
           </div>

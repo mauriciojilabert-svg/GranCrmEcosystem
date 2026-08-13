@@ -173,7 +173,8 @@ MIDDLEWARE = [
 | Código InciTrack (backend) | `/var/www/dash/grancrm/grancrm/incitrack` |
 | Frontend (fuentes) | `/var/www/dash/grancrm/grancrm/incitrack/frontend` |
 | `docker-compose.yml` | `/var/www/dash/grancrm/grancrm/docker-compose.yml` |
-| Archivos estáticos compilados | `/home/admincrm/staticfiles/mf/incitrack/` |
+| Archivos estáticos de Nginx | `/var/www/dash/staticfiles/mf/incitrack/` |
+| Output de `pnpm build` (local) | `/home/admincrm/staticfiles/mf/incitrack/` |
 | Orquestador | `/home/admincrm/orquestador/` |
 | Node.js 20 (vía nvm) | `$HOME/.nvm/versions/node/v20.x.x/` |
 
@@ -209,7 +210,7 @@ MIDDLEWARE = [
 **Comando rápido de despliegue completo (copiar/pegar en PuTTY):**
 
 ```bash
-export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm use 20 && cd /var/www/dash/grancrm && sudo git pull origin main && sudo chown -R admincrm:admincrm grancrm/incitrack/frontend && cd grancrm/incitrack/frontend && pnpm install && pnpm build && cd /var/www/dash/grancrm/grancrm && sudo docker compose up -d --build incitrack-modulo
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm use 20 && cd /var/www/dash/grancrm && sudo git pull origin main && sudo chown -R admincrm:admincrm grancrm/incitrack/frontend && cd grancrm/incitrack/frontend && pnpm install && pnpm build && sudo rsync -av --delete /home/admincrm/staticfiles/mf/incitrack/ /var/www/dash/staticfiles/mf/incitrack/ && cd /var/www/dash/grancrm/grancrm && sudo docker compose restart incitrack-modulo
 ```
 
 ---
