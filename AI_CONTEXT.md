@@ -10,8 +10,8 @@
    - Se realizan los cambios de código a nivel local.
    - **Subir cambios**: Se realiza commit y `git push` a la rama `main` en GitHub.
    - **Bajar cambios en Servidores**: Se accede al servidor mediante PuTTY, se realiza `git pull` en la carpeta correcta y se compila/reinicia Docker.
-     - **Ruta QA**: `cd /home/admincrm/grancrm`
-     - **Ruta Producción**: (Por definir en la máquina productiva)
+     - **Ruta QA/Producción**: `cd /var/www/dash/grancrm`
+     - **Git pull requiere sudo**: `sudo git pull origin main` (la carpeta `/var/www/` pertenece a `root`)
 
 ---
 
@@ -105,13 +105,18 @@ Al desplegar código que modifique modelos (ej. Categorías dinámicas), es obli
 
 ### 8. Frontend React y Caché
 
-- **Compilar frontend en QA**: No existe un contenedor de frontend. Se debe compilar en el host y luego reconstruir el contenedor de backend que lo absorbe:
-  1. `cd incitrack/frontend`
-  2. `export PATH="/home/admincrm/.node20/bin:$PATH"`
+- **Compilar frontend en QA/Producción**: No existe un contenedor de frontend. Se debe compilar en el host y luego reconstruir el contenedor de backend que lo absorbe:
+  1. `cd /var/www/dash/grancrm/grancrm/incitrack/frontend`
+  2. Cargar Node.js 20 vía `nvm`:
+     ```bash
+     export NVM_DIR="$HOME/.nvm"
+     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+     nvm use 20
+     ```
   3. `pnpm install && pnpm build`
-  4. `cd ../..` (volver a la raíz del ecosistema)
+  4. `cd /var/www/dash/grancrm/grancrm` (donde está `docker-compose.yml`)
   5. `sudo docker compose up -d --build incitrack-modulo`
-- **Caché en navegador**: Siempre pedir al usuario vaciar caché (F12 -> Cargar de forma rígida) al actualizar UI.
+- **Caché en navegador**: Siempre pedir al usuario vaciar caché (F12 -> Cargar de forma rígida, o `Ctrl+Shift+R`) al actualizar UI.
 - Para respuestas de Django Ninja con atributos vacíos, usar `response={200: dict}` para evitar que Pydantic omita claves.
 - El pegado de imágenes (Ctrl+V) está soportado visualmente tanto en creación de tickets (`TicketFormPage`) como en comentarios (`TicketDetailPage`).
 
@@ -157,6 +162,55 @@ MIDDLEWARE = [
 ```
 
 **Orden importante**: La sincronización del usuario (paso 2) ocurre ANTES del switch de BD tenant (paso 3), por lo que el usuario siempre se guarda en la BD `default` de InciTrack.
+
+### 12. Rutas del Servidor y Permisos
+
+**Estructura de rutas en el servidor (QA/Producción):**
+
+| Recurso | Ruta en servidor |
+|---|---|
+| Raíz del repositorio | `/var/www/dash/grancrm` |
+| Código InciTrack (backend) | `/var/www/dash/grancrm/grancrm/incitrack` |
+| Frontend (fuentes) | `/var/www/dash/grancrm/grancrm/incitrack/frontend` |
+| `docker-compose.yml` | `/var/www/dash/grancrm/grancrm/docker-compose.yml` |
+| Archivos estáticos compilados | `/home/admincrm/staticfiles/mf/incitrack/` |
+| Orquestador | `/home/admincrm/orquestador/` |
+| Node.js 20 (vía nvm) | `$HOME/.nvm/versions/node/v20.x.x/` |
+
+**Permisos y `sudo`:**
+
+- La carpeta `/var/www/dash/` pertenece a `root`. Operaciones de git requieren `sudo`:
+  ```bash
+  sudo git pull origin main
+  ```
+- El frontend necesita que el usuario `admincrm` tenga permisos de escritura para compilar. Si `pnpm install` falla con `EACCES`, corregir con:
+  ```bash
+  sudo chown -R admincrm:admincrm /var/www/dash/grancrm/grancrm/incitrack/frontend
+  ```
+- Docker compose siempre se ejecuta con `sudo`:
+  ```bash
+  sudo docker compose up -d --build incitrack-modulo
+  ```
+
+**Node.js en el servidor:**
+
+- La carpeta `/home/admincrm/.node20/` ya **no existe**. Node.js 20 fue instalado vía `nvm` (Node Version Manager) el 13/Ago/2026.
+- Para usar Node.js y `pnpm` en cualquier sesión de PuTTY:
+  ```bash
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  nvm use 20
+  ```
+- `pnpm@9.1.0` es la versión declarada en `package.json`. Si no está instalado:
+  ```bash
+  npm install -g pnpm@9.1.0
+  ```
+
+**Comando rápido de despliegue completo (copiar/pegar en PuTTY):**
+
+```bash
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && nvm use 20 && cd /var/www/dash/grancrm && sudo git pull origin main && sudo chown -R admincrm:admincrm grancrm/incitrack/frontend && cd grancrm/incitrack/frontend && pnpm install && pnpm build && cd /var/www/dash/grancrm/grancrm && sudo docker compose up -d --build incitrack-modulo
+```
 
 ---
 
