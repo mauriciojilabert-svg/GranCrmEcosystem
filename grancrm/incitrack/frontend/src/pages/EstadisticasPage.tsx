@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { apiFetch } from '../api';
+import type { SLAOut } from '../apiTypes';
 import { Card } from '@duralux/ui';
 import { PageHeader } from '../components/duralux/PageHeader';
 import { ChartCard } from '../components/duralux/charts/ChartCard';
@@ -165,18 +166,47 @@ export function EstadisticasPage(): JSX.Element {
     const load = async () => {
       setLoading(true); setError(null);
       try {
-        const tickets = await apiFetch<any[]>('tickets/?ver_todos=true&limite=2000');
-        const kpisData = {};
-        const tiemposData = { promedio_hrs: 0 };
-        setRawTickets(tickets.map((t: any) => ({
-          ...t,
-          fecha_obj: t.fecha_creacion ? new Date(t.fecha_creacion) : new Date(),
-          estado_norm: (t.estado || '').toLowerCase().trim().replace('_', ' '),
-        })));
-        setKpis(kpisData);
+        const [tickets, slaConfigs] = await Promise.all([
+          apiFetch<any[]>('tickets/?ver_todos=true&limite=2000'),
+          apiFetch<SLAOut[]>('sla/')
+        ]);
+
+        const tiemposData = { promedio_hrs: 0 }; // TODO: calcular si es necesario
+        
+        const enhancedTickets = tickets.map((t: any) => {
+          let tiene_sla = false;
+          let sla_cumplido = false;
+          
+          const ticketSla = slaConfigs.find(s => 
+            s.categoria_id === t.categoria_id &&
+            (s.subcategoria_id === t.subcategoria_id || s.subcategoria_id === null) &&
+            (!s.plataforma_bi || s.plataforma_bi === t.plataforma_bi)
+          );
+
+          if (ticketSla) {
+            tiene_sla = true;
+            const isResolved = t.estado === 'resuelto' || t.estado === 'cerrado';
+            const endDate = isResolved 
+              ? (t.fecha_resolucion ? new Date(t.fecha_resolucion) : new Date(t.fecha_actualizacion))
+              : new Date();
+            
+            const diffMin = (endDate.getTime() - new Date(t.fecha_creacion).getTime()) / 60000;
+            sla_cumplido = diffMin <= ticketSla.tiempo_cierre_minutos;
+          }
+
+          return {
+            ...t,
+            fecha_obj: t.fecha_creacion ? new Date(t.fecha_creacion) : new Date(),
+            estado_norm: (t.estado || '').toLowerCase().trim().replace('_', ' '),
+            tiene_sla,
+            sla_cumplido
+          };
+        });
+
+        setRawTickets(enhancedTickets);
         setTiempos(tiemposData);
       } catch {
-        setError('Error al obtener los tickets del backend local.');
+        setError('Error al obtener los datos del backend.');
       } finally {
         setLoading(false);
       }
@@ -215,8 +245,13 @@ export function EstadisticasPage(): JSX.Element {
       if (t.estado_norm === 'resuelto' || t.estado_norm === 'cerrado') return false;
       return (now.getTime() - t.fecha_obj.getTime()) / 3600000 > 48;
     }).length;
-    return { total, abiertos, enProceso, resueltos, tasa, estancados, sla: kpis?.sla_cumplimiento ?? 0, mttr: tiempos?.promedio_hrs ?? 0 };
-  }, [filteredTickets, kpis, tiempos]);
+
+    const ticketsConSLA = filteredTickets.filter(t => t.tiene_sla);
+    const ticketsCumplidos = ticketsConSLA.filter(t => t.sla_cumplido);
+    const slaCompliance = ticketsConSLA.length > 0 ? Math.round((ticketsCumplidos.length / ticketsConSLA.length) * 100) : 0;
+
+    return { total, abiertos, enProceso, resueltos, tasa, estancados, sla: slaCompliance, mttr: tiempos?.promedio_hrs ?? 0 };
+  }, [filteredTickets, tiempos]);
 
   // Volumen Semanal
   const weekData = useMemo(() => {
@@ -245,6 +280,23 @@ export function EstadisticasPage(): JSX.Element {
     const m: Record<string, number> = {};
     filteredTickets.forEach(t => { const c = t.categoria_nombre || 'Sin Categoría'; m[c] = (m[c] || 0) + 1; });
     return Object.entries(m).map(([name, value]) => ({ name: shortName(name), value })).sort((a, b) => b.value - a.value).slice(0, 6);
+  }, [filteredTickets]);
+
+  // SLA por Categoría
+  const slaCategoriasData = useMemo(() => {
+    const m: Record<string, { total: number, cumplidos: number }> = {};
+    filteredTickets.forEach(t => {
+      if (!t.tiene_sla) return;
+      const c = t.categoria_nombre || 'Sin Categoría';
+      if (!m[c]) m[c] = { total: 0, cumplidos: 0 };
+      m[c].total++;
+      if (t.sla_cumplido) m[c].cumplidos++;
+    });
+    
+    return Object.entries(m).map(([name, v]) => ({
+      name: shortName(name, 15),
+      SLA: Math.round((v.cumplidos / v.total) * 100)
+    })).sort((a, b) => b.SLA - a.SLA).slice(0, 5);
   }, [filteredTickets]);
 
   // Top Cuentas
@@ -367,20 +419,27 @@ export function EstadisticasPage(): JSX.Element {
             </div>
           </div>
 
-          {/* Volumen + Categorías */}
+          {/* Volumen + Categorías + SLA */}
           <div className="row g-3 mb-3">
-            <div className="col-12 col-xl-6">
-              <ChartCard title="Volumen Semanal (Lun–Sáb)" subtitle="Picos de operación esta semana">
+            <div className="col-12 col-xl-4">
+              <ChartCard title="Volumen Semanal" subtitle="Lun–Sáb">
                 <AreaChartWidget data={weekData}
                   series={[{ key: 'Tickets', color: '#6c63ff', label: 'Tickets' }]}
                   height={200} />
               </ChartCard>
             </div>
-            <div className="col-12 col-xl-6">
-              <ChartCard title="Distribución por Servicio" subtitle="Categorías con más incidencias">
+            <div className="col-12 col-xl-4">
+              <ChartCard title="Incidencias por Servicio" subtitle="Top categorías">
                 <BarChartWidget data={topCategorias}
                   series={[{ key: 'value', color: '#f59e0b', label: 'Tickets' }]}
-                  height={200} barSize={30} />
+                  height={200} barSize={25} />
+              </ChartCard>
+            </div>
+            <div className="col-12 col-xl-4">
+              <ChartCard title="SLA por Servicio" subtitle="% Cumplimiento">
+                <BarChartWidget data={slaCategoriasData}
+                  series={[{ key: 'SLA', color: '#22c55e', label: '% SLA' }]}
+                  height={200} barSize={25} />
               </ChartCard>
             </div>
           </div>

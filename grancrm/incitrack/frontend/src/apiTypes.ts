@@ -14,6 +14,7 @@ export interface TicketListItemOut {
   estado: TicketEstado;
   fecha_creacion: string;
   fecha_actualizacion: string;
+  fecha_resolucion: string | null;
   tipo_incidencia: string;
   fue_reasignado: boolean;
   cuenta_id: number;

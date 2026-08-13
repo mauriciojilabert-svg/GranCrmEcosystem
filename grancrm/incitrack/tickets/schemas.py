@@ -66,6 +66,7 @@ class TicketListItemOut(Schema):
     prioridad: str
     fecha_creacion: datetime
     fecha_actualizacion: datetime
+    fecha_resolucion: Optional[datetime] = None
     tipo_incidencia: str
     fue_reasignado: bool
     cuenta_id: int

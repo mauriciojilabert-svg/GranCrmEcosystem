@@ -329,6 +329,7 @@ def ticket_list(
             prioridad=t.prioridad,
             fecha_creacion=t.fecha_creacion,
             fecha_actualizacion=t.fecha_actualizacion,
+            fecha_resolucion=t.fecha_resolucion,
             tipo_incidencia=t.tipo_incidencia,
             fue_reasignado=t.fue_reasignado,
             cuenta_id=t.cuenta_id,
