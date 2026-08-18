@@ -386,7 +386,7 @@ export function TicketFormPage({ mode }: Props) {
 
               <div className="card stretch stretch-full">
                 <div className="card-header">
-                  <h5 className="card-title mb-0"><i className="feather-folder me-2" />Clasificación</h5>
+                  <h5 className="card-title mb-0"><i className="feather-folder me-2" />Archivos Adjuntos</h5>
                 </div>
                 <div className="card-body p-4">
                   <div className="row g-4">
