@@ -228,6 +228,7 @@ class NotificacionOut(Schema):
     activo: bool
     clasificacion_display: str
     usuario_ids: list[int] = []
+    usuarios_nombres: list[str] = []
 
 
 class NotificacionIn(Schema):

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8c8c8c"/>
+    </marker>
+  </defs>
+
+  <!-- Ticket creado -->
+  <rect x="255" y="15" width="250" height="52" rx="12" fill="#6c63ff"/>
+  <text x="380" y="38" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">🎫 NUEVO TICKET CREADO</text>
+  <text x="380" y="56" text-anchor="middle" fill="#e0deff" font-size="11">ej: "Cintillo Telefónico" en Empresa ABC</text>
+
+  <!-- Arrows down -->
+  <line x1="290" y1="67" x2="170" y2="100" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="470" y1="67" x2="590" y2="100" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Regla A -->
+  <rect x="45" y="104" width="290" height="120" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+  <text x="190" y="130" text-anchor="middle" fill="#15803d" font-size="14" font-weight="700">REGLA A — Jefe de Cuenta</text>
+  <text x="190" y="150" text-anchor="middle" fill="#283c50" font-size="12">El usuario en la casilla "Jefe"</text>
+  <text x="190" y="166" text-anchor="middle" fill="#283c50" font-size="12">del formulario de la Cuenta</text>
+  <rect x="70" y="180" width="240" height="30" rx="8" fill="#22c55e"/>
+  <text x="190" y="199" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">SIEMPRE recibe el correo ✉</text>
+
+  <!-- Regla B -->
+  <rect x="425" y="104" width="290" height="120" rx="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+  <text x="570" y="130" text-anchor="middle" fill="#b45309" font-size="14" font-weight="700">REGLA B — Notificaciones</text>
+  <text x="570" y="150" text-anchor="middle" fill="#283c50" font-size="12">Técnicos de la regla que calce con</text>
+  <text x="570" y="166" text-anchor="middle" fill="#283c50" font-size="12">Categoría / Subcategoría del ticket</text>
+  <rect x="450" y="180" width="240" height="30" rx="8" fill="#f59e0b"/>
+  <text x="570" y="199" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Técnicos + correos en CC ✉</text>
+
+  <!-- Precedencia -->
+  <rect x="45" y="244" width="670" height="70" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="380" y="268" text-anchor="middle" fill="#283c50" font-size="13" font-weight="700">📌 Precedencia de la Regla B (de más específica a más general)</text>
+  <text x="380" y="288" text-anchor="middle" fill="#475569" font-size="12.5">Subcategoría exacta  →  Categoría general  →  Regla global (sin categoría)</text>
+  <text x="380" y="305" text-anchor="middle" fill="#b45309" font-size="11.5" font-weight="600">Bonus: el PRIMER técnico de la regla queda auto-asignado al ticket</text>
+</svg>

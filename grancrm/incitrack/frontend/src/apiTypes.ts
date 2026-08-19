@@ -231,6 +231,7 @@ export interface NotificacionOut {
   activo: boolean;
   clasificacion_display: string;
   usuario_ids: number[];
+  usuarios_nombres: string[];
 }
 
 export interface NotificacionIn {

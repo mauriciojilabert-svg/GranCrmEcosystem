@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8c8c8c"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#ef4444"/>
+    </marker>
+  </defs>
+
+  <!-- Headers -->
+  <rect x="40" y="18" width="280" height="40" rx="10" fill="#283c50"/>
+  <text x="180" y="43" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">ORQUESTADOR (rol que eliges)</text>
+  <rect x="440" y="18" width="280" height="40" rx="10" fill="#6c63ff"/>
+  <text x="580" y="43" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">INCITRACK (lo que se convierte)</text>
+
+  <!-- Row 1: supervisor -->
+  <rect x="40" y="74" width="280" height="44" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="180" y="101" text-anchor="middle" fill="#1e40af" font-size="15" font-weight="600">supervisor</text>
+  <line x1="330" y1="96" x2="430" y2="96" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="440" y="74" width="280" height="44" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="580" y="95" text-anchor="middle" fill="#1e40af" font-size="14" font-weight="600">Supervisor (cliente base)</text>
+  <text x="580" y="111" text-anchor="middle" fill="#6b7591" font-size="11">Solo ve tickets de SUS cuentas asignadas</text>
+
+  <!-- Row 2: admin_cuenta -->
+  <rect x="40" y="130" width="280" height="44" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="180" y="157" text-anchor="middle" fill="#15803d" font-size="15" font-weight="600">admin_cuenta</text>
+  <line x1="330" y1="152" x2="430" y2="152" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="440" y="130" width="280" height="44" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="580" y="151" text-anchor="middle" fill="#15803d" font-size="14" font-weight="600">Jefe de Cuenta</text>
+  <text x="580" y="167" text-anchor="middle" fill="#6b7591" font-size="11">Hereda todos los tickets + recibe correos</text>
+
+  <!-- Row 3: admin_ti -->
+  <rect x="40" y="186" width="280" height="44" rx="10" fill="#f5f3ff" stroke="#6c63ff" stroke-width="1.5"/>
+  <text x="180" y="213" text-anchor="middle" fill="#5b21b6" font-size="15" font-weight="600">admin_ti</text>
+  <line x1="330" y1="208" x2="430" y2="208" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="440" y="186" width="280" height="44" rx="10" fill="#f5f3ff" stroke="#6c63ff" stroke-width="1.5"/>
+  <text x="580" y="207" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="600">Admin TI</text>
+  <text x="580" y="223" text-anchor="middle" fill="#6b7591" font-size="11">Acceso total (Cuentas, Usuarios, SLA, etc.)</text>
+
+  <!-- Row 4: agente BLOQUEADO -->
+  <rect x="40" y="242" width="280" height="44" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="180" y="269" text-anchor="middle" fill="#b91c1c" font-size="15" font-weight="600">agente</text>
+  <line x1="330" y1="264" x2="430" y2="264" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
+  <rect x="440" y="242" width="280" height="44" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="580" y="263" text-anchor="middle" fill="#b91c1c" font-size="14" font-weight="700">⛔ BLOQUEADO (Error 403)</text>
+  <text x="580" y="279" text-anchor="middle" fill="#6b7591" font-size="11">Nunca uses este rol para usuarios de InciTrack</text>
+</svg>

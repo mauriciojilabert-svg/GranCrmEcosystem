@@ -140,8 +140,13 @@ sudo docker compose exec incitrack-modulo python manage.py shell -c \
 
 ### 10. Servicio de Correos
 
-- `email_service.py` corre en `threading.Thread`.
+- `email_service.py` corre en `threading.Thread` (daemon).
 - Los fallos quedan en `docker logs`. Envía a Jefe de Cuenta y Admins TI asociados.
+- **⚠️ Incidente 2026-08-17 (Producción):** Los correos no se enviaban. El log mostraba `hilo de email iniciado → [destinatarios OK]` seguido de `Error 535 5.7.8 Username and Password not accepted` (gsmtp). Causa: la plantilla `.env.prod.example` NO incluía las variables `EMAIL_*`, así que producción usaba los defaults de `settings.py` con `EMAIL_HOST_PASSWORD=''` (vacío). Ya se corrigió la plantilla en `deploy_prod/.env.prod.example`.
+- **Regla de oro:** El `.env` de producción DEBE incluir `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` y `DEFAULT_FROM_EMAIL`.
+- **Gmail exige App Password** (16 caracteres, sin espacios, con 2FA activado en `myaccount.google.com/apppasswords`). La contraseña normal de la cuenta NO funciona vía SMTP desde que Google desactivó el acceso de "apps menos seguras".
+- **Diagnóstico rápido:** `sudo docker logs grancrm-incitrack 2>&1 | grep -iE "email|smtp|535"` → `Error al enviar email` = problema SMTP; `sin destinatarios` = falta jefe en la cuenta o regla `NotificacionServicio`.
+- **Test SMTP sin crear ticket:** `sudo docker compose exec incitrack-modulo python manage.py shell -c "from django.core.mail import send_mail; send_mail('Test','Prueba','InciTrack <noreply@in-touchcrm.cl>',['destino@x.com'],fail_silently=False)"`
 
 ### 11. Cadena de Middlewares (orden en `settings.py`)
 

@@ -55,3 +55,11 @@ arquitectura_incitrack.md
 arquitectura_incitrack.pdf
 fix_indent.py
 tracked_files.txt
+
+# .NET Core/C# build folders
+bin/
+obj/
+
+**/node_modules/
+**/bin/
+**/obj/

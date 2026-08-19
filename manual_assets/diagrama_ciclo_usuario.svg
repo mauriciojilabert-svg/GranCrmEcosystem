@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="170" viewBox="0 0 760 170" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrC" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#6c63ff"/>
+    </marker>
+  </defs>
+
+  <!-- Step 1 -->
+  <circle cx="95" cy="60" r="26" fill="#6c63ff"/>
+  <text x="95" y="66" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">1</text>
+  <text x="95" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Crear usuario en</text>
+  <text x="95" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">el Orquestador</text>
+  <text x="95" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">elegir el rol correcto</text>
+
+  <line x1="130" y1="60" x2="185" y2="60" stroke="#6c63ff" stroke-width="2.5" marker-end="url(#arrC)"/>
+
+  <!-- Step 2 -->
+  <circle cx="285" cy="60" r="26" fill="#3b82f6"/>
+  <text x="285" y="66" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">2</text>
+  <text x="285" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">El usuario inicia</text>
+  <text x="285" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">sesión 1 vez</text>
+  <text x="285" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">así "viaja" a InciTrack</text>
+
+  <line x1="320" y1="60" x2="375" y2="60" stroke="#6c63ff" stroke-width="2.5" marker-end="url(#arrC)"/>
+
+  <!-- Step 3 -->
+  <circle cx="475" cy="60" r="26" fill="#f59e0b"/>
+  <text x="475" y="66" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">3</text>
+  <text x="475" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Vincularlo a su</text>
+  <text x="475" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Cuenta en InciTrack</text>
+  <text x="475" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">campo Jefe y/o Supervisores</text>
+
+  <line x1="510" y1="60" x2="565" y2="60" stroke="#6c63ff" stroke-width="2.5" marker-end="url(#arrC)"/>
+
+  <!-- Step 4 -->
+  <circle cx="665" cy="60" r="26" fill="#22c55e"/>
+  <text x="665" y="67" text-anchor="middle" fill="#fff" font-size="17" font-weight="700">✓</text>
+  <text x="665" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Listo: ya puede</text>
+  <text x="665" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">crear y ver tickets</text>
+  <text x="665" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">solo de su empresa</text>
+</svg>

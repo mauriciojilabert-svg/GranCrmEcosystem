@@ -1122,6 +1122,7 @@ def notificacion_list(request: HttpRequest):
             activo=n.activo,
             clasificacion_display=n.clasificacion_display,
             usuario_ids=list(n.usuarios.values_list('id', flat=True)),
+            usuarios_nombres=[u.nombre for u in n.usuarios.all()],
         )
         for n in qs
     ]
@@ -1152,6 +1153,7 @@ def notificacion_crear(request: HttpRequest, data: NotificacionIn):
         activo=n.activo,
         clasificacion_display=n.clasificacion_display,
         usuario_ids=list(n.usuarios.values_list('id', flat=True)),
+        usuarios_nombres=[u.nombre for u in n.usuarios.all()],
     )
 
 
@@ -1180,6 +1182,7 @@ def notificacion_editar(request: HttpRequest, notif_id: int, data: NotificacionI
         activo=n.activo,
         clasificacion_display=n.clasificacion_display,
         usuario_ids=list(n.usuarios.values_list('id', flat=True)),
+        usuarios_nombres=[u.nombre for u in n.usuarios.all()],
     )
 
 

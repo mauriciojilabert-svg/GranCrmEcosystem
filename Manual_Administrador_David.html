@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Manual del Administrador — InciTrack</title>
+<style>
+  :root {
+    --primary: #6c63ff; --success: #22c55e; --warning: #f59e0b;
+    --danger: #ef4444; --info: #3b82f6; --dark: #283c50; --muted: #6b7591;
+    --border: #e5e9f2; --bg-soft: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif; color: var(--dark);
+    max-width: 820px; margin: 0 auto; padding: 32px 28px;
+    font-size: 14px; line-height: 1.6; background: #fff;
+  }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 {
+    font-size: 19px; margin: 34px 0 12px; padding: 10px 16px;
+    background: linear-gradient(90deg, #f5f3ff, transparent);
+    border-left: 4px solid var(--primary); border-radius: 6px;
+    page-break-after: avoid;
+  }
+  h3 { font-size: 15.5px; margin: 22px 0 8px; color: var(--primary); page-break-after: avoid; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  code {
+    background: #f1f5f9; border: 1px solid var(--border); border-radius: 4px;
+    padding: 1px 6px; font-size: 12.5px; color: #5b21b6; font-family: Consolas, monospace;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+  th { background: var(--bg-soft); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .cover {
+    background: linear-gradient(135deg, #283c50 0%, #6c63ff 100%);
+    color: #fff; border-radius: 14px; padding: 30px 34px; margin-bottom: 8px;
+  }
+  .cover h1 { color: #fff; }
+  .cover .subtitle { opacity: .9; font-size: 15px; margin-top: 6px; }
+  .cover .badge {
+    display: inline-block; background: rgba(255,255,255,.18); border-radius: 20px;
+    padding: 4px 14px; font-size: 12px; margin-top: 12px; font-weight: 600;
+  }
+  .intro { color: var(--muted); font-size: 13.5px; margin: 14px 0 0; }
+
+  .callout {
+    border-radius: 10px; padding: 12px 16px; margin: 14px 0; font-size: 13.5px;
+    page-break-inside: avoid;
+  }
+  .callout .title { font-weight: 700; margin-bottom: 4px; }
+  .callout.warn { background: #fffbeb; border: 1px solid #fcd34d; }
+  .callout.warn .title { color: #b45309; }
+  .callout.info { background: #eff6ff; border: 1px solid #93c5fd; }
+  .callout.info .title { color: #1d4ed8; }
+  .callout.tip { background: #f0fdf4; border: 1px solid #86efac; }
+  .callout.tip .title { color: #15803d; }
+
+  .figure { text-align: center; margin: 16px 0; page-break-inside: avoid; }
+  .figure svg, .figure img { max-width: 100%; height: auto; }
+  .figure img { border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 3px 12px rgba(40,60,80,.10); }
+  .figure .caption { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+  .screenshot-slot {
+    border: 2px dashed var(--primary); border-radius: 12px; background: #fafaff;
+    padding: 26px 20px; margin: 16px 0; text-align: center; page-break-inside: avoid;
+  }
+  .screenshot-slot .icon { font-size: 30px; }
+  .screenshot-slot .label { font-weight: 700; color: var(--primary); margin: 6px 0 2px; }
+  .screenshot-slot .hint { font-size: 12px; color: var(--muted); }
+
+  .footer {
+    margin-top: 36px; padding-top: 12px; border-top: 1px solid var(--border);
+    font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between;
+  }
+
+  @media print {
+    body { max-width: none; padding: 0; }
+    h2 { page-break-before: auto; }
+    @page { size: A4; margin: 16mm 14mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>🎫 Manual del Administrador — InciTrack</h1>
+  <div class="subtitle">Gestión de usuarios, cuentas, notificaciones y SLA</div>
+  <span class="badge">Para: Equipo de Soporte/TI &nbsp;·&nbsp; Versión 2 — Agosto 2026</span>
+</div>
+<p class="intro">Si estás leyendo este documento, significa que ahora tienes el control de la administración de accesos, cuentas y reglas de soporte dentro de InciTrack. Este sistema trabaja en conjunto con el <strong>"Orquestador"</strong> (la plataforma principal donde nacen los usuarios). A continuación, te explico el flujo exacto que debes seguir en tu día a día para que todo funcione a la perfección.</p>
+
+<!-- ═══════════════ SECCIÓN 1 ═══════════════ -->
+<h2>1. El ciclo de vida de un Usuario</h2>
+<p>Cada vez que entre un nuevo cliente, empleado o cambie de puesto, tu trabajo se divide en pasos: <strong>primero en el Orquestador y luego en InciTrack</strong>.</p>
+
+<div class="figure">
+  <svg xmlns="http://www.w3.org/2000/svg" width="760" height="170" viewBox="0 0 760 170" font-family="Segoe UI, Arial, sans-serif">
+    <defs><marker id="arrC" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#6c63ff"/></marker></defs>
+    <circle cx="95" cy="60" r="26" fill="#6c63ff"/><text x="95" y="66" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">1</text>
+    <text x="95" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Crear usuario en</text><text x="95" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">el Orquestador</text>
+    <text x="95" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">elegir el rol correcto</text>
+    <line x1="130" y1="60" x2="185" y2="60" stroke="#6c63ff" stroke-width="2.5" marker-end="url(#arrC)"/>
+    <circle cx="285" cy="60" r="26" fill="#3b82f6"/><text x="285" y="66" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">2</text>
+    <text x="285" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">El usuario inicia</text><text x="285" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">sesión 1 vez</text>
+    <text x="285" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">así "viaja" a InciTrack</text>
+    <line x1="320" y1="60" x2="375" y2="60" stroke="#6c63ff" stroke-width="2.5" marker-end="url(#arrC)"/>
+    <circle cx="475" cy="60" r="26" fill="#f59e0b"/><text x="475" y="66" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">3</text>
+    <text x="475" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Vincularlo a su</text><text x="475" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Cuenta en InciTrack</text>
+    <text x="475" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">campo Jefe y/o Supervisores</text>
+    <line x1="510" y1="60" x2="565" y2="60" stroke="#6c63ff" stroke-width="2.5" marker-end="url(#arrC)"/>
+    <circle cx="665" cy="60" r="26" fill="#22c55e"/><text x="665" y="67" text-anchor="middle" fill="#fff" font-size="17" font-weight="700">✓</text>
+    <text x="665" y="112" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">Listo: ya puede</text><text x="665" y="127" text-anchor="middle" fill="#283c50" font-size="12.5" font-weight="700">crear y ver tickets</text>
+    <text x="665" y="145" text-anchor="middle" fill="#6b7591" font-size="10.5">solo de su empresa</text>
+  </svg>
+  <div class="caption">Figura 1 — Las 4 etapas para dar de alta a una persona en InciTrack.</div>
+</div>
+
+<h3>Paso 1: Crear el usuario en el Orquestador</h3>
+<p>Entra al panel del Orquestador y crea el usuario. El "secreto" está en elegir el <strong>rol correcto</strong>, ya que InciTrack lo traducirá automáticamente:</p>
+
+<div class="figure">
+  <svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="Segoe UI, Arial, sans-serif">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8c8c8c"/></marker>
+      <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#ef4444"/></marker>
+    </defs>
+    <rect x="40" y="18" width="280" height="40" rx="10" fill="#283c50"/>
+    <text x="180" y="43" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">ORQUESTADOR (rol que eliges)</text>
+    <rect x="440" y="18" width="280" height="40" rx="10" fill="#6c63ff"/>
+    <text x="580" y="43" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">INCITRACK (lo que se convierte)</text>
+    <rect x="40" y="74" width="280" height="44" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="180" y="101" text-anchor="middle" fill="#1e40af" font-size="15" font-weight="600">supervisor</text>
+    <line x1="330" y1="96" x2="430" y2="96" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="440" y="74" width="280" height="44" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="580" y="95" text-anchor="middle" fill="#1e40af" font-size="14" font-weight="600">Supervisor (cliente base)</text>
+    <text x="580" y="111" text-anchor="middle" fill="#6b7591" font-size="11">Solo ve tickets de SUS cuentas asignadas</text>
+    <rect x="40" y="130" width="280" height="44" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="180" y="157" text-anchor="middle" fill="#15803d" font-size="15" font-weight="600">admin_cuenta</text>
+    <line x1="330" y1="152" x2="430" y2="152" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="440" y="130" width="280" height="44" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="580" y="151" text-anchor="middle" fill="#15803d" font-size="14" font-weight="600">Jefe de Cuenta</text>
+    <text x="580" y="167" text-anchor="middle" fill="#6b7591" font-size="11">Hereda todos los tickets + recibe correos</text>
+    <rect x="40" y="186" width="280" height="44" rx="10" fill="#f5f3ff" stroke="#6c63ff" stroke-width="1.5"/>
+    <text x="180" y="213" text-anchor="middle" fill="#5b21b6" font-size="15" font-weight="600">admin_ti</text>
+    <line x1="330" y1="208" x2="430" y2="208" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="440" y="186" width="280" height="44" rx="10" fill="#f5f3ff" stroke="#6c63ff" stroke-width="1.5"/>
+    <text x="580" y="207" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="600">Admin TI</text>
+    <text x="580" y="223" text-anchor="middle" fill="#6b7591" font-size="11">Acceso total (Cuentas, Usuarios, SLA, etc.)</text>
+    <rect x="40" y="242" width="280" height="44" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="180" y="269" text-anchor="middle" fill="#b91c1c" font-size="15" font-weight="600">agente</text>
+    <line x1="330" y1="264" x2="430" y2="264" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
+    <rect x="440" y="242" width="280" height="44" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="580" y="263" text-anchor="middle" fill="#b91c1c" font-size="14" font-weight="700">⛔ BLOQUEADO (Error 403)</text>
+    <text x="580" y="279" text-anchor="middle" fill="#6b7591" font-size="11">Nunca uses este rol para usuarios de InciTrack</text>
+  </svg>
+  <div class="caption">Figura 2 — Cómo se traduce cada rol del Orquestador dentro de InciTrack.</div>
+</div>
+
+<ul>
+  <li><strong>Cliente base (usuario normal):</strong> rol <code>supervisor</code>. Verá un panel limpio y <strong>solo</strong> los tickets de las cuentas que tú le asignes. No verá tickets de otros clientes.</li>
+  <li><strong>Gerente o contraparte principal del cliente:</strong> rol <code>admin_cuenta</code> → <strong>"Jefe de Cuenta"</strong>. Al vincularlo a una cuenta hereda el acceso a todos sus tickets y <strong>recibe correos automáticos</strong> de cada incidencia nueva.</li>
+  <li><strong>Resolutor interno de tu equipo (TI):</strong> rol <code>admin_ti</code> → <strong>"Admin TI"</strong>, con poderes totales, igual que tú.</li>
+  <li><strong>⛔ NUNCA uses el rol <code>agente</code>:</strong> InciTrack lo bloquea con <em>Error 403</em> (es para otros módulos del ecosistema).</li>
+</ul>
+
+<div class="callout warn">
+  <div class="title">⚠️ Importante</div>
+  El usuario <strong>debe iniciar sesión al menos una vez</strong> en el sistema para que su cuenta "viaje" desde el Orquestador hacia la base de datos de InciTrack. Hasta que eso ocurra, no aparecerá en las listas de InciTrack.
+</div>
+
+<div class="figure"><img src="manual_assets/captura_02_nuevo_usuario.svg" alt="Formulario Nuevo usuario del Orquestador con selector de roles"><div class="caption">Figura 3 — Formulario Nuevo usuario del Orquestador. Deja activada la app InciTrack y selecciona el rol correcto.</div></div>
+<div class="figure"><img src="manual_assets/captura_01_usuarios.svg" alt="Lista de usuarios del Orquestador"><div class="caption">Figura 4 — Lista de usuarios del Orquestador, donde se revisan correo, cuenta, rol y estado.</div></div>
+
+<h3>Paso 2: Vincular al usuario a su Cuenta (en InciTrack)</h3>
+<p>Una vez que el usuario inició sesión por primera vez, debes "engancharlo" a la empresa a la que pertenece:</p>
+<ol>
+  <li>Abre <strong>InciTrack</strong> y ve a la pestaña <strong>Cuentas</strong>.</li>
+  <li>Presiona <strong>Editar</strong> en la cuenta correspondiente (ej: "Empresa ABC").</li>
+  <li>En el campo <strong>"Jefe"</strong>, busca y selecciona al usuario que definiste como <code>admin_cuenta</code>.</li>
+  <li>En el campo <strong>"Supervisores"</strong>, agrega a todos los demás usuarios base (los creados como <code>supervisor</code>).</li>
+</ol>
+<p><strong>¡Listo!</strong> Al guardar, esas personas ya podrán levantar y ver tickets exclusivamente para esa cuenta.</p>
+
+<div class="callout info">
+  <div class="title">ℹ️ ¿Por qué mi cliente no ve las pestañas Cuentas, Usuarios o Notificaciones?</div>
+  Es por diseño: esas pestañas de administración <strong>solo las ven los Admin TI</strong>. Supervisores y Jefes de Cuenta solo ven <em>Dashboard</em>, <em>Tickets</em> y <em>Nuevo Ticket</em>.
+</div>
+
+<div class="figure"><img src="manual_assets/captura_03_cuentas.svg" alt="Lista de cuentas de InciTrack"><div class="caption">Figura 5 — Pestaña Cuentas: selecciona Editar en la empresa correspondiente.</div></div>
+<div class="figure"><img src="manual_assets/captura_04_editar_cuenta.svg" alt="Formulario Editar Cuenta de InciTrack"><div class="caption">Figura 6 — Formulario Editar Cuenta con Jefe de Cuenta y Supervisores.</div></div>
+
+<!-- ═══════════════ SECCIÓN 2 ═══════════════ -->
+<h2>2. Gestión de Correos y Notificaciones</h2>
+<p>InciTrack envía correos automáticos basándose en <strong>dos reglas</strong>. Es crucial entender cómo funcionan para evitar que personas equivocadas reciban alertas.</p>
+
+<div class="figure">
+  <svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" font-family="Segoe UI, Arial, sans-serif">
+    <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#8c8c8c"/></marker></defs>
+    <rect x="255" y="15" width="250" height="52" rx="12" fill="#6c63ff"/>
+    <text x="380" y="38" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">🎫 NUEVO TICKET CREADO</text>
+    <text x="380" y="56" text-anchor="middle" fill="#e0deff" font-size="11">ej: "Cintillo Telefónico" en Empresa ABC</text>
+    <line x1="290" y1="67" x2="170" y2="100" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arr)"/>
+    <line x1="470" y1="67" x2="590" y2="100" stroke="#8c8c8c" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="45" y="104" width="290" height="120" rx="12" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+    <text x="190" y="130" text-anchor="middle" fill="#15803d" font-size="14" font-weight="700">REGLA A — Jefe de Cuenta</text>
+    <text x="190" y="150" text-anchor="middle" fill="#283c50" font-size="12">El usuario en la casilla "Jefe"</text>
+    <text x="190" y="166" text-anchor="middle" fill="#283c50" font-size="12">del formulario de la Cuenta</text>
+    <rect x="70" y="180" width="240" height="30" rx="8" fill="#22c55e"/>
+    <text x="190" y="199" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">SIEMPRE recibe el correo ✉</text>
+    <rect x="425" y="104" width="290" height="120" rx="12" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+    <text x="570" y="130" text-anchor="middle" fill="#b45309" font-size="14" font-weight="700">REGLA B — Notificaciones</text>
+    <text x="570" y="150" text-anchor="middle" fill="#283c50" font-size="12">Técnicos de la regla que calce con</text>
+    <text x="570" y="166" text-anchor="middle" fill="#283c50" font-size="12">Categoría / Subcategoría del ticket</text>
+    <rect x="450" y="180" width="240" height="30" rx="8" fill="#f59e0b"/>
+    <text x="570" y="199" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Técnicos + correos en CC ✉</text>
+    <rect x="45" y="244" width="670" height="70" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="380" y="268" text-anchor="middle" fill="#283c50" font-size="13" font-weight="700">📌 Precedencia de la Regla B (de más específica a más general)</text>
+    <text x="380" y="288" text-anchor="middle" fill="#475569" font-size="12.5">Subcategoría exacta  →  Categoría general  →  Regla global (sin categoría)</text>
+    <text x="380" y="305" text-anchor="middle" fill="#b45309" font-size="11.5" font-weight="600">Bonus: el PRIMER técnico de la regla queda auto-asignado al ticket</text>
+  </svg>
+  <div class="caption">Figura 3 — Quién recibe el correo cuando se crea un ticket.</div>
+</div>
+
+<h3>Regla A: El Jefe de la Cuenta (Automático)</h3>
+<p>Cualquier usuario seleccionado en la casilla <strong>"Jefe"</strong> del formulario de una <strong>Cuenta</strong> recibirá <strong>siempre</strong> un correo cuando se cree un ticket en esa empresa.</p>
+<ul>
+  <li><em>Solución de problemas:</em> si alguien se fue de la empresa o ya no debe recibir alertas, ve a <strong>Cuentas</strong>, edita la empresa y bórralo de la casilla "Jefe". <strong>No basta con desactivar al usuario.</strong></li>
+</ul>
+
+<h3>Regla B: Las alertas para el equipo TI (pestaña "Notificaciones")</h3>
+<p>¿Cómo sabe InciTrack a qué técnico avisarle cuando se cae un servidor o falla un cintillo? Usando la pestaña <strong>Notificaciones</strong> de tu menú lateral:</p>
+<ol>
+  <li>Ve a <strong>Notificaciones</strong> y crea una nueva regla.</li>
+  <li>Selecciona la <strong>Categoría</strong> (ej: "Equipamiento e Insumos") y la <strong>Subcategoría</strong> (ej: "Cintillo Telefónico").</li>
+  <li>En <strong>Usuarios</strong>, selecciona a los técnicos (Admins TI) que deben atender ese problema.</li>
+  <li>Agrega correos externos en la sección <strong>"CC"</strong> si es necesario.</li>
+</ol>
+<p>A partir de ese momento, si un cliente levanta un ticket de "Cintillo Telefónico", el correo le llegará a <strong>su Jefe de Cuenta</strong> (Regla A) y a <strong>los técnicos de la regla</strong> (Regla B).</p>
+<p><strong>🎯 Bonus — Auto-asignación:</strong> el <strong>primer técnico</strong> de la regla que calce quedará <strong>asignado automáticamente</strong> al ticket recién creado. Ordena bien tus reglas.</p>
+
+<div class="callout warn">
+  <div class="title">🔧 Si los correos dejan de llegar — checklist de diagnóstico</div>
+  <ol style="margin:4px 0">
+    <li>¿La <strong>Cuenta</strong> tiene un <strong>Jefe</strong> asignado y ese usuario tiene email registrado?</li>
+    <li>¿Existe una <strong>regla de Notificación</strong> que calce con la categoría del ticket y está <strong>activa</strong>?</li>
+    <li>¿Los técnicos de la regla tienen email registrado en el Orquestador?</li>
+    <li>Si todo lo anterior está correcto → <strong>avisa a Infraestructura</strong>: el problema está en el servidor (credenciales SMTP). <em>Caso real (ago/2026): los correos fallaban porque al servidor de producción le faltaba la contraseña de aplicación de Gmail; el error solo era visible en los logs del contenedor.</em></li>
+  </ol>
+</div>
+
+<!-- ═══════════════ SECCIÓN 3 ═══════════════ -->
+<h2>3. SLA (Tiempos de Respuesta y Cierre)</h2>
+<div class="figure"><img src="manual_assets/captura_05_sla.svg" alt="Formulario Nuevo SLA de InciTrack"><div class="caption">Figura 7 — Configuración de SLA por categoría, subcategoría y tiempos de respuesta/cierre.</div></div>
+<p>En la pestaña <strong>Config SLA</strong> defines los tiempos máximos de atención. <strong>Ojo:</strong> las reglas SLA se configuran por <strong>Categoría + Subcategoría</strong> (y opcionalmente <em>Plataforma BI</em> si la categoría lo requiere), <strong>no por prioridad</strong>.</p>
+<p>Cada regla SLA tiene <strong>dos tiempos</strong>:</p>
+<ul>
+  <li><strong>Tiempo de respuesta:</strong> cuánto tiene TI para <em>tomar</em> el ticket.</li>
+  <li><strong>Tiempo de cierre:</strong> cuánto tiene TI para <em>resolverlo</em> por completo.</li>
+</ul>
+<p>El cumplimiento se mide en la pestaña <strong>Estadísticas</strong> (Centro de Analítica TI), donde verás el <strong>% de cumplimiento SLA por servicio</strong> y alertas de tickets estancados (más de 48 h sin resolverse).</p>
+
+<div class="callout info">
+  <div class="title">ℹ️ Prioridades vs SLA</div>
+  Las <strong>prioridades</strong> del ticket (Baja, Media, Alta, <strong>Crítica</strong>) las elige quien crea el ticket y son informativas: no mueven las reglas SLA.
+</div>
+
+<!-- ═══════════════ SECCIÓN 4 ═══════════════ -->
+<h2>4. Referencia rápida: Estados del ticket</h2>
+<table>
+  <tr><th>Estado</th><th>Significado</th></tr>
+  <tr><td><strong>Abierto</strong></td><td>Recién creado, nadie lo ha tomado.</td></tr>
+  <tr><td><strong>En Proceso</strong></td><td>Un técnico ya está trabajando en él.</td></tr>
+  <tr><td><strong>Resuelto</strong></td><td>El técnico lo dio por solucionado.</td></tr>
+  <tr><td><strong>Cerrado</strong></td><td>Solución confirmada / ticket archivado.</td></tr>
+</table>
+<p><em>Tickets "estancados":</em> los que llevan <strong>más de 48 horas</strong> en Abierto o En Proceso. Aparecen alertados en Estadísticas.</p>
+
+<!-- ═══════════════ SECCIÓN 5 ═══════════════ -->
+<h2>5. ✅ Resumen del Día a Día</h2>
+<div class="callout tip">
+  <div class="title">Checklist diario de administración</div>
+  <ol style="margin:4px 0">
+    <li>Nuevo cliente → créalo en el <strong>Orquestador</strong> (rol <code>supervisor</code> o <code>admin_cuenta</code>).</li>
+    <li>El cliente <strong>inicia sesión</strong> por primera vez.</li>
+    <li>Entras a InciTrack → <strong>Cuentas</strong> → lo vinculas a su empresa (Jefe / Supervisores).</li>
+    <li>(Opcional) Ajustas los correos por categoría en <strong>Notificaciones</strong> y los tiempos en <strong>Config SLA</strong>.</li>
+  </ol>
+</div>
+
+<div class="footer">
+  <span>Manual del Administrador — InciTrack · v2</span>
+  <span>GranCRM Ecosystem · Agosto 2026</span>
+</div>
+
+</body>
+</html>

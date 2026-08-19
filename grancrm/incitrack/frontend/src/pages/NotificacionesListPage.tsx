@@ -86,15 +86,16 @@ export function NotificacionesListPage() {
                       <thead className="table-light">
                         <tr>
                           <th className="ps-3" style={{ width: '25%' }}>Servicio</th>
-                          <th style={{ width: '45%' }}>Emails CC</th>
-                          <th className="text-center" style={{ width: '15%' }}>Estado</th>
+                          <th style={{ width: '25%' }}>Responsables TI</th>
+                          <th style={{ width: '25%' }}>Emails CC</th>
+                          <th className="text-center" style={{ width: '10%' }}>Estado</th>
                           <th className="text-end pe-4" style={{ width: '15%' }}>Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
                         {notificaciones.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className="text-center text-muted py-4">
+                            <td colSpan={5} className="text-center text-muted py-4">
                               <i className="feather-bell fs-3 mb-2 d-block" />
                               Sin configuraciones de notificación.
                             </td>
@@ -107,7 +108,27 @@ export function NotificacionesListPage() {
                                   {n.clasificacion_display}
                                 </span>
                               </td>
-                              <td className="text-muted" style={{ fontSize: 12 }}>{n.emails_cc || '—'}</td>
+                              <td>
+                                {n.usuarios_nombres && n.usuarios_nombres.length > 0 ? (
+                                  <div className="d-flex flex-wrap gap-1">
+                                    {n.usuarios_nombres.map((u, i) => (
+                                      <span key={i} className="badge bg-light text-dark border">
+                                        <i className="feather-user me-1 text-primary" />{u}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted" style={{ fontSize: 12 }}>Sin asignar</span>
+                                )}
+                              </td>
+                              <td className="text-muted" style={{ fontSize: 12 }}>
+                                {n.emails_cc ? (
+                                  <div className="d-flex align-items-center gap-2">
+                                    <i className="feather-mail text-secondary fs-6" />
+                                    <span>{n.emails_cc}</span>
+                                  </div>
+                                ) : '—'}
+                              </td>
                               <td className="text-center">
                                 {n.activo
                                   ? <span className="badge bg-success-subtle text-success"><i className="feather-check me-1" />Activo</span>
