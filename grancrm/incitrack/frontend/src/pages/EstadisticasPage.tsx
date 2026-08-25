@@ -396,11 +396,11 @@ export function EstadisticasPage(): JSX.Element {
             </div>
           </div>
 
-          {/* Progress Rings + Estado Donut */}
+          {/* Progress Rings + Estado Donut (Alineados con ChartCard) */}
           <div className="row g-3 mb-3">
             <div className="col-12 col-md-6">
-              <Card className="h-100">
-                <div className="card-body d-flex align-items-center justify-content-around py-4">
+              <ChartCard title="Métricas de Cumplimiento" subtitle="Efectividad de resolución y SLA">
+                <div className="d-flex align-items-center justify-content-around py-2">
                   <div className="text-center">
                     <ProgressRing value={metrics.tasa} color="#22c55e" />
                     <p className="fs-11 fw-bold text-muted mt-2 mb-0">Resolución</p>
@@ -409,7 +409,7 @@ export function EstadisticasPage(): JSX.Element {
                     <ProgressRing value={metrics.sla} color="#6c63ff" />
                     <p className="fs-11 fw-bold text-muted mt-2 mb-0">SLA</p>
                   </div>
-                  {/* Dato extra del SLA marcado en rojo */}
+                  {/* Dato extra del SLA */}
                   {slaCategoriasData.length > 0 && (
                     <div className="border-start ps-4 ms-2 d-none d-sm-block">
                       <p className="fs-11 fw-bold text-muted mb-2 text-uppercase">SLA más bajo</p>
@@ -425,11 +425,11 @@ export function EstadisticasPage(): JSX.Element {
                     </div>
                   )}
                 </div>
-              </Card>
+              </ChartCard>
             </div>
             <div className="col-12 col-md-6">
-              <ChartCard title="Estado de Tickets">
-                <PieChartWidget data={estadoData} height={140} />
+              <ChartCard title="Estado de Tickets" subtitle="Distribución por estado actual">
+                <PieChartWidget data={estadoData} height={175} />
               </ChartCard>
             </div>
           </div>
@@ -479,12 +479,8 @@ export function EstadisticasPage(): JSX.Element {
               </ChartCard>
             </div>
             <div className="col-12 col-xl-4">
-              <Card className="h-100">
-                <div className="card-header bg-transparent border-0 pt-4 pb-0">
-                  <h6 className="card-title fw-bold mb-0">Ranking Supervisores</h6>
-                  <p className="fs-12 text-muted mb-0 mt-1">Usuarios que más solicitan</p>
-                </div>
-                <div className="card-body pt-3">
+              <ChartCard title="Ranking Supervisores" subtitle="Usuarios que más solicitan">
+                <div className="pt-1">
                   {rankingSupervisores.length > 0 ? (
                     <RankingTable data={rankingSupervisores} valueLabel="Tkts" />
                   ) : (
@@ -493,7 +489,7 @@ export function EstadisticasPage(): JSX.Element {
                     </p>
                   )}
                 </div>
-              </Card>
+              </ChartCard>
             </div>
           </div>
 
