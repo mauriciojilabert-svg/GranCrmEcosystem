@@ -399,20 +399,22 @@ export function EstadisticasPage(): JSX.Element {
           {/* Progress Rings + Estado Donut (Alineados con ChartCard) */}
           <div className="row g-3 mb-3">
             <div className="col-12 col-md-6">
-              <ChartCard title="Métricas de Cumplimiento" subtitle="Efectividad de resolución y SLA">
-                <div className="d-flex align-items-center justify-content-around py-2">
+              <ChartCard title="Métricas de Cumplimiento" subtitle="Tasa de resolución general y cumplimiento dentro de plazo acordado">
+                <div className="d-flex align-items-center justify-content-around py-1">
                   <div className="text-center">
                     <ProgressRing value={metrics.tasa} color="#22c55e" />
                     <p className="fs-11 fw-bold text-muted mt-2 mb-0">Resolución</p>
+                    <span className="fs-10 text-muted">Total resueltos</span>
                   </div>
                   <div className="text-center">
                     <ProgressRing value={metrics.sla} color="#6c63ff" />
-                    <p className="fs-11 fw-bold text-muted mt-2 mb-0">SLA</p>
+                    <p className="fs-11 fw-bold text-muted mt-2 mb-0">Cumplimiento SLA</p>
+                    <span className="fs-10 text-muted">Dentro de plazo</span>
                   </div>
                   {/* Dato extra del SLA */}
                   {slaCategoriasData.length > 0 && (
                     <div className="border-start ps-4 ms-2 d-none d-sm-block">
-                      <p className="fs-11 fw-bold text-muted mb-2 text-uppercase">SLA más bajo</p>
+                      <p className="fs-11 fw-bold text-muted mb-1 text-uppercase">SLA más bajo</p>
                       {(() => {
                         const worst = [...slaCategoriasData].sort((a, b) => a.SLA - b.SLA)[0];
                         return (
@@ -424,6 +426,12 @@ export function EstadisticasPage(): JSX.Element {
                       })()}
                     </div>
                   )}
+                </div>
+                <div className="border-top pt-2 mt-2">
+                  <p className="fs-11 text-muted mb-0 text-center">
+                    <i className="feather-info me-1 text-primary"></i>
+                    <strong>SLA ({metrics.sla}%):</strong> Mide el porcentaje de tickets que fueron cerrados antes de vencer su tiempo límite de atención configurado.
+                  </p>
                 </div>
               </ChartCard>
             </div>
