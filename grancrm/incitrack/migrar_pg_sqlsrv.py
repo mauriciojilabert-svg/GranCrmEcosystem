@@ -159,6 +159,13 @@ def run():
                     fue_reasignado=row['fue_reasignado']
                 )
                 t.save(force_insert=True)
+                
+                # CORRECCIÓN: auto_now_add y auto_now pisan las fechas al hacer save(). 
+                # Usamos .update() para forzar las fechas originales saltando esa restricción.
+                Ticket.objects.filter(id=row['id']).update(
+                    fecha_creacion=row['fecha_creacion'],
+                    fecha_actualizacion=row['fecha_actualizacion']
+                )
 
             print("8. Migrando Comentarios...")
             cursor.execute("SELECT * FROM tickets_comentario")
@@ -172,6 +179,7 @@ def run():
                     interno=row['interno']
                 )
                 c.save(force_insert=True)
+                Comentario.objects.filter(id=row['id']).update(fecha=row['fecha'])
 
             print("9. Migrando Adjuntos...")
             cursor.execute("SELECT * FROM tickets_adjunto")
@@ -190,6 +198,8 @@ def run():
                     fecha_subida=row.get('fecha_subida')
                 )
                 a.save(force_insert=True)
+                if row.get('fecha_subida'):
+                    Adjunto.objects.filter(id=row['id']).update(fecha_subida=row['fecha_subida'])
                 
             print("10. Migrando Notificaciones de Servicio...")
             cursor.execute("SELECT * FROM tickets_notificacionservicio")
@@ -221,7 +231,9 @@ def run():
                         valor_anterior=row['valor_anterior'],
                         valor_nuevo=row['valor_nuevo'],
                         fecha_modificacion=row['fecha_modificacion']
-                    ).save(force_insert=True)
+                    )
+                    audit.save(force_insert=True)
+                    TicketAudit.objects.filter(id=row['id']).update(fecha_modificacion=row['fecha_modificacion'])
             except Exception as e:
                 print(f"  -> Aviso: No se migró auditoría (puede que la tabla no existiera en PG): {e}")
 
