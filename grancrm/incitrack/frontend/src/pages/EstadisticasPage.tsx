@@ -396,9 +396,9 @@ export function EstadisticasPage(): JSX.Element {
             </div>
           </div>
 
-          {/* Progress Rings + Estado Donut */}
+          {/* Progress Rings + Detalle SLA por Servicio */}
           <div className="row g-3 mb-3">
-            <div className="col-12 col-md-6">
+            <div className="col-12 col-md-5">
               <Card className="h-100">
                 <div className="card-body d-flex align-items-center justify-content-around py-4">
                   <div className="text-center">
@@ -412,9 +412,31 @@ export function EstadisticasPage(): JSX.Element {
                 </div>
               </Card>
             </div>
-            <div className="col-12 col-md-6">
-              <ChartCard title="Estado de Tickets">
-                <PieChartWidget data={estadoData} height={140} />
+            <div className="col-12 col-md-7">
+              <ChartCard title="Servicios con Menor Cumplimiento SLA" subtitle="Servicios que requieren atención prioritaria">
+                {slaCategoriasData.length > 0 ? (
+                  <div>
+                    {[...slaCategoriasData].sort((a, b) => a.SLA - b.SLA).slice(0, 5).map((item, i) => {
+                      const barColor = item.SLA >= 80 ? '#22c55e' : item.SLA >= 50 ? '#f59e0b' : '#ef4444';
+                      const badgeClass = item.SLA >= 80 ? 'bg-success-subtle text-success' : item.SLA >= 50 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger';
+                      return (
+                        <div key={i} className="mb-3">
+                          <div className="d-flex justify-content-between align-items-center mb-1">
+                            <span className="fs-12 fw-semibold text-dark">{item.name}</span>
+                            <span className={`badge ${badgeClass} fw-bold`}>{item.SLA}%</span>
+                          </div>
+                          <div className="progress" style={{ height: 6, borderRadius: 3 }}>
+                            <div className="progress-bar" style={{ width: `${item.SLA}%`, backgroundColor: barColor, borderRadius: 3, transition: 'width 0.6s ease' }}></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-muted text-center py-3 fs-13">
+                    <i className="feather-shield me-2"></i>Sin datos de SLA
+                  </p>
+                )}
               </ChartCard>
             </div>
           </div>
