@@ -281,7 +281,7 @@ def ticket_list(
         'cuenta', 'creado_por', 'asignado_a', 'categoria', 'subcategoria'
     )
 
-    solo_mis_tickets = usuario.es_admin and not ver_todos
+    solo_mis_tickets = usuario.es_admin and not ver_todos and not responsable_ti
     if solo_mis_tickets:
         qs = qs.filter(asignado_a=usuario)
 

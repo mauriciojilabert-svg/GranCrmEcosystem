@@ -78,7 +78,7 @@ export function TicketListPage() {
 
   function applyFilters() {
     const next = new URLSearchParams();
-    if (verTodos) next.set('ver_todos', '1');
+    if (verTodos || formResponsable) next.set('ver_todos', '1');
     if (formQ) next.set('q', formQ);
     if (formEstado) next.set('estado', formEstado);
     if (formCuenta) next.set('cuenta', formCuenta);
@@ -287,9 +287,20 @@ export function TicketListPage() {
                 onChange={e => setFormResponsable(e.target.value)}
               >
                 <option value="">Todos</option>
-                {usuarios.filter(u => u.rol === 'admin' && u.activo).map(u => (
-                  <option key={u.id} value={String(u.id)}>{u.nombre}</option>
-                ))}
+                {(() => {
+                  const seen = new Set<string>();
+                  return usuarios
+                    .filter(u => u.rol === 'admin' && u.activo)
+                    .filter(u => {
+                      const norm = (u.nombre || '').trim().toLowerCase();
+                      if (seen.has(norm)) return false;
+                      seen.add(norm);
+                      return true;
+                    })
+                    .map(u => (
+                      <option key={u.id} value={String(u.id)}>{u.nombre}</option>
+                    ));
+                })()}
               </select>
             </div>
           </div>
