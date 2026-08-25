@@ -436,8 +436,37 @@ export function EstadisticasPage(): JSX.Element {
               </ChartCard>
             </div>
             <div className="col-12 col-md-6">
-              <ChartCard title="Estado de Tickets" subtitle="Distribución por estado actual">
-                <PieChartWidget data={estadoData} height={175} />
+              <ChartCard title="Estado de Tickets" subtitle="Distribución porcentual y conteo por estado">
+                <div className="row align-items-center g-2 py-1">
+                  <div className="col-6">
+                    <PieChartWidget data={estadoData} height={145} legend={false} />
+                  </div>
+                  <div className="col-6">
+                    <div className="d-flex flex-column gap-2 pe-1">
+                      {estadoData.map((item, idx) => {
+                        const pct = metrics.total > 0 ? ((item.value / metrics.total) * 100).toFixed(1) : '0';
+                        return (
+                          <div key={idx} className="d-flex align-items-center justify-content-between px-2 py-1 rounded bg-light border-0">
+                            <div className="d-flex align-items-center gap-2">
+                              <span className="rounded-circle" style={{ width: 8, height: 8, backgroundColor: item.color, display: 'inline-block' }}></span>
+                              <span className="fs-12 fw-semibold text-dark">{item.name}</span>
+                            </div>
+                            <div>
+                              <span className="fs-12 fw-bold text-dark me-1">{item.value}</span>
+                              <span className="fs-11 text-muted">({pct}%)</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                <div className="border-top pt-2 mt-2">
+                  <p className="fs-11 text-muted mb-0 text-center">
+                    <i className="feather-pie-chart me-1 text-primary"></i>
+                    <strong>Total analizado:</strong> {metrics.total} tickets en el periodo seleccionado.
+                  </p>
+                </div>
               </ChartCard>
             </div>
           </div>
