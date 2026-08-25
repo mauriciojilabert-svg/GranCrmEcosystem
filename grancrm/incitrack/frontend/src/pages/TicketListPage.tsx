@@ -375,10 +375,12 @@ export function TicketListPage() {
                           {t.asignado_a_nombre ? (
                             <div className="d-flex align-items-center gap-2">
                               <div className="avatar-ini">{initials}</div>
-                              <span className="fs-12 fw-semibold">{t.asignado_a_nombre}</span>
-                              {t.fue_reasignado && (
-                                <span className="badge bg-warning-subtle text-warning border border-warning-subtle ms-1" style={{ fontSize: 9 }}>REASIGNADO</span>
-                              )}
+                              <div>
+                                <span className="fs-12 fw-semibold">{t.asignado_a_nombre}</span>
+                                {t.fue_reasignado && (
+                                  <div><span className="badge bg-warning-subtle text-warning border border-warning-subtle" style={{ fontSize: 9 }}>REASIGNADO</span></div>
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <span className="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Sin asignar</span>
