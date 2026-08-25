@@ -294,7 +294,8 @@ export function EstadisticasPage(): JSX.Element {
     });
     
     return Object.entries(m).map(([name, v]) => ({
-      name: shortName(name, 15),
+      name: shortName(name, 22),
+      fullName: name,
       SLA: Math.round((v.cumplidos / v.total) * 100)
     })).sort((a, b) => b.SLA - a.SLA).slice(0, 5);
   }, [filteredTickets]);
@@ -419,7 +420,7 @@ export function EstadisticasPage(): JSX.Element {
                         const worst = [...slaCategoriasData].sort((a, b) => a.SLA - b.SLA)[0];
                         return (
                           <div>
-                            <p className="fs-13 fw-semibold text-dark mb-1">{worst.name}</p>
+                            <p className="fs-13 fw-semibold text-dark mb-1">{worst.fullName || worst.name}</p>
                             <span className="badge bg-danger-subtle text-danger">{worst.SLA}% Cumplimiento</span>
                           </div>
                         );
