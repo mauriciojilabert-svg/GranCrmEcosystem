@@ -273,7 +273,7 @@ export function DashboardPage() {
                   value={stats.abiertos}
                   label="Abiertos"
                   progress={{ label: 'Tickets activos', value: pctAbiertos, color: 'danger' }}
-                  onClick={() => navigate('tickets?estado=abierto')}
+                  onClick={() => navigate(`tickets?estado=abierto${verTodos ? '&ver_todos=1' : ''}`)}
                 />
               </div>
 
@@ -284,7 +284,7 @@ export function DashboardPage() {
                   value={stats.en_proceso}
                   label="En Proceso"
                   progress={{ label: 'En atención', value: pctEnProceso, color: 'warning' }}
-                  onClick={() => navigate('tickets?estado=en_proceso')}
+                  onClick={() => navigate(`tickets?estado=en_proceso${verTodos ? '&ver_todos=1' : ''}`)}
                 />
               </div>
 
@@ -295,7 +295,7 @@ export function DashboardPage() {
                   value={stats.resueltos}
                   label="Resueltos"
                   progress={{ label: 'Solucionados', value: pctResueltos, color: 'success' }}
-                  onClick={() => navigate('tickets?estado=resuelto')}
+                  onClick={() => navigate(`tickets?estado=resuelto${verTodos ? '&ver_todos=1' : ''}`)}
                 />
               </div>
 
@@ -306,7 +306,7 @@ export function DashboardPage() {
                   value={stats.cerrados_48h}
                   label="Cerrados"
                   progress={{ label: 'Últimas 48h', value: pctCerrados, color: 'info' }}
-                  onClick={() => navigate('tickets?estado=cerrado')}
+                  onClick={() => navigate(`tickets?estado=cerrado${verTodos ? '&ver_todos=1' : ''}`)}
                 />
               </div>
             </div>
@@ -323,7 +323,7 @@ export function DashboardPage() {
                   footer={
                     stats.por_cerrar > 0 ? (
                       <div className="px-4 pb-2">
-                        <Link to="tickets?estado=abierto&por_cerrar=1" className="btn btn-warning btn-sm w-100">Atender ahora</Link>
+                        <Link to={`tickets?estado=abierto&por_cerrar=1${verTodos ? '&ver_todos=1' : ''}`} className="btn btn-warning btn-sm w-100">Atender ahora</Link>
                       </div>
                     ) : undefined
                   }
