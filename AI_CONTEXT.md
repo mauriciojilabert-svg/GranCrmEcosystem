@@ -6,12 +6,12 @@
 2. **Estructura del Repositorio Git**: 
    - La raíz del repositorio rastrea la carpeta `grancrm` y otras carpetas troncales (`248`, `PRODUCCION`).
    - La carpeta `249` (QA/Desarrollo) es **estrictamente local** y ha sido añadida a `.gitignore`. NUNCA se debe subir a GitHub.
-3. **Flujo de Trabajo (Vía GitHub)**:
-   - Se realizan los cambios de código a nivel local.
-   - **Subir cambios**: Se realiza commit y `git push` a la rama `main` en GitHub.
-   - **Bajar cambios en Servidores**: Se accede al servidor mediante PuTTY, se realiza `git pull` en la carpeta correcta y se compila/reinicia Docker.
-     - **Ruta QA/Producción**: `cd /var/www/dash/grancrm`
-     - **Git pull requiere sudo**: `sudo git pull origin main` (la carpeta `/var/www/` pertenece a `root`)
+3. **Flujo de Trabajo (Vía GitHub & PuTTY)**:
+   - **Subir cambios automáticamente**: La IA realiza las modificaciones, commits claros y `git push` a `main` en GitHub directamente.
+   - **Entregar comandos para PuTTY**: La IA siempre debe entregar el comando exacto (one-liner o pasos claros) listo para copiar y pegar en PuTTY para compilar/desplegar en el servidor.
+   - **Trazabilidad y Rollback Seguro**: Cada cambio debe realizarse con commits atómicos y descriptivos que permitan realizar `git revert` o volver atrás sin pérdida de datos ni configuraciones.
+   - **Ruta Servidor QA/Producción**: `cd /var/www/dash/grancrm`
+   - **Git pull en Servidor**: `sudo git pull origin main` (la carpeta `/var/www/` pertenece a `root`)
 
 ---
 
