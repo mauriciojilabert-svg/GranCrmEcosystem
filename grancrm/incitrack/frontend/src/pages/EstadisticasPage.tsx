@@ -396,9 +396,9 @@ export function EstadisticasPage(): JSX.Element {
             </div>
           </div>
 
-          {/* Progress Rings + Detalle SLA por Servicio */}
+          {/* Progress Rings + Estado Donut */}
           <div className="row g-3 mb-3">
-            <div className="col-12 col-md-5">
+            <div className="col-12 col-md-6">
               <Card className="h-100">
                 <div className="card-body d-flex align-items-center justify-content-around py-4">
                   <div className="text-center">
@@ -409,34 +409,27 @@ export function EstadisticasPage(): JSX.Element {
                     <ProgressRing value={metrics.sla} color="#6c63ff" />
                     <p className="fs-11 fw-bold text-muted mt-2 mb-0">SLA</p>
                   </div>
+                  {/* Dato extra del SLA marcado en rojo */}
+                  {slaCategoriasData.length > 0 && (
+                    <div className="border-start ps-4 ms-2 d-none d-sm-block">
+                      <p className="fs-11 fw-bold text-muted mb-2 text-uppercase">SLA más bajo</p>
+                      {(() => {
+                        const worst = [...slaCategoriasData].sort((a, b) => a.SLA - b.SLA)[0];
+                        return (
+                          <div>
+                            <p className="fs-13 fw-semibold text-dark mb-1">{worst.name}</p>
+                            <span className="badge bg-danger-subtle text-danger">{worst.SLA}% Cumplimiento</span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               </Card>
             </div>
-            <div className="col-12 col-md-7">
-              <ChartCard title="Servicios con Menor Cumplimiento SLA" subtitle="Servicios que requieren atención prioritaria">
-                {slaCategoriasData.length > 0 ? (
-                  <div>
-                    {[...slaCategoriasData].sort((a, b) => a.SLA - b.SLA).slice(0, 5).map((item, i) => {
-                      const barColor = item.SLA >= 80 ? '#22c55e' : item.SLA >= 50 ? '#f59e0b' : '#ef4444';
-                      const badgeClass = item.SLA >= 80 ? 'bg-success-subtle text-success' : item.SLA >= 50 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger';
-                      return (
-                        <div key={i} className="mb-3">
-                          <div className="d-flex justify-content-between align-items-center mb-1">
-                            <span className="fs-12 fw-semibold text-dark">{item.name}</span>
-                            <span className={`badge ${badgeClass} fw-bold`}>{item.SLA}%</span>
-                          </div>
-                          <div className="progress" style={{ height: 6, borderRadius: 3 }}>
-                            <div className="progress-bar" style={{ width: `${item.SLA}%`, backgroundColor: barColor, borderRadius: 3, transition: 'width 0.6s ease' }}></div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-muted text-center py-3 fs-13">
-                    <i className="feather-shield me-2"></i>Sin datos de SLA
-                  </p>
-                )}
+            <div className="col-12 col-md-6">
+              <ChartCard title="Estado de Tickets">
+                <PieChartWidget data={estadoData} height={140} />
               </ChartCard>
             </div>
           </div>
